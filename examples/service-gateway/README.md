@@ -7,14 +7,14 @@ This pattern is appropriate for workloads that need to access managed Oracle ser
 **Key design points:**
 
 - `create_service_gateway = true` — explicit OCI-specific opt-in (no AWS equivalent)
-- `create_internet_gateway = false` / `enable_nat_gateway = false` — closed network, Oracle Services only
+- `create_igw = false` / `enable_nat_gateway = false` — closed network, Oracle Services only
 - `create_database_subnet_route_table = true` — the database tier gets its own route table, which automatically picks up the SGW route
 - `service_gateway_tags` — optional extra freeform tags on the SGW resource
 
 The route tables created are:
 
-| Route table | Used by | Routes |
-|---|---|---|
+| Route table                | Used by          | Routes                    |
+| -------------------------- | ---------------- | ------------------------- |
 | `<name>-db-rt` (dedicated) | database subnets | SGW → all Oracle services |
 
 Private subnets have **no route table** when there is no NAT Gateway — they remain fully isolated with no default gateway.
