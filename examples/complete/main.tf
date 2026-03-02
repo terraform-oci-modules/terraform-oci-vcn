@@ -57,19 +57,19 @@ module "vcn" {
   intra_subnets = [cidrsubnet(local.vcn_cidr, 8, 52), cidrsubnet(local.vcn_cidr, 8, 53)]
 
   # Gateways
-  create_internet_gateway = true
-  enable_nat_gateway      = true
-  single_nat_gateway      = true
-  create_service_gateway  = true
+  create_igw             = true
+  enable_nat_gateway     = true
+  single_nat_gateway     = true
+  create_service_gateway = true
 
   # Per-subnet route tables: one dedicated route table per public subnet and per intra subnet
   create_multiple_public_route_tables = true
   create_multiple_intra_route_tables  = true
 
   # Custom DHCP options — search domain with OCI VCN resolver (default type)
-  create_dhcp_options        = true
-  dhcp_options_search_domain = "example.internal"
-  dhcp_options_server_type   = "VcnLocalPlusInternet"
+  enable_dhcp_options      = true
+  dhcp_options_domain_name = "example.internal"
+  dhcp_options_server_type = "VcnLocalPlusInternet"
 
   # Per-AD freeform tags — applied on top of subnet_tags for the matching AD
   public_subnet_tags_per_ad = {

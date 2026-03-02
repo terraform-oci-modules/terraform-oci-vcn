@@ -26,7 +26,7 @@ locals {
 #
 # Key settings:
 #   create_service_gateway             = true   — explicit opt-in (OCI-specific flag)
-#   create_internet_gateway            = false  — no public internet access
+#   create_igw                         = false  — no public internet access
 #   enable_nat_gateway                 = false  — no NAT; Oracle Services via SGW only
 #   create_database_subnet_route_table = true   — dedicated RT for DB subnets; also
 #                                                 picks up the SGW route automatically
@@ -50,9 +50,9 @@ module "vcn" {
   create_database_subnet_route_table = true
 
   # No internet access — Oracle Services via SGW only
-  create_internet_gateway = false
-  enable_nat_gateway      = false
-  create_service_gateway  = true
+  create_igw             = false
+  enable_nat_gateway     = false
+  create_service_gateway = true
 
   # Optional: add extra freeform tags to the Service Gateway resource
   service_gateway_tags = {

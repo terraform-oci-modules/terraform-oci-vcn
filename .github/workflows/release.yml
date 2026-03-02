@@ -7,10 +7,10 @@ on:
       - main
       - master
     paths:
-      - '**/*.tpl'
-      - '**/*.py'
-      - '**/*.tf'
-      - '.github/workflows/release.yml'
+      - "**/*.tpl"
+      - "**/*.py"
+      - "**/*.tf"
+      - ".github/workflows/release.yml"
 
 jobs:
   release:

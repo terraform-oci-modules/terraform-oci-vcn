@@ -43,7 +43,7 @@ output "default_dhcp_options_id" {
 }
 
 output "dhcp_options_id" {
-  description = "The OCID of the custom DHCP options set created by this module. Null when create_dhcp_options = false"
+  description = "The OCID of the custom DHCP options set created by this module. Null when enable_dhcp_options = false"
   value       = try(oci_core_dhcp_options.this[0].id, null)
 }
 

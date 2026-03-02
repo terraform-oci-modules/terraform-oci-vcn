@@ -48,9 +48,9 @@ module "vcn" {
   # in OCI (there is no separate egress-only gateway).
   private_subnets = ["10.0.0.0/20", "10.0.16.0/20", "10.0.32.0/20"]
 
-  create_internet_gateway = true
-  enable_nat_gateway      = true
-  single_nat_gateway      = true
+  create_igw         = true
+  enable_nat_gateway = true
+  single_nat_gateway = true
 
   tags = local.tags
 }
