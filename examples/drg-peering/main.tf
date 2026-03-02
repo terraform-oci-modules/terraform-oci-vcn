@@ -69,10 +69,10 @@ module "vcn_ashburn" {
   public_subnets  = [cidrsubnet(local.vcn_cidr_ashburn, 4, 8), cidrsubnet(local.vcn_cidr_ashburn, 4, 9)]
   private_subnets = [cidrsubnet(local.vcn_cidr_ashburn, 4, 0), cidrsubnet(local.vcn_cidr_ashburn, 4, 1)]
 
-  create_internet_gateway = true
-  enable_nat_gateway      = true
-  single_nat_gateway      = true
-  create_service_gateway  = true
+  create_igw             = true
+  enable_nat_gateway     = true
+  single_nat_gateway     = true
+  create_service_gateway = true
 
   # Pass the DRG OCID so the symbolic "drg" network_entity_id works in route rules
   attached_drg_id = oci_core_drg.ashburn.id
@@ -110,9 +110,9 @@ module "vcn_chicago" {
 
   # Chicago spoke has no internet access — traffic to Oracle Services via SGW,
   # and cross-region traffic back to Ashburn via DRG
-  create_internet_gateway = false
-  enable_nat_gateway      = false
-  create_service_gateway  = true
+  create_igw             = false
+  enable_nat_gateway     = false
+  create_service_gateway = true
 
   attached_drg_id = oci_core_drg.chicago.id
 
