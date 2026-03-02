@@ -36,7 +36,7 @@ module "vcn" {
   cidr           = local.vcn_cidr
 
   # Attach a secondary CIDR block
-  secondary_cidrs = [local.secondary_cidr]
+  secondary_cidr_blocks = [local.secondary_cidr]
 
   # Public subnets from the primary CIDR
   public_subnets = [

@@ -12,7 +12,7 @@ locals {
   ]
 
   # VCN CIDR blocks — primary + any secondary CIDRs
-  vcn_cidr_blocks = concat([var.cidr], var.secondary_cidrs)
+  vcn_cidr_blocks = concat([var.cidr], var.secondary_cidr_blocks)
 
   # DNS label: when enable_dns_hostnames=true and no explicit label given, derive from name.
   # OCI DNS labels: alphanumeric, max 15 chars, must start with a letter.
@@ -91,7 +91,7 @@ resource "oci_core_vcn" "this" {
 ################################################################################
 
 resource "oci_core_dhcp_options" "this" {
-  count = local.create_vcn && var.create_dhcp_options ? 1 : 0
+  count = local.create_vcn && var.enable_dhcp_options ? 1 : 0
 
   compartment_id = var.compartment_id
   vcn_id         = oci_core_vcn.this[0].id
@@ -102,12 +102,12 @@ resource "oci_core_dhcp_options" "this" {
     type        = "DomainNameServer"
     server_type = var.dhcp_options_server_type
     # custom_dns_servers only valid when server_type = "CustomDnsServer"
-    custom_dns_servers = var.dhcp_options_server_type == "CustomDnsServer" ? var.dhcp_options_custom_dns_servers : []
+    custom_dns_servers = var.dhcp_options_server_type == "CustomDnsServer" ? var.dhcp_options_domain_name_servers : []
   }
 
   # Search domain option — only included when a value is provided
   dynamic "options" {
-    for_each = var.dhcp_options_search_domain != "" ? [var.dhcp_options_search_domain] : []
+    for_each = var.dhcp_options_domain_name != "" ? [var.dhcp_options_domain_name] : []
     content {
       type                = "SearchDomain"
       search_domain_names = [options.value]
@@ -150,8 +150,8 @@ resource "oci_core_subnet" "public" {
   # Public subnets: prohibit_public_ip = false so instances can get public IPs
   prohibit_public_ip_on_vnic = false
   ipv6cidr_block             = var.enable_ipv6 && length(var.public_subnet_ipv6_cidrs) > count.index ? var.public_subnet_ipv6_cidrs[count.index] : null
-  dhcp_options_id            = var.create_dhcp_options ? oci_core_dhcp_options.this[0].id : null
-  route_table_id             = var.create_internet_gateway ? element(oci_core_route_table.ig[*].id, var.create_multiple_public_route_tables ? count.index : 0) : null
+  dhcp_options_id            = var.enable_dhcp_options ? oci_core_dhcp_options.this[0].id : null
+  route_table_id             = var.create_igw ? element(oci_core_route_table.ig[*].id, var.create_multiple_public_route_tables ? count.index : 0) : null
   security_list_ids          = local.create_public_security_list ? [oci_core_security_list.public[0].id] : null
 
   freeform_tags = merge(
@@ -201,7 +201,7 @@ resource "oci_core_subnet" "private" {
   availability_domain        = local.private_subnet_objects[count.index].ad
   prohibit_public_ip_on_vnic = true
   ipv6cidr_block             = var.enable_ipv6 && length(var.private_subnet_ipv6_cidrs) > count.index ? var.private_subnet_ipv6_cidrs[count.index] : null
-  dhcp_options_id            = var.create_dhcp_options ? oci_core_dhcp_options.this[0].id : null
+  dhcp_options_id            = var.enable_dhcp_options ? oci_core_dhcp_options.this[0].id : null
   route_table_id = (
     var.enable_nat_gateway
     ? oci_core_route_table.nat[local.private_subnet_objects[count.index].nat_rt_index].id
@@ -247,7 +247,7 @@ resource "oci_core_subnet" "database" {
   availability_domain        = local.database_subnet_objects[count.index].ad
   prohibit_public_ip_on_vnic = true
   ipv6cidr_block             = var.enable_ipv6 && length(var.database_subnet_ipv6_cidrs) > count.index ? var.database_subnet_ipv6_cidrs[count.index] : null
-  dhcp_options_id            = var.create_dhcp_options ? oci_core_dhcp_options.this[0].id : null
+  dhcp_options_id            = var.enable_dhcp_options ? oci_core_dhcp_options.this[0].id : null
   route_table_id = (
     var.create_database_subnet_route_table
     ? oci_core_route_table.database[0].id
@@ -304,7 +304,7 @@ resource "oci_core_route_table" "database" {
 
   # Optional direct Internet Gateway route for database subnets (use with caution)
   dynamic "route_rules" {
-    for_each = var.create_database_internet_gateway_route && var.create_internet_gateway ? [1] : []
+    for_each = var.create_database_internet_gateway_route && var.create_igw ? [1] : []
     content {
       destination       = local.anywhere
       destination_type  = "CIDR_BLOCK"
@@ -346,7 +346,7 @@ resource "oci_core_subnet" "intra" {
   availability_domain        = local.intra_subnet_objects[count.index].ad
   prohibit_public_ip_on_vnic = true
   ipv6cidr_block             = var.enable_ipv6 && length(var.intra_subnet_ipv6_cidrs) > count.index ? var.intra_subnet_ipv6_cidrs[count.index] : null
-  dhcp_options_id            = var.create_dhcp_options ? oci_core_dhcp_options.this[0].id : null
+  dhcp_options_id            = var.enable_dhcp_options ? oci_core_dhcp_options.this[0].id : null
   # No route table — intra subnets are fully isolated (use VCN default/empty RT)
   route_table_id    = element(oci_core_route_table.intra[*].id, var.create_multiple_intra_route_tables ? count.index : 0)
   security_list_ids = local.create_intra_security_list ? [oci_core_security_list.intra[0].id] : null
@@ -387,13 +387,13 @@ resource "oci_core_route_table" "intra" {
 ################################################################################
 
 resource "oci_core_internet_gateway" "this" {
-  count = local.create_vcn && var.create_internet_gateway ? 1 : 0
+  count = local.create_vcn && var.create_igw ? 1 : 0
 
   compartment_id = var.compartment_id
   vcn_id         = oci_core_vcn.this[0].id
   display_name   = "${var.name}-igw"
 
-  freeform_tags = merge({ "Name" = "${var.name}-igw" }, var.tags, var.internet_gateway_tags)
+  freeform_tags = merge({ "Name" = "${var.name}-igw" }, var.tags, var.igw_tags)
   defined_tags  = var.defined_tags
 
   lifecycle {
@@ -402,7 +402,7 @@ resource "oci_core_internet_gateway" "this" {
 }
 
 resource "oci_core_route_table" "ig" {
-  count = local.create_vcn && var.create_internet_gateway && length(var.public_subnets) > 0 ? local.num_public_route_tables : 0
+  count = local.create_vcn && var.create_igw && length(var.public_subnets) > 0 ? local.num_public_route_tables : 0
 
   compartment_id = var.compartment_id
   vcn_id         = oci_core_vcn.this[0].id

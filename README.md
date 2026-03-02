@@ -92,15 +92,24 @@ When a Service Gateway is enabled, NAT Gateway route tables automatically includ
 
 OCI supports two tag types, both mapped:
 
-| Variable | OCI tag type |
-|---|---|
-| `tags` | `freeform_tags` |
-| `defined_tags` | `defined_tags` |
+| Variable       | OCI tag type    |
+| -------------- | --------------- |
+| `tags`         | `freeform_tags` |
+| `defined_tags` | `defined_tags`  |
 
 ## Examples
 
-- [Simple](examples/simple) — public + private subnets, single NAT, service gateway
-- [Complete](examples/complete) — all subnet types, AD-specific placement, flow logs, dedicated DB route table
+- [simple](examples/simple) — Minimal VCN: public + private + database subnets, NAT + SGW, IGW
+- [complete](examples/complete) — All features: 4 tiers, dedicated security lists, multiple CIDRs, flow logs, DHCP options, DRG, LPGs
+- [flow-log](examples/flow-log) — Standalone `modules/flow-log` usage at VCN and subnet level
+- [ipv6-dualstack](examples/ipv6-dualstack) — Dual-stack VCN with explicit IPv6 CIDRs (two-step workflow)
+- [network-acls](examples/network-acls) — Per-tier dedicated security lists with custom ingress/egress rules
+- [secondary-cidr-blocks](examples/secondary-cidr-blocks) — Multiple CIDR blocks, subnets spread across CIDRs
+- [separate-route-tables](examples/separate-route-tables) — Database subnet with dedicated route table
+- [dhcp-options](examples/dhcp-options) — Custom search domain + custom DNS servers
+- [local-peering](examples/local-peering) — Hub-and-spoke LPG topology between two VCNs
+- [service-gateway](examples/service-gateway) — Fully-private VCN with Oracle Services routing via SGW
+- [drg-peering](examples/drg-peering) — Cross-region DRG + Remote Peering Connection (us-ashburn-1 ↔ us-chicago-1)
 
 ## Submodules
 
@@ -110,6 +119,42 @@ OCI supports two tag types, both mapped:
 
 - [wrappers](wrappers) — Terragrunt-style `for_each` wrapper for the root module
 - [wrappers/flow-log](wrappers/flow-log) — `for_each` wrapper for the flow-log submodule
+
+## AWS → OCI Feature Parity
+
+See [docs/feature_parity.md](docs/feature_parity.md) for a detailed comparison between this module
+and `terraform-aws-modules/vpc/aws`, including:
+
+- Feature-by-feature coverage (16 areas: routing, gateways, subnets, security lists, flow logs, etc.)
+- Variable mapping (matched / AWS-only / OCI-only)
+- Output mapping
+- Example comparison and gap analysis
+- Potential future additions
+
+## Related Projects
+
+### Official Oracle module
+
+Oracle maintains an official Terraform module for OCI VCN:
+[oracle-terraform-modules/terraform-oci-vcn](https://github.com/oracle-terraform-modules/terraform-oci-vcn)
+
+**When to use the official module:**
+- You prefer OCI-native variable naming conventions
+- You are already familiar with OCI concepts and do not need AWS parity
+- You want a module maintained directly by Oracle
+
+**When to use this module:**
+- You are migrating from AWS and want the same variable names (`create_igw`, `enable_nat_gateway`, `secondary_cidr_blocks`, etc.)
+- You want to use the same mental model and `.tf` structure as `terraform-aws-modules/vpc/aws`
+- You are managing both AWS and OCI infrastructure and want consistent module interfaces
+
+### Disclaimer
+
+This is an independent community module and is **not affiliated with, endorsed by, or supported by Oracle Corporation**. Oracle Cloud Infrastructure (OCI) is a trademark of Oracle Corporation. This module uses the publicly available [OCI Terraform provider](https://registry.terraform.io/providers/oracle/oci/latest) under its Mozilla Public License 2.0.
+
+## License
+
+[Apache 2.0](LICENSE)
 
 <!-- BEGIN_TF_DOCS -->
 ## Requirements
@@ -167,10 +212,9 @@ No modules.
 | <a name="input_attached_drg_id"></a> [attached\_drg\_id](#input\_attached\_drg\_id) | OCID of a DRG already attached to the VCN. Used for symbolic 'drg' route rules | `string` | `null` | no |
 | <a name="input_cidr"></a> [cidr](#input\_cidr) | The primary IPv4 CIDR block for the VCN | `string` | `"10.0.0.0/16"` | no |
 | <a name="input_compartment_id"></a> [compartment\_id](#input\_compartment\_id) | The OCID of the compartment where the VCN and all resources will be created | `string` | n/a | yes |
-| <a name="input_create_database_internet_gateway_route"></a> [create\_database\_internet\_gateway\_route](#input\_create\_database\_internet\_gateway\_route) | Controls if an Internet Gateway route is added to the database route table. Requires create\_database\_subnet\_route\_table = true and create\_internet\_gateway = true. Use with caution — database subnets are normally private | `bool` | `false` | no |
+| <a name="input_create_database_internet_gateway_route"></a> [create\_database\_internet\_gateway\_route](#input\_create\_database\_internet\_gateway\_route) | Controls if an Internet Gateway route is added to the database route table. Requires create\_database\_subnet\_route\_table = true and create\_igw = true. Use with caution — database subnets are normally private | `bool` | `false` | no |
 | <a name="input_create_database_subnet_route_table"></a> [create\_database\_subnet\_route\_table](#input\_create\_database\_subnet\_route\_table) | Controls if a dedicated route table for database subnets should be created. When false, database subnets use the private route table | `bool` | `false` | no |
-| <a name="input_create_dhcp_options"></a> [create\_dhcp\_options](#input\_create\_dhcp\_options) | Controls if a custom DHCP options set is created and associated with all subnets. When false, subnets use the VCN default DHCP options (VcnLocalPlusInternet resolver) | `bool` | `false` | no |
-| <a name="input_create_internet_gateway"></a> [create\_internet\_gateway](#input\_create\_internet\_gateway) | Controls if an Internet Gateway is created for public subnets | `bool` | `true` | no |
+| <a name="input_create_igw"></a> [create\_igw](#input\_create\_igw) | Controls if an Internet Gateway is created for public subnets | `bool` | `true` | no |
 | <a name="input_create_multiple_intra_route_tables"></a> [create\_multiple\_intra\_route\_tables](#input\_create\_multiple\_intra\_route\_tables) | When true, creates a dedicated route table for each intra subnet. When false, all intra subnets share a single route table | `bool` | `false` | no |
 | <a name="input_create_multiple_public_route_tables"></a> [create\_multiple\_public\_route\_tables](#input\_create\_multiple\_public\_route\_tables) | When true, creates a dedicated route table for each public subnet. When false, all public subnets share a single route table | `bool` | `false` | no |
 | <a name="input_create_service_gateway"></a> [create\_service\_gateway](#input\_create\_service\_gateway) | Controls if an OCI Service Gateway is created (routes traffic to Oracle Services Network without going to the internet) | `bool` | `false` | no |
@@ -188,18 +232,19 @@ No modules.
 | <a name="input_database_subnet_tags_per_ad"></a> [database\_subnet\_tags\_per\_ad](#input\_database\_subnet\_tags\_per\_ad) | Additional freeform tags for the database subnets where the primary key is the AD name (e.g. "NATD:US-ASHBURN-AD-1") | `map(map(string))` | `{}` | no |
 | <a name="input_database_subnets"></a> [database\_subnets](#input\_database\_subnets) | A list of database subnet CIDR blocks inside the VCN (private + service gateway route) | `list(string)` | `[]` | no |
 | <a name="input_defined_tags"></a> [defined\_tags](#input\_defined\_tags) | A map of defined tags (namespace.key = value) to add to all resources | `map(string)` | `{}` | no |
-| <a name="input_dhcp_options_custom_dns_servers"></a> [dhcp\_options\_custom\_dns\_servers](#input\_dhcp\_options\_custom\_dns\_servers) | List of custom DNS server IP addresses. Required when dhcp\_options\_server\_type = 'CustomDnsServer'. Only used when create\_dhcp\_options = true | `list(string)` | `[]` | no |
-| <a name="input_dhcp_options_search_domain"></a> [dhcp\_options\_search\_domain](#input\_dhcp\_options\_search\_domain) | A domain name to append to DNS search for instances in the VCN. Only used when create\_dhcp\_options = true | `string` | `""` | no |
-| <a name="input_dhcp_options_server_type"></a> [dhcp\_options\_server\_type](#input\_dhcp\_options\_server\_type) | DNS server type for the DHCP options set. 'VcnLocalPlusInternet' uses the OCI VCN resolver (equivalent to AmazonProvidedDNS). 'CustomDnsServer' uses the IPs in dhcp\_options\_custom\_dns\_servers. Only used when create\_dhcp\_options = true | `string` | `"VcnLocalPlusInternet"` | no |
-| <a name="input_dhcp_options_tags"></a> [dhcp\_options\_tags](#input\_dhcp\_options\_tags) | Additional freeform tags for the DHCP options set. Only used when create\_dhcp\_options = true | `map(string)` | `{}` | no |
+| <a name="input_dhcp_options_domain_name"></a> [dhcp\_options\_domain\_name](#input\_dhcp\_options\_domain\_name) | A domain name to append to DNS search for instances in the VCN. Only used when enable\_dhcp\_options = true | `string` | `""` | no |
+| <a name="input_dhcp_options_domain_name_servers"></a> [dhcp\_options\_domain\_name\_servers](#input\_dhcp\_options\_domain\_name\_servers) | List of custom DNS server IP addresses. Required when dhcp\_options\_server\_type = 'CustomDnsServer'. Only used when enable\_dhcp\_options = true | `list(string)` | `[]` | no |
+| <a name="input_dhcp_options_server_type"></a> [dhcp\_options\_server\_type](#input\_dhcp\_options\_server\_type) | DNS server type for the DHCP options set. 'VcnLocalPlusInternet' uses the OCI VCN resolver (equivalent to AmazonProvidedDNS). 'CustomDnsServer' uses the IPs in dhcp\_options\_domain\_name\_servers. Only used when enable\_dhcp\_options = true | `string` | `"VcnLocalPlusInternet"` | no |
+| <a name="input_dhcp_options_tags"></a> [dhcp\_options\_tags](#input\_dhcp\_options\_tags) | Additional freeform tags for the DHCP options set. Only used when enable\_dhcp\_options = true | `map(string)` | `{}` | no |
+| <a name="input_enable_dhcp_options"></a> [enable\_dhcp\_options](#input\_enable\_dhcp\_options) | Controls if a custom DHCP options set is created and associated with all subnets. When false, subnets use the VCN default DHCP options (VcnLocalPlusInternet resolver) | `bool` | `false` | no |
 | <a name="input_enable_dns_hostnames"></a> [enable\_dns\_hostnames](#input\_enable\_dns\_hostnames) | Should be true to enable DNS hostnames in the VCN (sets vcn\_dns\_label) | `bool` | `true` | no |
 | <a name="input_enable_flow_log"></a> [enable\_flow\_log](#input\_enable\_flow\_log) | Whether or not to enable VCN Flow Logs (OCI Logging service) | `bool` | `false` | no |
 | <a name="input_enable_ipv6"></a> [enable\_ipv6](#input\_enable\_ipv6) | Requests an Oracle-provided IPv6 CIDR block for the VCN. Subnets must be assigned explicit IPv6 CIDR blocks via <tier>\_subnet\_ipv6\_cidrs | `bool` | `false` | no |
 | <a name="input_enable_nat_gateway"></a> [enable\_nat\_gateway](#input\_enable\_nat\_gateway) | Should be true if you want to provision NAT Gateways for each of your private networks | `bool` | `false` | no |
 | <a name="input_flow_log_retention_duration"></a> [flow\_log\_retention\_duration](#input\_flow\_log\_retention\_duration) | Log retention duration in days for VCN flow logs. Allowed values: 30, 60, 90, 180, 365 | `number` | `30` | no |
 | <a name="input_flow_log_tags"></a> [flow\_log\_tags](#input\_flow\_log\_tags) | Additional freeform tags for the flow log resources | `map(string)` | `{}` | no |
+| <a name="input_igw_tags"></a> [igw\_tags](#input\_igw\_tags) | Additional freeform tags for the Internet Gateway | `map(string)` | `{}` | no |
 | <a name="input_internet_gateway_route_rules"></a> [internet\_gateway\_route\_rules](#input\_internet\_gateway\_route\_rules) | Additional route rules to add to the Internet Gateway route table. Use symbolic network\_entity\_id values: 'drg', 'internet\_gateway', 'lpg@<key>' | `list(map(string))` | `null` | no |
-| <a name="input_internet_gateway_tags"></a> [internet\_gateway\_tags](#input\_internet\_gateway\_tags) | Additional freeform tags for the Internet Gateway | `map(string)` | `{}` | no |
 | <a name="input_intra_acl_tags"></a> [intra\_acl\_tags](#input\_intra\_acl\_tags) | Additional freeform tags for the intra dedicated security list | `map(string)` | `{}` | no |
 | <a name="input_intra_dedicated_security_list"></a> [intra\_dedicated\_security\_list](#input\_intra\_dedicated\_security\_list) | Whether to create a dedicated security list for intra subnets and attach it | `bool` | `false` | no |
 | <a name="input_intra_inbound_security_rules"></a> [intra\_inbound\_security\_rules](#input\_intra\_inbound\_security\_rules) | Inbound (ingress) security rules for the intra dedicated security list | <pre>list(object({<br/>    protocol    = string<br/>    source      = string<br/>    source_type = optional(string, "CIDR_BLOCK")<br/>    description = optional(string, null)<br/>    stateless   = optional(bool, false)<br/>    tcp_options = optional(object({<br/>      min = number<br/>      max = number<br/>    }), null)<br/>    udp_options = optional(object({<br/>      min = number<br/>      max = number<br/>    }), null)<br/>    icmp_options = optional(object({<br/>      type = number<br/>      code = optional(number, null)<br/>    }), null)<br/>  }))</pre> | <pre>[<br/>  {<br/>    "description": "Allow all inbound traffic",<br/>    "protocol": "all",<br/>    "source": "0.0.0.0/0",<br/>    "source_type": "CIDR_BLOCK"<br/>  }<br/>]</pre> | no |
@@ -244,7 +289,7 @@ No modules.
 | <a name="input_public_subnet_tags"></a> [public\_subnet\_tags](#input\_public\_subnet\_tags) | Additional freeform tags for the public subnets | `map(string)` | `{}` | no |
 | <a name="input_public_subnet_tags_per_ad"></a> [public\_subnet\_tags\_per\_ad](#input\_public\_subnet\_tags\_per\_ad) | Additional freeform tags for the public subnets where the primary key is the AD name (e.g. "NATD:US-ASHBURN-AD-1") | `map(map(string))` | `{}` | no |
 | <a name="input_public_subnets"></a> [public\_subnets](#input\_public\_subnets) | A list of public subnet CIDR blocks inside the VCN | `list(string)` | `[]` | no |
-| <a name="input_secondary_cidrs"></a> [secondary\_cidrs](#input\_secondary\_cidrs) | List of secondary IPv4 CIDR blocks to associate with the VCN | `list(string)` | `[]` | no |
+| <a name="input_secondary_cidr_blocks"></a> [secondary\_cidr\_blocks](#input\_secondary\_cidr\_blocks) | List of secondary IPv4 CIDR blocks to associate with the VCN | `list(string)` | `[]` | no |
 | <a name="input_service_gateway_tags"></a> [service\_gateway\_tags](#input\_service\_gateway\_tags) | Additional freeform tags for the Service Gateway | `map(string)` | `{}` | no |
 | <a name="input_single_nat_gateway"></a> [single\_nat\_gateway](#input\_single\_nat\_gateway) | Should be true if you want to provision a single shared NAT Gateway across all private networks | `bool` | `false` | no |
 | <a name="input_tags"></a> [tags](#input\_tags) | A map of freeform tags to add to all resources | `map(string)` | `{}` | no |
@@ -267,7 +312,7 @@ No modules.
 | <a name="output_default_dhcp_options_id"></a> [default\_dhcp\_options\_id](#output\_default\_dhcp\_options\_id) | The OCID of the VCN default DHCP options |
 | <a name="output_default_route_table_id"></a> [default\_route\_table\_id](#output\_default\_route\_table\_id) | The OCID of the VCN default route table |
 | <a name="output_default_security_list_id"></a> [default\_security\_list\_id](#output\_default\_security\_list\_id) | The OCID of the VCN default security list |
-| <a name="output_dhcp_options_id"></a> [dhcp\_options\_id](#output\_dhcp\_options\_id) | The OCID of the custom DHCP options set created by this module. Null when create\_dhcp\_options = false |
+| <a name="output_dhcp_options_id"></a> [dhcp\_options\_id](#output\_dhcp\_options\_id) | The OCID of the custom DHCP options set created by this module. Null when enable\_dhcp\_options = false |
 | <a name="output_flow_log_group_ids"></a> [flow\_log\_group\_ids](#output\_flow\_log\_group\_ids) | Map of subnet type to flow log group OCID |
 | <a name="output_flow_log_ids"></a> [flow\_log\_ids](#output\_flow\_log\_ids) | Map of subnet key to flow log OCID |
 | <a name="output_ig_route_all_attributes"></a> [ig\_route\_all\_attributes](#output\_ig\_route\_all\_attributes) | All attributes of the Internet Gateway route table (full object, auto-updating) |
@@ -310,7 +355,3 @@ No modules.
 | <a name="output_vcn_id"></a> [vcn\_id](#output\_vcn\_id) | The OCID of the VCN |
 | <a name="output_vcn_ipv6_cidr_blocks"></a> [vcn\_ipv6\_cidr\_blocks](#output\_vcn\_ipv6\_cidr\_blocks) | The IPv6 CIDR blocks assigned to the VCN |
 <!-- END_TF_DOCS -->
-
-## License
-
-Apache 2 Licensed. See [LICENSE](LICENSE) for full details.

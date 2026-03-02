@@ -59,7 +59,7 @@ variable "cidr" {
   default     = "10.0.0.0/16"
 }
 
-variable "secondary_cidrs" {
+variable "secondary_cidr_blocks" {
   description = "List of secondary IPv4 CIDR blocks to associate with the VCN"
   type        = list(string)
   default     = []
@@ -279,7 +279,7 @@ variable "create_database_subnet_route_table" {
 }
 
 variable "create_database_internet_gateway_route" {
-  description = "Controls if an Internet Gateway route is added to the database route table. Requires create_database_subnet_route_table = true and create_internet_gateway = true. Use with caution — database subnets are normally private"
+  description = "Controls if an Internet Gateway route is added to the database route table. Requires create_database_subnet_route_table = true and create_igw = true. Use with caution — database subnets are normally private"
   type        = bool
   default     = false
 }
@@ -352,13 +352,13 @@ variable "create_multiple_intra_route_tables" {
 # Internet Gateway
 ################################################################################
 
-variable "create_internet_gateway" {
+variable "create_igw" {
   description = "Controls if an Internet Gateway is created for public subnets"
   type        = bool
   default     = true
 }
 
-variable "internet_gateway_tags" {
+variable "igw_tags" {
   description = "Additional freeform tags for the Internet Gateway"
   type        = map(string)
   default     = {}
@@ -460,20 +460,20 @@ variable "local_peering_gateways" {
 # DHCP Options
 ################################################################################
 
-variable "create_dhcp_options" {
+variable "enable_dhcp_options" {
   description = "Controls if a custom DHCP options set is created and associated with all subnets. When false, subnets use the VCN default DHCP options (VcnLocalPlusInternet resolver)"
   type        = bool
   default     = false
 }
 
-variable "dhcp_options_search_domain" {
-  description = "A domain name to append to DNS search for instances in the VCN. Only used when create_dhcp_options = true"
+variable "dhcp_options_domain_name" {
+  description = "A domain name to append to DNS search for instances in the VCN. Only used when enable_dhcp_options = true"
   type        = string
   default     = ""
 }
 
 variable "dhcp_options_server_type" {
-  description = "DNS server type for the DHCP options set. 'VcnLocalPlusInternet' uses the OCI VCN resolver (equivalent to AmazonProvidedDNS). 'CustomDnsServer' uses the IPs in dhcp_options_custom_dns_servers. Only used when create_dhcp_options = true"
+  description = "DNS server type for the DHCP options set. 'VcnLocalPlusInternet' uses the OCI VCN resolver (equivalent to AmazonProvidedDNS). 'CustomDnsServer' uses the IPs in dhcp_options_domain_name_servers. Only used when enable_dhcp_options = true"
   type        = string
   default     = "VcnLocalPlusInternet"
   validation {
@@ -482,14 +482,14 @@ variable "dhcp_options_server_type" {
   }
 }
 
-variable "dhcp_options_custom_dns_servers" {
-  description = "List of custom DNS server IP addresses. Required when dhcp_options_server_type = 'CustomDnsServer'. Only used when create_dhcp_options = true"
+variable "dhcp_options_domain_name_servers" {
+  description = "List of custom DNS server IP addresses. Required when dhcp_options_server_type = 'CustomDnsServer'. Only used when enable_dhcp_options = true"
   type        = list(string)
   default     = []
 }
 
 variable "dhcp_options_tags" {
-  description = "Additional freeform tags for the DHCP options set. Only used when create_dhcp_options = true"
+  description = "Additional freeform tags for the DHCP options set. Only used when enable_dhcp_options = true"
   type        = map(string)
   default     = {}
 }

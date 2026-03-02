@@ -100,9 +100,9 @@ module "vcn_spoke" {
   private_subnets = [cidrsubnet(local.spoke_cidr, 4, 0), cidrsubnet(local.spoke_cidr, 4, 1)]
 
   # Spoke has no IGW or NAT — it reaches the internet only via the hub
-  create_internet_gateway = false
-  enable_nat_gateway      = false
-  create_service_gateway  = false
+  create_igw             = false
+  enable_nat_gateway     = false
+  create_service_gateway = false
 
   # Create the spoke-side LPG in requestor mode — sets peer_id to initiate peering
   local_peering_gateways = {

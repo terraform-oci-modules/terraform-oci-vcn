@@ -1,23 +1,23 @@
 # DHCP Options
 
-Configuration in this directory demonstrates using the module's `create_dhcp_options` flag to override the OCI-default DHCP options set that every VCN receives at creation time.
+Configuration in this directory demonstrates using the module's `enable_dhcp_options` flag to override the OCI-default DHCP options set that every VCN receives at creation time.
 
 Two VCNs are created side-by-side to show both supported DNS server types:
 
-| VCN | `dhcp_options_server_type` | Purpose |
-|---|---|---|
-| `vcn_search_domain` | `VcnLocalPlusInternet` | OCI's built-in VCN resolver + a custom search domain (`corp.example.internal`) |
-| `vcn_custom_dns` | `CustomDnsServer` | All DNS queries forwarded to on-premises DNS servers |
+| VCN                 | `dhcp_options_server_type` | Purpose                                                                        |
+| ------------------- | -------------------------- | ------------------------------------------------------------------------------ |
+| `vcn_search_domain` | `VcnLocalPlusInternet`     | OCI's built-in VCN resolver + a custom search domain (`corp.example.internal`) |
+| `vcn_custom_dns`    | `CustomDnsServer`          | All DNS queries forwarded to on-premises DNS servers                           |
 
-**When `create_dhcp_options = false` (the default)**, every subnet inherits OCI's VCN-default DHCP options, which use `VcnLocalPlusInternet` with no custom search domain. This covers most use-cases.
+**When `enable_dhcp_options = false` (the default)**, every subnet inherits OCI's VCN-default DHCP options, which use `VcnLocalPlusInternet` with no custom search domain. This covers most use-cases.
 
-**When `create_dhcp_options = true`**, the module creates an `oci_core_dhcp_options` resource and associates it with all subnets, overriding the VCN default.
+**When `enable_dhcp_options = true`**, the module creates an `oci_core_dhcp_options` resource and associates it with all subnets, overriding the VCN default.
 
 **OCI DHCP server types:**
 
-- `VcnLocalPlusInternet` — uses OCI's built-in VCN resolver, which handles DNS for resources within the VCN and forwards public names to the internet. This is equivalent to `AmazonProvidedDNS` in AWS. Combined with `dhcp_options_search_domain`, unqualified hostnames (e.g. `db01`) are resolved as fully-qualified names (e.g. `db01.corp.example.internal`).
+- `VcnLocalPlusInternet` — uses OCI's built-in VCN resolver, which handles DNS for resources within the VCN and forwards public names to the internet. This is equivalent to `AmazonProvidedDNS` in AWS. Combined with `dhcp_options_domain_name`, unqualified hostnames (e.g. `db01`) are resolved as fully-qualified names (e.g. `db01.corp.example.internal`).
 
-- `CustomDnsServer` — bypasses OCI's resolver entirely. All DNS queries are sent to the IP addresses listed in `dhcp_options_custom_dns_servers`. Use this when instances must resolve names from an on-premises or custom DNS infrastructure.
+- `CustomDnsServer` — bypasses OCI's resolver entirely. All DNS queries are sent to the IP addresses listed in `dhcp_options_domain_name_servers`. Use this when instances must resolve names from an on-premises or custom DNS infrastructure.
 
 [Read more about OCI DHCP Options](https://docs.oracle.com/en-us/iaas/Content/Network/Tasks/managingDHCP.htm).
 

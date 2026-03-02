@@ -20,7 +20,7 @@ locals {
 #
 # OCI creates a default DHCP options set for every VCN (VcnLocalPlusInternet
 # resolver, no custom search domain). This example demonstrates overriding those
-# defaults using the module's create_dhcp_options flag.
+# defaults using the module's enable_dhcp_options flag.
 #
 # Two VCNs are created side-by-side:
 #
@@ -35,10 +35,10 @@ locals {
 #                        to the custom servers.
 #
 # Key module settings:
-#   create_dhcp_options              = true   — opt-in; false = use VCN default
+#   enable_dhcp_options              = true   — opt-in; false = use VCN default
 #   dhcp_options_server_type         — "VcnLocalPlusInternet" or "CustomDnsServer"
-#   dhcp_options_search_domain       — optional; appended to unqualified DNS names
-#   dhcp_options_custom_dns_servers  — required when server_type = "CustomDnsServer"
+#   dhcp_options_domain_name         — optional; appended to unqualified DNS names
+#   dhcp_options_domain_name_servers — required when server_type = "CustomDnsServer"
 #   dhcp_options_tags                — optional extra freeform tags on the DHCP set
 ################################################################################
 
@@ -57,16 +57,16 @@ module "vcn_search_domain" {
   private_subnets = [cidrsubnet(local.vcn_cidr, 4, 0), cidrsubnet(local.vcn_cidr, 4, 1)]
   public_subnets  = [cidrsubnet(local.vcn_cidr, 4, 8)]
 
-  create_internet_gateway = true
-  enable_nat_gateway      = true
-  single_nat_gateway      = true
-  create_service_gateway  = true
+  create_igw             = true
+  enable_nat_gateway     = true
+  single_nat_gateway     = true
+  create_service_gateway = true
 
   # Custom DHCP options: use OCI's VCN resolver but append a search domain so
   # that unqualified hostnames like "db01" resolve as "db01.corp.example.internal"
-  create_dhcp_options        = true
-  dhcp_options_server_type   = "VcnLocalPlusInternet"
-  dhcp_options_search_domain = "corp.example.internal"
+  enable_dhcp_options      = true
+  dhcp_options_server_type = "VcnLocalPlusInternet"
+  dhcp_options_domain_name = "corp.example.internal"
   dhcp_options_tags = {
     DhcpOptionsPurpose = "vcn-resolver-with-search-domain"
   }
@@ -88,15 +88,15 @@ module "vcn_custom_dns" {
 
   private_subnets = [cidrsubnet("10.1.0.0/16", 4, 0), cidrsubnet("10.1.0.0/16", 4, 1)]
 
-  create_internet_gateway = false
-  enable_nat_gateway      = false
-  create_service_gateway  = true
+  create_igw             = false
+  enable_nat_gateway     = false
+  create_service_gateway = true
 
   # Custom DHCP options: bypass OCI's resolver; all DNS queries go to these
   # on-premises forwarders (placeholder IPs — replace with your actual servers)
-  create_dhcp_options             = true
-  dhcp_options_server_type        = "CustomDnsServer"
-  dhcp_options_custom_dns_servers = ["192.168.100.10", "192.168.100.11"]
+  enable_dhcp_options              = true
+  dhcp_options_server_type         = "CustomDnsServer"
+  dhcp_options_domain_name_servers = ["192.168.100.10", "192.168.100.11"]
   dhcp_options_tags = {
     DhcpOptionsPurpose = "custom-dns-forwarders"
   }
