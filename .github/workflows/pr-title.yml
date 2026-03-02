@@ -1,4 +1,4 @@
-name: 'Validate PR title'
+name: "Validate PR title"
 
 on:
   pull_request_target:
@@ -6,6 +6,10 @@ on:
       - opened
       - edited
       - synchronize
+
+permissions:
+  statuses: write
+  pull-requests: read
 
 jobs:
   main:
