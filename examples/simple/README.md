@@ -4,7 +4,11 @@ Configuration in this directory creates a set of VCN resources which may be suff
 
 There is a public and private regional subnet created (each spanning all availability domains automatically) in addition to a single NAT Gateway shared across the VCN, and an optional Service Gateway for OCI service traffic.
 
+![Image](./simple.png)
+
+
 [Read more about OCI VCN, subnets, and availability domains](https://docs.oracle.com/en-us/iaas/Content/Network/Tasks/Overview_of_VCNs_and_Subnets.htm).
+
 
 ## Usage
 
