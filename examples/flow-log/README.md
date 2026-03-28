@@ -5,7 +5,38 @@ Configuration in this directory demonstrates two patterns for attaching OCI flow
 **Pattern 1** — Public subnet flow log with its own dedicated log group (new `oci_logging_log_group` created).
 **Pattern 2** — Private subnet flow log that reuses the log group created in Pattern 1.
 
+Both subnets are **regional** (`ads` not set) — each spans all availability domains automatically.
+
 [Read more about OCI flow logs](https://docs.oracle.com/en-us/iaas/Content/Network/Concepts/vcn_flow_logs.htm).
+
+## Architecture
+
+```mermaid
+graph TD
+    Internet((Internet))
+    OracleSvc[(Oracle Services)]
+
+    subgraph Region[OCI Region · us-ashburn-1]
+        subgraph VCN[VCN · 10.0.0.0/16 · regional subnets]
+            pub[Public · 10.0.128.0/20]
+            priv[Private · 10.0.0.0/20]
+        end
+        NAT[NAT Gateway]
+        SGW[Service Gateway]
+
+        subgraph Logging[OCI Logging Service]
+            LG[Log Group]
+            FL1[Flow Log · public\ncreate_log_group = true]
+            FL2[Flow Log · private\nreuses log group]
+        end
+    end
+
+    Internet <--> pub
+    priv --> NAT --> Internet
+    priv --> SGW --> OracleSvc
+    pub -. captures traffic .-> FL1 --> LG
+    priv -. captures traffic .-> FL2 --> LG
+```
 
 ## Usage
 

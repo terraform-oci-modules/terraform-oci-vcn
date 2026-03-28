@@ -19,7 +19,45 @@ Two VCNs are created side-by-side to show both supported DNS server types:
 
 - `CustomDnsServer` — bypasses OCI's resolver entirely. All DNS queries are sent to the IP addresses listed in `dhcp_options_domain_name_servers`. Use this when instances must resolve names from an on-premises or custom DNS infrastructure.
 
+Subnets in both VCNs are **regional** (`ads` not set) — each spans all availability domains automatically.
+
 [Read more about OCI DHCP Options](https://docs.oracle.com/en-us/iaas/Content/Network/Tasks/managingDHCP.htm).
+
+## Architecture
+
+```mermaid
+graph TD
+    Internet((Internet))
+    OracleSvc[(Oracle Services)]
+    OnPremDNS[On-Prem DNS\n192.168.100.10\n192.168.100.11]
+
+    subgraph VCN1[VCN 1 · vcn_search_domain · 10.0.0.0/16 · regional subnets]
+        direction TB
+        pub1[Public · 10.0.128.0/20]
+        priv1a[Private · 10.0.0.0/20]
+        priv1b[Private · 10.0.16.0/20]
+        IGW1[IGW]
+        NAT1[NAT]
+        SGW1[SGW]
+        DHCP1[DHCP: VcnLocalPlusInternet\nsearch domain: corp.example.internal]
+    end
+
+    subgraph VCN2[VCN 2 · vcn_custom_dns · 10.1.0.0/16 · regional subnets]
+        direction TB
+        priv2a[Private · 10.1.0.0/20]
+        priv2b[Private · 10.1.16.0/20]
+        SGW2[SGW]
+        DHCP2[DHCP: CustomDnsServer]
+    end
+
+    Internet <--> IGW1 <--> pub1
+    priv1a & priv1b --> NAT1 --> Internet
+    priv1a & priv1b & pub1 --> SGW1 --> OracleSvc
+    DHCP1 -. all subnets in VCN 1 .-> priv1a & priv1b & pub1
+    priv2a & priv2b --> SGW2 --> OracleSvc
+    DHCP2 -. all subnets in VCN 2 .-> priv2a & priv2b
+    DHCP2 --> OnPremDNS
+```
 
 ## Usage
 

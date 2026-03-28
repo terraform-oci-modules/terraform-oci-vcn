@@ -51,8 +51,16 @@ module "vcn_hub" {
   tenancy_id     = var.tenancy_id
   cidr           = local.hub_cidr
 
-  public_subnets  = [cidrsubnet(local.hub_cidr, 4, 8), cidrsubnet(local.hub_cidr, 4, 9)]
-  private_subnets = [cidrsubnet(local.hub_cidr, 4, 0), cidrsubnet(local.hub_cidr, 4, 1)]
+  # Regional subnets — ads = [] (default); each subnet spans all ADs automatically
+  # Hub public subnets — internet-facing; hub is the internet exit point for the spoke
+  public_subnets = [
+    cidrsubnet(local.hub_cidr, 4, 8), # 10.0.128.0/20
+    cidrsubnet(local.hub_cidr, 4, 9), # 10.0.144.0/20
+  ]
+  private_subnets = [
+    cidrsubnet(local.hub_cidr, 4, 0), # 10.0.0.0/20
+    cidrsubnet(local.hub_cidr, 4, 1), # 10.0.16.0/20
+  ]
 
   enable_nat_gateway     = true
   single_nat_gateway     = true
@@ -97,7 +105,12 @@ module "vcn_spoke" {
   tenancy_id     = var.tenancy_id
   cidr           = local.spoke_cidr
 
-  private_subnets = [cidrsubnet(local.spoke_cidr, 4, 0), cidrsubnet(local.spoke_cidr, 4, 1)]
+  # Regional subnets — ads = [] (default); each subnet spans all ADs automatically
+  # Spoke private subnets — egress goes to hub via LPG, not directly to internet
+  private_subnets = [
+    cidrsubnet(local.spoke_cidr, 4, 0), # 10.1.0.0/20
+    cidrsubnet(local.spoke_cidr, 4, 1), # 10.1.16.0/20
+  ]
 
   # Spoke has no IGW or NAT — it reaches the internet only via the hub
   create_igw             = false

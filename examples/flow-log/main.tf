@@ -28,8 +28,9 @@ module "vcn" {
   tenancy_id     = var.tenancy_id
   cidr           = local.vcn_cidr
 
-  public_subnets  = [cidrsubnet(local.vcn_cidr, 4, 8)]
-  private_subnets = [cidrsubnet(local.vcn_cidr, 4, 0)]
+  # Regional subnets — ads = [] (default); each subnet spans all ADs automatically
+  public_subnets  = [cidrsubnet(local.vcn_cidr, 4, 8)] # 10.0.128.0/20 — internet-facing
+  private_subnets = [cidrsubnet(local.vcn_cidr, 4, 0)] # 10.0.0.0/20  — outbound via NAT
 
   enable_nat_gateway     = true
   single_nat_gateway     = true

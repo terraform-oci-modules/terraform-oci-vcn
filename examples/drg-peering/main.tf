@@ -66,8 +66,15 @@ module "vcn_ashburn" {
   tenancy_id     = var.tenancy_id
   cidr           = local.vcn_cidr_ashburn
 
-  public_subnets  = [cidrsubnet(local.vcn_cidr_ashburn, 4, 8), cidrsubnet(local.vcn_cidr_ashburn, 4, 9)]
-  private_subnets = [cidrsubnet(local.vcn_cidr_ashburn, 4, 0), cidrsubnet(local.vcn_cidr_ashburn, 4, 1)]
+  # Regional subnets — ads = [] (default); each subnet spans all ADs automatically
+  public_subnets = [
+    cidrsubnet(local.vcn_cidr_ashburn, 4, 8), # 10.0.128.0/20
+    cidrsubnet(local.vcn_cidr_ashburn, 4, 9), # 10.0.144.0/20
+  ]
+  private_subnets = [
+    cidrsubnet(local.vcn_cidr_ashburn, 4, 0), # 10.0.0.0/20
+    cidrsubnet(local.vcn_cidr_ashburn, 4, 1), # 10.0.16.0/20
+  ]
 
   create_igw             = true
   enable_nat_gateway     = true
@@ -106,7 +113,12 @@ module "vcn_chicago" {
   tenancy_id     = var.tenancy_id
   cidr           = local.vcn_cidr_chicago
 
-  private_subnets = [cidrsubnet(local.vcn_cidr_chicago, 4, 0), cidrsubnet(local.vcn_cidr_chicago, 4, 1)]
+  # Regional subnets — ads = [] (default); each subnet spans all ADs automatically
+  # Chicago is a private spoke — no internet access, cross-region traffic via DRG
+  private_subnets = [
+    cidrsubnet(local.vcn_cidr_chicago, 4, 0), # 10.1.0.0/20
+    cidrsubnet(local.vcn_cidr_chicago, 4, 1), # 10.1.16.0/20
+  ]
 
   # Chicago spoke has no internet access — traffic to Oracle Services via SGW,
   # and cross-region traffic back to Ashburn via DRG

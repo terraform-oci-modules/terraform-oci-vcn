@@ -6,6 +6,50 @@ There are public, private, database, and intra (fully isolated, no outbound rout
 
 [Read more about OCI VCN, subnets, and availability domains](https://docs.oracle.com/en-us/iaas/Content/Network/Tasks/Overview_of_VCNs_and_Subnets.htm).
 
+## Architecture
+
+```mermaid
+graph TD
+    Internet((Internet))
+    OracleSvc[(Oracle Services)]
+
+    subgraph Region[OCI Region · us-ashburn-1]
+        IGW[Internet Gateway]
+        NAT[NAT Gateway]
+        SGW[Service Gateway]
+
+        subgraph VCN[VCN · 10.0.0.0/16 · AD-pinned subnets]
+            subgraph Pub[Public Subnets · AD-pinned · per-subnet route tables]
+                pub1[AD-1 · 10.0.128.0/20]
+                pub2[AD-2 · 10.0.144.0/20]
+                pub3[AD-3 · 10.0.160.0/20]
+            end
+            subgraph Priv[Private Subnets · AD-pinned · NAT route table]
+                priv1[AD-1 · 10.0.0.0/20]
+                priv2[AD-2 · 10.0.16.0/20]
+                priv3[AD-3 · 10.0.32.0/20]
+            end
+            subgraph DB[Database Subnets · AD-pinned · dedicated route table]
+                db1[AD-1 · 10.0.64.0/20]
+                db2[AD-2 · 10.0.80.0/20]
+                db3[AD-3 · 10.0.96.0/20]
+            end
+            subgraph Intra[Intra Subnets · AD-pinned · no route table]
+                i1[10.0.52.0/24]
+                i2[10.0.53.0/24]
+            end
+        end
+    end
+
+    Internet <--> IGW
+    IGW <--> pub1 & pub2 & pub3
+    priv1 & priv2 & priv3 --> NAT --> Internet
+    priv1 & priv2 & priv3 --> SGW
+    db1 & db2 & db3 --> NAT
+    db1 & db2 & db3 --> SGW
+    SGW --> OracleSvc
+```
+
 ## Usage
 
 To run this example you need to execute:

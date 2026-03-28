@@ -38,6 +38,35 @@ terraform apply
 - Private subnets do not have IPv6 outbound by default in this example. Add
   `private_subnet_ipv6_cidrs` and they will route IPv6 via the IGW as well.
 - IPv6-only subnets are not supported in OCI (`cidr_block` is always required).
+- Subnets are **regional** (`ads` not set) — each spans all availability domains automatically.
+
+## Architecture
+
+```mermaid
+graph TD
+    Internet((Internet))
+
+    subgraph Region[OCI Region]
+        subgraph VCN[VCN · 10.0.0.0/16 · IPv6 /56 assigned by OCI · regional subnets]
+            subgraph Pub[Public Subnets · IPv4 /20 + IPv6 /64 each]
+                pub1[10.0.128.0/20 · /64 offset 0]
+                pub2[10.0.144.0/20 · /64 offset 1]
+                pub3[10.0.160.0/20 · /64 offset 2]
+            end
+            subgraph Priv[Private Subnets · IPv4 /20 + IPv6 /64 each]
+                priv1[10.0.0.0/20 · /64 offset 3]
+                priv2[10.0.16.0/20 · /64 offset 4]
+                priv3[10.0.32.0/20 · /64 offset 5]
+            end
+        end
+        IGW[Internet Gateway\nIPv4 + IPv6]
+        NAT[NAT Gateway\nIPv4 only]
+    end
+
+    Internet <--> IGW
+    IGW <--> pub1 & pub2 & pub3
+    priv1 & priv2 & priv3 --> NAT --> Internet
+```
 
 <!-- BEGIN_TF_DOCS -->
 ## Requirements
@@ -76,8 +105,8 @@ No resources.
 | <a name="output_private_subnets_cidr_blocks"></a> [private\_subnets\_cidr\_blocks](#output\_private\_subnets\_cidr\_blocks) | List of IPv4 CIDR blocks of private subnets |
 | <a name="output_public_subnets"></a> [public\_subnets](#output\_public\_subnets) | List of OCIDs of public subnets |
 | <a name="output_public_subnets_cidr_blocks"></a> [public\_subnets\_cidr\_blocks](#output\_public\_subnets\_cidr\_blocks) | List of IPv4 CIDR blocks of public subnets |
-| <a name="output_public_subnets_ipv6_cidr_blocks"></a> [public\_subnets\_ipv6\_cidr\_blocks](#output\_public\_subnets\_ipv6\_cidr\_blocks) | List of IPv6 CIDR blocks of public subnets (empty until public\_subnet\_ipv6\_cidrs is set) |
+| <a name="output_public_subnets_ipv6_cidr_blocks"></a> [public\_subnets\_ipv6\_cidr\_blocks](#output\_public\_subnets\_ipv6\_cidr\_blocks) | List of IPv6 /64 CIDR blocks of public subnets (auto-derived from the VCN /56) |
 | <a name="output_vcn_cidr_block"></a> [vcn\_cidr\_block](#output\_vcn\_cidr\_block) | The primary IPv4 CIDR block of the VCN |
 | <a name="output_vcn_id"></a> [vcn\_id](#output\_vcn\_id) | The OCID of the VCN |
-| <a name="output_vcn_ipv6_cidr_blocks"></a> [vcn\_ipv6\_cidr\_blocks](#output\_vcn\_ipv6\_cidr\_blocks) | The Oracle-assigned IPv6 /56 CIDR block(s) of the VCN. Use these to carve /64 blocks for subnets |
+| <a name="output_vcn_ipv6_cidr_blocks"></a> [vcn\_ipv6\_cidr\_blocks](#output\_vcn\_ipv6\_cidr\_blocks) | The Oracle-assigned IPv6 /56 CIDR block(s) of the VCN |
 <!-- END_TF_DOCS -->

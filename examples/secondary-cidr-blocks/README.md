@@ -2,9 +2,13 @@
 
 Configuration in this directory demonstrates attaching a secondary IPv4 CIDR block to a VCN and carving subnets from both the primary and secondary CIDR ranges. This mirrors the `examples/secondary-cidr-blocks` pattern from `terraform-aws-vpc`.
 
-OCI supports up to five CIDR blocks per VCN. Subnets can be allocated from any attached CIDR — they are not restricted to the primary range.
+OCI supports up to five CIDR blocks per VCN. Subnets can be allocated from any attached CIDR — they are not restricted to the primary range. All subnets are **regional** (`ads` not set) — each spans all availability domains automatically.
 
 [Read more about OCI VCN CIDR blocks](https://docs.oracle.com/en-us/iaas/Content/Network/Tasks/Overview_of_VCNs_and_Subnets.htm).
+
+## Architecture
+
+![Image](./secondary-cidr-blocks.png)
 
 ## Usage
 

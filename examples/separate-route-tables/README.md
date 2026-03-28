@@ -2,9 +2,13 @@
 
 Configuration in this directory demonstrates creating a dedicated route table for the database subnet tier, independent from the private (NAT) route table. This mirrors the `examples/separate-route-tables` pattern from `terraform-aws-vpc`.
 
-When `create_database_subnet_route_table = true`, database subnets are associated with their own route table containing NAT Gateway and Service Gateway routes, while private subnets retain their own separate NAT route table(s).
+When `create_database_subnet_route_table = true`, database subnets are associated with their own route table containing NAT Gateway and Service Gateway routes, while private subnets retain their own separate NAT route table(s). All subnets are **regional** (`ads` not set) — each spans all availability domains automatically.
 
 [Read more about OCI route tables](https://docs.oracle.com/en-us/iaas/Content/Network/Tasks/managingroutetables.htm).
+
+## Architecture
+
+![Image](./separate-route-tables.png)
 
 ## Usage
 

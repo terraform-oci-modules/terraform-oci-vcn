@@ -37,10 +37,26 @@ module "vcn" {
   tenancy_id     = var.tenancy_id
   cidr           = local.vcn_cidr
 
-  public_subnets   = [cidrsubnet(local.vcn_cidr, 4, 8), cidrsubnet(local.vcn_cidr, 4, 9)]
-  private_subnets  = [cidrsubnet(local.vcn_cidr, 4, 0), cidrsubnet(local.vcn_cidr, 4, 1)]
-  database_subnets = [cidrsubnet(local.vcn_cidr, 4, 4), cidrsubnet(local.vcn_cidr, 4, 5)]
-  intra_subnets    = [cidrsubnet(local.vcn_cidr, 8, 52)]
+  # Regional subnets — ads = [] (default); each subnet spans all ADs automatically
+  # Public subnets — internet-facing (IGW route)
+  public_subnets = [
+    cidrsubnet(local.vcn_cidr, 4, 8), # 10.0.128.0/20
+    cidrsubnet(local.vcn_cidr, 4, 9), # 10.0.144.0/20
+  ]
+  # Private subnets — outbound via NAT, no inbound from internet
+  private_subnets = [
+    cidrsubnet(local.vcn_cidr, 4, 0), # 10.0.0.0/20
+    cidrsubnet(local.vcn_cidr, 4, 1), # 10.0.16.0/20
+  ]
+  # Database subnets — no outbound route (isolated unless create_database_subnet_route_table = true)
+  database_subnets = [
+    cidrsubnet(local.vcn_cidr, 4, 4), # 10.0.64.0/20
+    cidrsubnet(local.vcn_cidr, 4, 5), # 10.0.80.0/20
+  ]
+  # Intra subnet — fully isolated, no route table entries
+  intra_subnets = [
+    cidrsubnet(local.vcn_cidr, 8, 52), # 10.0.52.0/24
+  ]
 
   enable_nat_gateway     = true
   single_nat_gateway     = true

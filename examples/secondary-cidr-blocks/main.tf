@@ -38,23 +38,24 @@ module "vcn" {
   # Attach a secondary CIDR block
   secondary_cidr_blocks = [local.secondary_cidr]
 
-  # Public subnets from the primary CIDR
+  # Regional subnets — ads = [] (default); each subnet spans all ADs automatically
+  # Public subnets — from the primary CIDR, internet-facing
   public_subnets = [
-    cidrsubnet(local.vcn_cidr, 4, 8),
-    cidrsubnet(local.vcn_cidr, 4, 9),
+    cidrsubnet(local.vcn_cidr, 4, 8), # 10.0.128.0/20
+    cidrsubnet(local.vcn_cidr, 4, 9), # 10.0.144.0/20
   ]
 
-  # Private subnets from the primary CIDR
+  # Private subnets — from the primary CIDR, outbound via NAT
   private_subnets = [
-    cidrsubnet(local.vcn_cidr, 4, 0),
-    cidrsubnet(local.vcn_cidr, 4, 1),
+    cidrsubnet(local.vcn_cidr, 4, 0), # 10.0.0.0/20
+    cidrsubnet(local.vcn_cidr, 4, 1), # 10.0.16.0/20
   ]
 
-  # Additional private subnets carved from the secondary CIDR
-  # (OCI allows mixing CIDRs from any block attached to the VCN)
+  # Intra subnets — carved from the secondary CIDR, fully isolated (no route table entries)
+  # OCI allows mixing CIDRs from any block attached to the VCN
   intra_subnets = [
-    cidrsubnet(local.secondary_cidr, 4, 0),
-    cidrsubnet(local.secondary_cidr, 4, 1),
+    cidrsubnet(local.secondary_cidr, 4, 0), # 10.1.0.0/20
+    cidrsubnet(local.secondary_cidr, 4, 1), # 10.1.16.0/20
   ]
 
   enable_nat_gateway     = true
