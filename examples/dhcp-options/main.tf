@@ -54,8 +54,14 @@ module "vcn_search_domain" {
   tenancy_id     = var.tenancy_id
   cidr           = local.vcn_cidr
 
-  private_subnets = [cidrsubnet(local.vcn_cidr, 4, 0), cidrsubnet(local.vcn_cidr, 4, 1)]
-  public_subnets  = [cidrsubnet(local.vcn_cidr, 4, 8)]
+  # Regional subnets — ads = [] (default); each subnet spans all ADs automatically
+  private_subnets = [
+    cidrsubnet(local.vcn_cidr, 4, 0), # 10.0.0.0/20
+    cidrsubnet(local.vcn_cidr, 4, 1), # 10.0.16.0/20
+  ]
+  public_subnets = [
+    cidrsubnet(local.vcn_cidr, 4, 8), # 10.0.128.0/20
+  ]
 
   create_igw             = true
   enable_nat_gateway     = true
@@ -86,7 +92,12 @@ module "vcn_custom_dns" {
   tenancy_id     = var.tenancy_id
   cidr           = "10.1.0.0/16"
 
-  private_subnets = [cidrsubnet("10.1.0.0/16", 4, 0), cidrsubnet("10.1.0.0/16", 4, 1)]
+  # Regional subnets — ads = [] (default); each subnet spans all ADs automatically
+  # Private-only VCN — no IGW, no public subnets; DNS via custom forwarders
+  private_subnets = [
+    cidrsubnet("10.1.0.0/16", 4, 0), # 10.1.0.0/20
+    cidrsubnet("10.1.0.0/16", 4, 1), # 10.1.16.0/20
+  ]
 
   create_igw             = false
   enable_nat_gateway     = false

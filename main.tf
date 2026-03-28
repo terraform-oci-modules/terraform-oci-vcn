@@ -135,6 +135,7 @@ locals {
       cidr         = cidr
       display_name = length(var.public_subnet_names) > idx ? var.public_subnet_names[idx] : "${var.name}-${var.public_subnet_suffix}-${idx + 1}"
       ad           = length(local.ad_names) > 0 ? local.ad_names[idx % length(local.ad_names)] : null
+      ipv6_index   = idx
     }
   ]
 }
@@ -149,7 +150,7 @@ resource "oci_core_subnet" "public" {
   availability_domain = local.public_subnet_objects[count.index].ad
   # Public subnets: prohibit_public_ip = false so instances can get public IPs
   prohibit_public_ip_on_vnic = false
-  ipv6cidr_block             = var.enable_ipv6 && length(var.public_subnet_ipv6_cidrs) > count.index ? var.public_subnet_ipv6_cidrs[count.index] : null
+  ipv6cidr_block             = var.enable_ipv6 ? cidrsubnet(oci_core_vcn.this[0].ipv6cidr_blocks[0], 8, local.public_subnet_objects[count.index].ipv6_index) : null
   dhcp_options_id            = var.enable_dhcp_options ? oci_core_dhcp_options.this[0].id : null
   route_table_id             = var.create_igw ? element(oci_core_route_table.ig[*].id, var.create_multiple_public_route_tables ? count.index : 0) : null
   security_list_ids          = local.create_public_security_list ? [oci_core_security_list.public[0].id] : null
@@ -178,6 +179,7 @@ locals {
       cidr         = cidr
       display_name = length(var.private_subnet_names) > idx ? var.private_subnet_names[idx] : "${var.name}-${var.private_subnet_suffix}-${idx + 1}"
       ad           = length(local.ad_names) > 0 ? local.ad_names[idx % length(local.ad_names)] : null
+      ipv6_index   = idx + length(var.public_subnets)
       # Which NAT GW route table does this subnet use?
       # single → index 0; one_per_ad → index = (idx % ad count); else → index = idx
       nat_rt_index = (
@@ -200,7 +202,7 @@ resource "oci_core_subnet" "private" {
   display_name               = local.private_subnet_objects[count.index].display_name
   availability_domain        = local.private_subnet_objects[count.index].ad
   prohibit_public_ip_on_vnic = true
-  ipv6cidr_block             = var.enable_ipv6 && length(var.private_subnet_ipv6_cidrs) > count.index ? var.private_subnet_ipv6_cidrs[count.index] : null
+  ipv6cidr_block             = var.enable_ipv6 ? cidrsubnet(oci_core_vcn.this[0].ipv6cidr_blocks[0], 8, local.private_subnet_objects[count.index].ipv6_index) : null
   dhcp_options_id            = var.enable_dhcp_options ? oci_core_dhcp_options.this[0].id : null
   route_table_id = (
     var.enable_nat_gateway
@@ -233,6 +235,7 @@ locals {
       cidr         = cidr
       display_name = length(var.database_subnet_names) > idx ? var.database_subnet_names[idx] : "${var.name}-${var.database_subnet_suffix}-${idx + 1}"
       ad           = length(local.ad_names) > 0 ? local.ad_names[idx % length(local.ad_names)] : null
+      ipv6_index   = idx + length(var.public_subnets) + length(var.private_subnets)
     }
   ]
 }
@@ -246,7 +249,7 @@ resource "oci_core_subnet" "database" {
   display_name               = local.database_subnet_objects[count.index].display_name
   availability_domain        = local.database_subnet_objects[count.index].ad
   prohibit_public_ip_on_vnic = true
-  ipv6cidr_block             = var.enable_ipv6 && length(var.database_subnet_ipv6_cidrs) > count.index ? var.database_subnet_ipv6_cidrs[count.index] : null
+  ipv6cidr_block             = var.enable_ipv6 ? cidrsubnet(oci_core_vcn.this[0].ipv6cidr_blocks[0], 8, local.database_subnet_objects[count.index].ipv6_index) : null
   dhcp_options_id            = var.enable_dhcp_options ? oci_core_dhcp_options.this[0].id : null
   route_table_id = (
     var.create_database_subnet_route_table
@@ -332,6 +335,7 @@ locals {
       cidr         = cidr
       display_name = length(var.intra_subnet_names) > idx ? var.intra_subnet_names[idx] : "${var.name}-${var.intra_subnet_suffix}-${idx + 1}"
       ad           = length(local.ad_names) > 0 ? local.ad_names[idx % length(local.ad_names)] : null
+      ipv6_index   = idx + length(var.public_subnets) + length(var.private_subnets) + length(var.database_subnets)
     }
   ]
 }
@@ -345,7 +349,7 @@ resource "oci_core_subnet" "intra" {
   display_name               = local.intra_subnet_objects[count.index].display_name
   availability_domain        = local.intra_subnet_objects[count.index].ad
   prohibit_public_ip_on_vnic = true
-  ipv6cidr_block             = var.enable_ipv6 && length(var.intra_subnet_ipv6_cidrs) > count.index ? var.intra_subnet_ipv6_cidrs[count.index] : null
+  ipv6cidr_block             = var.enable_ipv6 ? cidrsubnet(oci_core_vcn.this[0].ipv6cidr_blocks[0], 8, local.intra_subnet_objects[count.index].ipv6_index) : null
   dhcp_options_id            = var.enable_dhcp_options ? oci_core_dhcp_options.this[0].id : null
   # No route table — intra subnets are fully isolated (use VCN default/empty RT)
   route_table_id    = element(oci_core_route_table.intra[*].id, var.create_multiple_intra_route_tables ? count.index : 0)

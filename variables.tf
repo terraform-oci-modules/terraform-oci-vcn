@@ -105,7 +105,7 @@ variable "vcn_dns_label" {
 }
 
 variable "enable_ipv6" {
-  description = "Requests an Oracle-provided IPv6 CIDR block for the VCN. Subnets must be assigned explicit IPv6 CIDR blocks via <tier>_subnet_ipv6_cidrs"
+  description = "Requests an Oracle-provided IPv6 /56 CIDR block for the VCN. The module automatically derives a /64 for each subnet from that /56 — no manual CIDR input required. Public subnet 0 gets offset 0, private subnet 0 gets offset N_public, etc."
   type        = bool
   default     = false
 }
@@ -156,11 +156,6 @@ variable "public_subnet_defined_tags" {
   default     = {}
 }
 
-variable "public_subnet_ipv6_cidrs" {
-  description = "List of IPv6 CIDR blocks for public subnets. Length must match public_subnets. Requires enable_ipv6 = true"
-  type        = list(string)
-  default     = []
-}
 
 variable "public_route_table_tags" {
   description = "Additional freeform tags for the public route table"
@@ -214,11 +209,6 @@ variable "private_subnet_defined_tags" {
   default     = {}
 }
 
-variable "private_subnet_ipv6_cidrs" {
-  description = "List of IPv6 CIDR blocks for private subnets. Length must match private_subnets. Requires enable_ipv6 = true"
-  type        = list(string)
-  default     = []
-}
 
 variable "private_route_table_tags" {
   description = "Additional freeform tags for the private route tables"
@@ -266,11 +256,6 @@ variable "database_subnet_defined_tags" {
   default     = {}
 }
 
-variable "database_subnet_ipv6_cidrs" {
-  description = "List of IPv6 CIDR blocks for database subnets. Length must match database_subnets. Requires enable_ipv6 = true"
-  type        = list(string)
-  default     = []
-}
 
 variable "create_database_subnet_route_table" {
   description = "Controls if a dedicated route table for database subnets should be created. When false, database subnets use the private route table"
@@ -330,11 +315,6 @@ variable "intra_subnet_defined_tags" {
   default     = {}
 }
 
-variable "intra_subnet_ipv6_cidrs" {
-  description = "List of IPv6 CIDR blocks for intra subnets. Length must match intra_subnets. Requires enable_ipv6 = true"
-  type        = list(string)
-  default     = []
-}
 
 variable "intra_route_table_tags" {
   description = "Additional freeform tags for the intra route table"

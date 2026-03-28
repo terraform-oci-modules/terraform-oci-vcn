@@ -16,7 +16,50 @@ The Ashburn VCN has public and private subnets, an Internet Gateway, a NAT Gatew
 2. An RPC is created on each DRG. One side is the *requestor* — it sets `peer_id` and `peer_region_name` to initiate the connection. The other side is the *acceptor* and omits `peer_id`. Here Ashburn is the requestor and Chicago is the acceptor.
 3. Route tables on each VCN must have a route pointing the remote CIDR at the local DRG. This example uses the symbolic `"drg"` value in `nat_gateway_route_rules`, which the module resolves to the correct DRG OCID via `attached_drg_id`.
 
+Subnets in both VCNs are **regional** (`ads` not set) — each spans all availability domains automatically.
+
 [Read more about OCI DRG Remote Peering](https://docs.oracle.com/en-us/iaas/Content/Network/Tasks/remoteVCNpeering.htm).
+
+## Architecture
+
+```mermaid
+graph LR
+    Internet((Internet))
+    OracleSvc[(Oracle Services)]
+
+    subgraph Ashburn[OCI Region · us-ashburn-1]
+        subgraph VCNA[VCN · 10.0.0.0/16 · regional subnets]
+            pubA1[Public · 10.0.128.0/20]
+            pubA2[Public · 10.0.144.0/20]
+            privA1[Private · 10.0.0.0/20]
+            privA2[Private · 10.0.16.0/20]
+        end
+        IGW[IGW]
+        NAT_A[NAT]
+        SGW_A[SGW]
+        DRG_A[DRG]
+        RPC_A[RPC · requestor]
+    end
+
+    subgraph Chicago[OCI Region · us-chicago-1]
+        subgraph VCNC[VCN · 10.1.0.0/16 · regional subnets]
+            privC1[Private · 10.1.0.0/20]
+            privC2[Private · 10.1.16.0/20]
+        end
+        SGW_C[SGW]
+        DRG_C[DRG]
+        RPC_C[RPC · acceptor]
+    end
+
+    Internet <--> IGW <--> pubA1 & pubA2
+    privA1 & privA2 --> NAT_A --> Internet
+    privA1 & privA2 --> SGW_A --> OracleSvc
+    privA1 & privA2 --> DRG_A --> RPC_A
+    RPC_A <-.cross-region.-> RPC_C
+    RPC_C --> DRG_C
+    privC1 & privC2 --> DRG_C
+    privC1 & privC2 --> SGW_C --> OracleSvc
+```
 
 ## Usage
 

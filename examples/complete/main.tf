@@ -43,18 +43,33 @@ module "vcn" {
   # Remove this line (or set ads = []) to use regional subnets instead.
   ads = [1, 2, 3]
 
-  # Public subnets — one per AD
-  public_subnets = [cidrsubnet(local.vcn_cidr, 4, 8), cidrsubnet(local.vcn_cidr, 4, 9), cidrsubnet(local.vcn_cidr, 4, 10)]
+  # Public subnets — one per AD; internet-facing (IGW route), public IPs eligible
+  public_subnets = [
+    cidrsubnet(local.vcn_cidr, 4, 8),  # 10.0.128.0/20 — AD-1
+    cidrsubnet(local.vcn_cidr, 4, 9),  # 10.0.144.0/20 — AD-2
+    cidrsubnet(local.vcn_cidr, 4, 10), # 10.0.160.0/20 — AD-3
+  ]
 
-  # Private subnets — one per AD
-  private_subnets = [cidrsubnet(local.vcn_cidr, 4, 0), cidrsubnet(local.vcn_cidr, 4, 1), cidrsubnet(local.vcn_cidr, 4, 2)]
+  # Private subnets — one per AD; outbound via NAT, no inbound from internet
+  private_subnets = [
+    cidrsubnet(local.vcn_cidr, 4, 0), # 10.0.0.0/20  — AD-1
+    cidrsubnet(local.vcn_cidr, 4, 1), # 10.0.16.0/20 — AD-2
+    cidrsubnet(local.vcn_cidr, 4, 2), # 10.0.32.0/20 — AD-3
+  ]
 
-  # Database subnets — one per AD, with a dedicated route table
-  database_subnets                   = [cidrsubnet(local.vcn_cidr, 4, 4), cidrsubnet(local.vcn_cidr, 4, 5), cidrsubnet(local.vcn_cidr, 4, 6)]
+  # Database subnets — one per AD; dedicated route table (set below)
+  database_subnets = [
+    cidrsubnet(local.vcn_cidr, 4, 4), # 10.0.64.0/20  — AD-1
+    cidrsubnet(local.vcn_cidr, 4, 5), # 10.0.80.0/20  — AD-2
+    cidrsubnet(local.vcn_cidr, 4, 6), # 10.0.96.0/20  — AD-3
+  ]
   create_database_subnet_route_table = true
 
-  # Intra subnets — fully isolated (no outbound route)
-  intra_subnets = [cidrsubnet(local.vcn_cidr, 8, 52), cidrsubnet(local.vcn_cidr, 8, 53)]
+  # Intra subnets — fully isolated, no outbound route; smaller /24 blocks
+  intra_subnets = [
+    cidrsubnet(local.vcn_cidr, 8, 52), # 10.0.52.0/24
+    cidrsubnet(local.vcn_cidr, 8, 53), # 10.0.53.0/24
+  ]
 
   # Gateways
   create_igw             = true

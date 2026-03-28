@@ -4,6 +4,10 @@ Configuration in this directory demonstrates a fully-private VCN that uses an Or
 
 This pattern is appropriate for workloads that need to access managed Oracle services (Object Storage, Logging, Monitoring, Vault, etc.) without any exposure to the public internet.
 
+## Architecture
+
+![Image](./service-gateway.png)
+
 **Key design points:**
 
 - `create_service_gateway = true` — explicit OCI-specific opt-in (no AWS equivalent)
@@ -17,7 +21,7 @@ The route tables created are:
 | -------------------------- | ---------------- | ------------------------- |
 | `<name>-db-rt` (dedicated) | database subnets | SGW → all Oracle services |
 
-Private subnets have **no route table** when there is no NAT Gateway — they remain fully isolated with no default gateway.
+Private subnets have **no route table** when there is no NAT Gateway — they remain fully isolated with no default gateway. All subnets are **regional** (`ads` not set) — each spans all availability domains automatically.
 
 [Read more about OCI Service Gateways](https://docs.oracle.com/en-us/iaas/Content/Network/Tasks/servicegateway.htm).
 

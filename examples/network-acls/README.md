@@ -2,9 +2,13 @@
 
 Configuration in this directory demonstrates per-tier dedicated security lists — the OCI equivalent of AWS dedicated Network ACLs. Each subnet tier (public, private, database, intra) gets its own `oci_core_security_list` with explicit inbound and outbound rules, instead of relying solely on the VCN default security list.
 
-OCI security list rules differ from AWS NACLs in two key ways: there is no `rule_number` (all matching rules are evaluated), and protocol is specified as a string (`"6"` for TCP, `"17"` for UDP, `"1"` for ICMP, `"all"` for all traffic).
+OCI security list rules differ from AWS NACLs in two key ways: there is no `rule_number` (all matching rules are evaluated), and protocol is specified as a string (`"6"` for TCP, `"17"` for UDP, `"1"` for ICMP, `"all"` for all traffic). All subnets are **regional** (`ads` not set) — each spans all availability domains automatically.
 
 [Read more about OCI security lists](https://docs.oracle.com/en-us/iaas/Content/Network/Concepts/securitylists.htm).
+
+## Architecture
+
+![Image](./network-acls.png)
 
 ## Usage
 
