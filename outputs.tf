@@ -144,9 +144,9 @@ output "database_subnets_ipv6_cidr_blocks" {
   value       = [for s in oci_core_subnet.database : s.ipv6cidr_block]
 }
 
-output "database_route_table_id" {
-  description = "The OCID of the dedicated database route table (if created)"
-  value       = try(oci_core_route_table.database[0].id, null)
+output "database_route_table_ids" {
+  description = "List of OCIDs of the dedicated database route tables (one per NAT GW when one_nat_gateway_per_ad=true)"
+  value       = oci_core_route_table.database[*].id
 }
 
 output "database_security_list_id" {

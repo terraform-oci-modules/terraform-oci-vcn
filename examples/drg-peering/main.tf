@@ -10,7 +10,7 @@ provider "oci" {
 }
 
 locals {
-  name           = "ex-${basename(path.cwd)}"
+  name           = "ex-drg-peering"
   region_ashburn = "us-ashburn-1"
   region_chicago = "us-chicago-1"
 
@@ -63,8 +63,8 @@ module "vcn_ashburn" {
 
   name           = "${local.name}-ashburn"
   compartment_id = var.compartment_id
-  tenancy_id     = var.tenancy_id
-  cidr           = local.vcn_cidr_ashburn
+
+  cidr = local.vcn_cidr_ashburn
 
   # Regional subnets — ads = [] (default); each subnet spans all ADs automatically
   public_subnets = [
@@ -110,8 +110,8 @@ module "vcn_chicago" {
 
   name           = "${local.name}-chicago"
   compartment_id = var.compartment_id
-  tenancy_id     = var.tenancy_id
-  cidr           = local.vcn_cidr_chicago
+
+  cidr = local.vcn_cidr_chicago
 
   # Regional subnets — ads = [] (default); each subnet spans all ADs automatically
   # Chicago is a private spoke — no internet access, cross-region traffic via DRG

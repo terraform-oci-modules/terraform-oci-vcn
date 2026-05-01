@@ -42,31 +42,7 @@ terraform apply
 
 ## Architecture
 
-```mermaid
-graph TD
-    Internet((Internet))
-
-    subgraph Region[OCI Region]
-        subgraph VCN[VCN · 10.0.0.0/16 · IPv6 /56 assigned by OCI · regional subnets]
-            subgraph Pub[Public Subnets · IPv4 /20 + IPv6 /64 each]
-                pub1[10.0.128.0/20 · /64 offset 0]
-                pub2[10.0.144.0/20 · /64 offset 1]
-                pub3[10.0.160.0/20 · /64 offset 2]
-            end
-            subgraph Priv[Private Subnets · IPv4 /20 + IPv6 /64 each]
-                priv1[10.0.0.0/20 · /64 offset 3]
-                priv2[10.0.16.0/20 · /64 offset 4]
-                priv3[10.0.32.0/20 · /64 offset 5]
-            end
-        end
-        IGW[Internet Gateway\nIPv4 + IPv6]
-        NAT[NAT Gateway\nIPv4 only]
-    end
-
-    Internet <--> IGW
-    IGW <--> pub1 & pub2 & pub3
-    priv1 & priv2 & priv3 --> NAT --> Internet
-```
+![Image](./ipv6-dualstack.png))
 
 <!-- BEGIN_TF_DOCS -->
 ## Requirements
@@ -95,7 +71,6 @@ No resources.
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
 | <a name="input_compartment_id"></a> [compartment\_id](#input\_compartment\_id) | The OCID of the compartment where resources will be created | `string` | n/a | yes |
-| <a name="input_tenancy_id"></a> [tenancy\_id](#input\_tenancy\_id) | The OCID of the tenancy (used to resolve availability domain names) | `string` | `null` | no |
 
 ## Outputs
 

@@ -3,7 +3,7 @@ provider "oci" {
 }
 
 locals {
-  name   = "ex-${basename(path.cwd)}"
+  name   = "ex-local-peering"
   region = "us-ashburn-1"
 
   hub_cidr   = "10.0.0.0/16"
@@ -48,8 +48,8 @@ module "vcn_hub" {
 
   name           = "${local.name}-hub"
   compartment_id = var.compartment_id
-  tenancy_id     = var.tenancy_id
-  cidr           = local.hub_cidr
+
+  cidr = local.hub_cidr
 
   # Regional subnets — ads = [] (default); each subnet spans all ADs automatically
   # Hub public subnets — internet-facing; hub is the internet exit point for the spoke
@@ -102,8 +102,8 @@ module "vcn_spoke" {
 
   name           = "${local.name}-spoke"
   compartment_id = var.compartment_id
-  tenancy_id     = var.tenancy_id
-  cidr           = local.spoke_cidr
+
+  cidr = local.spoke_cidr
 
   # Regional subnets — ads = [] (default); each subnet spans all ADs automatically
   # Spoke private subnets — egress goes to hub via LPG, not directly to internet

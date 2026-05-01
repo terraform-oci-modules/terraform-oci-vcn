@@ -289,7 +289,7 @@ No modules.
 | <a name="input_service_gateway_tags"></a> [service\_gateway\_tags](#input\_service\_gateway\_tags) | Additional freeform tags for the Service Gateway | `map(string)` | `{}` | no |
 | <a name="input_single_nat_gateway"></a> [single\_nat\_gateway](#input\_single\_nat\_gateway) | Should be true if you want to provision a single shared NAT Gateway across all private networks | `bool` | `false` | no |
 | <a name="input_tags"></a> [tags](#input\_tags) | A map of freeform tags to add to all resources | `map(string)` | `{}` | no |
-| <a name="input_tenancy_id"></a> [tenancy\_id](#input\_tenancy\_id) | The OCID of the tenancy, used to resolve availability domain names.<br/><br/>Optional — when null (default), the module uses var.compartment\_id to query ADs,<br/>which works for any compartment in the tenancy. Set this explicitly only when your<br/>compartment lacks IAM permission to list ADs, which is rare. | `string` | `null` | no |
+| <a name="input_tenancy_id"></a> [tenancy\_id](#input\_tenancy\_id) | Deprecated — no longer needed. The module resolves availability domains using<br/>var.compartment\_id, which works for any compartment in the tenancy.<br/><br/>Retained for backward compatibility only. If set, it overrides compartment\_id<br/>for the AD lookup data source. Will be removed in the next major version. | `string` | `null` | no |
 | <a name="input_vcn_dns_label"></a> [vcn\_dns\_label](#input\_vcn\_dns\_label) | A DNS label for the VCN. When null and enable\_dns\_hostnames is true, derived from var.name. Set to empty string to disable DNS | `string` | `null` | no |
 | <a name="input_vcn_tags"></a> [vcn\_tags](#input\_vcn\_tags) | Additional freeform tags for the VCN | `map(string)` | `{}` | no |
 
@@ -299,7 +299,7 @@ No modules.
 |------|-------------|
 | <a name="output_ad_names"></a> [ad\_names](#output\_ad\_names) | Resolved availability domain names for the ADs specified in var.ads |
 | <a name="output_ads"></a> [ads](#output\_ads) | A list of availability domain numbers specified as argument to this module |
-| <a name="output_database_route_table_id"></a> [database\_route\_table\_id](#output\_database\_route\_table\_id) | The OCID of the dedicated database route table (if created) |
+| <a name="output_database_route_table_ids"></a> [database\_route\_table\_ids](#output\_database\_route\_table\_ids) | List of OCIDs of the dedicated database route tables (one per NAT GW when one\_nat\_gateway\_per\_ad=true) |
 | <a name="output_database_security_list_id"></a> [database\_security\_list\_id](#output\_database\_security\_list\_id) | The OCID of the dedicated database security list (null if not created) |
 | <a name="output_database_subnet_objects"></a> [database\_subnet\_objects](#output\_database\_subnet\_objects) | A list of all database subnet objects (full attributes) |
 | <a name="output_database_subnets"></a> [database\_subnets](#output\_database\_subnets) | List of OCIDs of database subnets |

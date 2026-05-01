@@ -31,8 +31,8 @@ module "vcn" {
 
   name           = local.name
   compartment_id = var.compartment_id
-  tenancy_id     = var.tenancy_id
-  vcn_dns_label  = "exipv6dual"
+
+  vcn_dns_label = "exipv6dual"
 
   cidr = "10.0.0.0/16"
 

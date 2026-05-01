@@ -28,9 +28,9 @@ output "database_subnets_cidr_blocks" {
   value       = module.vcn.database_subnets_cidr_blocks
 }
 
-output "database_route_table_id" {
-  description = "The OCID of the dedicated database subnet route table"
-  value       = module.vcn.database_route_table_id
+output "database_route_table_ids" {
+  description = "List of OCIDs of the dedicated database route tables"
+  value       = module.vcn.database_route_table_ids
 }
 
 output "service_gateway_id" {
