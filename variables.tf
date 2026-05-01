@@ -9,25 +9,25 @@ variable "compartment_id" {
   type        = string
 
   validation {
-    condition     = can(regex("^ocid1\\.(compartment|tenancy)\\.oc1\\.", var.compartment_id))
-    error_message = "compartment_id must be a valid OCI compartment or tenancy OCID (e.g. ocid1.compartment.oc1... or ocid1.tenancy.oc1...)."
+    condition     = can(regex("^ocid1\\.(compartment|tenancy)\\.oc1\\.", var.compartment_id)) && length(var.compartment_id) > 50
+    error_message = "compartment_id must be a valid OCI compartment or tenancy OCID (e.g. ocid1.compartment.oc1..aaaaaa...). Placeholder values like '<your-compartment-ocid>' are not accepted."
   }
 }
 
 variable "tenancy_id" {
   description = <<-EOT
-    The OCID of the tenancy, used to resolve availability domain names.
+    Deprecated — no longer needed. The module resolves availability domains using
+    var.compartment_id, which works for any compartment in the tenancy.
 
-    Optional — when null (default), the module uses var.compartment_id to query ADs,
-    which works for any compartment in the tenancy. Set this explicitly only when your
-    compartment lacks IAM permission to list ADs, which is rare.
+    Retained for backward compatibility only. If set, it overrides compartment_id
+    for the AD lookup data source. Will be removed in the next major version.
   EOT
   type        = string
   default     = null
 
   validation {
-    condition     = var.tenancy_id == null ? true : can(regex("^ocid1\\.tenancy\\.oc1\\.", var.tenancy_id))
-    error_message = "tenancy_id must be a valid OCI tenancy OCID (e.g. ocid1.tenancy.oc1...) or null."
+    condition     = var.tenancy_id == null ? true : (can(regex("^ocid1\\.tenancy\\.oc1\\.", var.tenancy_id)) && length(var.tenancy_id) > 50)
+    error_message = "tenancy_id must be a valid OCI tenancy OCID (e.g. ocid1.tenancy.oc1..aaaaaa...) or null. Placeholder values are not accepted."
   }
 }
 
@@ -82,8 +82,8 @@ variable "ads" {
   default     = []
 
   validation {
-    condition     = alltrue([for n in var.ads : n >= 1])
-    error_message = "All ads values must be >= 1 (AD numbers are 1-indexed)."
+    condition     = alltrue([for n in var.ads : n >= 1 && n <= 3])
+    error_message = "All ads values must be between 1 and 3. OCI regions have at most 3 availability domains."
   }
 }
 
@@ -372,6 +372,7 @@ variable "one_nat_gateway_per_ad" {
   default     = false
 }
 
+
 variable "nat_gateway_tags" {
   description = "Additional freeform tags for the NAT Gateways"
   type        = map(string)
@@ -523,6 +524,11 @@ variable "public_inbound_security_rules" {
       description = "Allow all inbound traffic"
     },
   ]
+
+  validation {
+    condition     = alltrue([for r in var.public_inbound_security_rules : contains(["all", "1", "6", "17", "58"], r.protocol)])
+    error_message = "protocol must be one of: \"all\", \"1\" (ICMP), \"6\" (TCP), \"17\" (UDP), \"58\" (ICMPv6)."
+  }
 }
 
 variable "public_outbound_security_rules" {
@@ -554,6 +560,11 @@ variable "public_outbound_security_rules" {
       description      = "Allow all outbound traffic"
     },
   ]
+
+  validation {
+    condition     = alltrue([for r in var.public_outbound_security_rules : contains(["all", "1", "6", "17", "58"], r.protocol)])
+    error_message = "protocol must be one of: \"all\", \"1\" (ICMP), \"6\" (TCP), \"17\" (UDP), \"58\" (ICMPv6)."
+  }
 }
 
 variable "public_acl_tags" {
@@ -601,6 +612,11 @@ variable "private_inbound_security_rules" {
       description = "Allow all inbound traffic"
     },
   ]
+
+  validation {
+    condition     = alltrue([for r in var.private_inbound_security_rules : contains(["all", "1", "6", "17", "58"], r.protocol)])
+    error_message = "protocol must be one of: \"all\", \"1\" (ICMP), \"6\" (TCP), \"17\" (UDP), \"58\" (ICMPv6)."
+  }
 }
 
 variable "private_outbound_security_rules" {
@@ -632,6 +648,11 @@ variable "private_outbound_security_rules" {
       description      = "Allow all outbound traffic"
     },
   ]
+
+  validation {
+    condition     = alltrue([for r in var.private_outbound_security_rules : contains(["all", "1", "6", "17", "58"], r.protocol)])
+    error_message = "protocol must be one of: \"all\", \"1\" (ICMP), \"6\" (TCP), \"17\" (UDP), \"58\" (ICMPv6)."
+  }
 }
 
 variable "private_acl_tags" {
@@ -679,6 +700,11 @@ variable "database_inbound_security_rules" {
       description = "Allow all inbound traffic"
     },
   ]
+
+  validation {
+    condition     = alltrue([for r in var.database_inbound_security_rules : contains(["all", "1", "6", "17", "58"], r.protocol)])
+    error_message = "protocol must be one of: \"all\", \"1\" (ICMP), \"6\" (TCP), \"17\" (UDP), \"58\" (ICMPv6)."
+  }
 }
 
 variable "database_outbound_security_rules" {
@@ -710,6 +736,11 @@ variable "database_outbound_security_rules" {
       description      = "Allow all outbound traffic"
     },
   ]
+
+  validation {
+    condition     = alltrue([for r in var.database_outbound_security_rules : contains(["all", "1", "6", "17", "58"], r.protocol)])
+    error_message = "protocol must be one of: \"all\", \"1\" (ICMP), \"6\" (TCP), \"17\" (UDP), \"58\" (ICMPv6)."
+  }
 }
 
 variable "database_acl_tags" {
@@ -757,6 +788,11 @@ variable "intra_inbound_security_rules" {
       description = "Allow all inbound traffic"
     },
   ]
+
+  validation {
+    condition     = alltrue([for r in var.intra_inbound_security_rules : contains(["all", "1", "6", "17", "58"], r.protocol)])
+    error_message = "protocol must be one of: \"all\", \"1\" (ICMP), \"6\" (TCP), \"17\" (UDP), \"58\" (ICMPv6)."
+  }
 }
 
 variable "intra_outbound_security_rules" {
@@ -788,6 +824,11 @@ variable "intra_outbound_security_rules" {
       description      = "Allow all outbound traffic"
     },
   ]
+
+  validation {
+    condition     = alltrue([for r in var.intra_outbound_security_rules : contains(["all", "1", "6", "17", "58"], r.protocol)])
+    error_message = "protocol must be one of: \"all\", \"1\" (ICMP), \"6\" (TCP), \"17\" (UDP), \"58\" (ICMPv6)."
+  }
 }
 
 variable "intra_acl_tags" {
@@ -812,8 +853,8 @@ variable "flow_log_retention_duration" {
   default     = 30
 
   validation {
-    condition     = contains([30, 60, 90, 180, 365], var.flow_log_retention_duration)
-    error_message = "flow_log_retention_duration must be one of: 30, 60, 90, 180, 365."
+    condition     = contains([30, 60, 90, 120, 150, 180], var.flow_log_retention_duration)
+    error_message = "flow_log_retention_duration must be a 30-day increment between 30 and 180 (30, 60, 90, 120, 150, 180)."
   }
 }
 

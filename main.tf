@@ -59,8 +59,8 @@ locals {
 }
 
 # Data source: resolve AD numbers → AD names.
-# Uses tenancy_id when provided, otherwise falls back to compartment_id —
-# the OCI ADs API works with any compartment in the tenancy.
+# Uses compartment_id by default (works for any compartment in the tenancy).
+# Falls back to tenancy_id only when explicitly set (deprecated, backward compat).
 data "oci_identity_availability_domains" "ads" {
   compartment_id = coalesce(var.tenancy_id, var.compartment_id)
 }
@@ -236,8 +236,29 @@ locals {
       display_name = length(var.database_subnet_names) > idx ? var.database_subnet_names[idx] : "${var.name}-${var.database_subnet_suffix}-${idx + 1}"
       ad           = length(local.ad_names) > 0 ? local.ad_names[idx % length(local.ad_names)] : null
       ipv6_index   = idx + length(var.public_subnets) + length(var.private_subnets)
+      # Which NAT GW / route table does this subnet use?
+      # Same logic as private subnets — keeps DB traffic AD-local when one_nat_gateway_per_ad=true.
+      nat_rt_index = (
+        var.single_nat_gateway
+        ? 0
+        : var.one_nat_gateway_per_ad
+        ? (length(local.ad_names) > 0 ? idx % length(local.ad_names) : 0)
+        : idx
+      )
     }
   ]
+
+  # How many dedicated database route tables?
+  #   - When IGW route is requested or single NAT, a single shared RT suffices.
+  #   - Otherwise, one per NAT GW so each DB subnet routes through its AD-local NAT.
+  #     This mirrors the AWS VPC module's database route table count logic.
+  num_database_route_tables = (
+    var.create_database_internet_gateway_route || var.single_nat_gateway
+    ? 1
+    : local.nat_gateway_count > 0
+    ? local.nat_gateway_count
+    : 1
+  )
 }
 
 resource "oci_core_subnet" "database" {
@@ -253,10 +274,11 @@ resource "oci_core_subnet" "database" {
   dhcp_options_id            = var.enable_dhcp_options ? oci_core_dhcp_options.this[0].id : null
   route_table_id = (
     var.create_database_subnet_route_table
-    ? oci_core_route_table.database[0].id
+    ? element(oci_core_route_table.database[*].id,
+    var.create_database_internet_gateway_route || var.single_nat_gateway ? 0 : local.database_subnet_objects[count.index].nat_rt_index)
     : (
       var.enable_nat_gateway
-      ? oci_core_route_table.nat[0].id
+      ? oci_core_route_table.nat[local.database_subnet_objects[count.index].nat_rt_index].id
       : null
     )
   )
@@ -275,13 +297,15 @@ resource "oci_core_subnet" "database" {
   }
 }
 
-# Dedicated database route table (optional — service gateway route for DB traffic)
+# Dedicated database route table (optional — service gateway route for DB traffic).
+# When one_nat_gateway_per_ad=true, creates one RT per NAT GW so each DB subnet
+# routes through its AD-local NAT gateway (mirrors the AWS VPC module pattern).
 resource "oci_core_route_table" "database" {
-  count = local.create_vcn && var.create_database_subnet_route_table && length(var.database_subnets) > 0 ? 1 : 0
+  count = local.create_vcn && var.create_database_subnet_route_table && length(var.database_subnets) > 0 ? local.num_database_route_tables : 0
 
   compartment_id = var.compartment_id
   vcn_id         = oci_core_vcn.this[0].id
-  display_name   = "${var.name}-${var.database_subnet_suffix}-rt"
+  display_name   = local.num_database_route_tables > 1 ? "${var.name}-${var.database_subnet_suffix}-rt-${count.index + 1}" : "${var.name}-${var.database_subnet_suffix}-rt"
 
   # Route to service gateway when available
   dynamic "route_rules" {
@@ -294,13 +318,13 @@ resource "oci_core_route_table" "database" {
     }
   }
 
-  # Route to NAT gateway when available
+  # Route to NAT gateway when available — indexes into the correct NAT GW per RT
   dynamic "route_rules" {
     for_each = var.enable_nat_gateway ? [1] : []
     content {
       destination       = local.anywhere
       destination_type  = "CIDR_BLOCK"
-      network_entity_id = oci_core_nat_gateway.this[0].id
+      network_entity_id = oci_core_nat_gateway.this[count.index < local.nat_gateway_count ? count.index : 0].id
       description       = "Auto-generated: NAT Gateway as default gateway"
     }
   }
@@ -316,7 +340,7 @@ resource "oci_core_route_table" "database" {
     }
   }
 
-  freeform_tags = merge({ "Name" = "${var.name}-${var.database_subnet_suffix}-rt" }, var.tags, var.database_route_table_tags)
+  freeform_tags = merge({ "Name" = local.num_database_route_tables > 1 ? "${var.name}-${var.database_subnet_suffix}-rt-${count.index + 1}" : "${var.name}-${var.database_subnet_suffix}-rt" }, var.tags, var.database_route_table_tags)
   defined_tags  = var.defined_tags
 
   lifecycle {
@@ -542,6 +566,10 @@ resource "oci_core_nat_gateway" "this" {
   defined_tags = var.defined_tags
 
   lifecycle {
+    precondition {
+      condition     = !(var.single_nat_gateway && var.one_nat_gateway_per_ad)
+      error_message = "single_nat_gateway and one_nat_gateway_per_ad are mutually exclusive. Set only one to true."
+    }
     ignore_changes = [defined_tags, freeform_tags]
   }
 }

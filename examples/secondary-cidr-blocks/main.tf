@@ -3,7 +3,7 @@ provider "oci" {
 }
 
 locals {
-  name   = "ex-${basename(path.cwd)}"
+  name   = "ex-secondary-cidr-blocks"
   region = "us-ashburn-1"
 
   # Primary VCN CIDR
@@ -32,8 +32,8 @@ module "vcn" {
 
   name           = local.name
   compartment_id = var.compartment_id
-  tenancy_id     = var.tenancy_id
-  cidr           = local.vcn_cidr
+
+  cidr = local.vcn_cidr
 
   # Attach a secondary CIDR block
   secondary_cidr_blocks = [local.secondary_cidr]

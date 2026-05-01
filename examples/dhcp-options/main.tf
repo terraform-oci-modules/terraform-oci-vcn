@@ -3,7 +3,7 @@ provider "oci" {
 }
 
 locals {
-  name   = "ex-${basename(path.cwd)}"
+  name   = "ex-dhcp-options"
   region = "us-ashburn-1"
 
   vcn_cidr = "10.0.0.0/16"
@@ -51,8 +51,8 @@ module "vcn_search_domain" {
 
   name           = "${local.name}-search-domain"
   compartment_id = var.compartment_id
-  tenancy_id     = var.tenancy_id
-  cidr           = local.vcn_cidr
+
+  cidr = local.vcn_cidr
 
   # Regional subnets — ads = [] (default); each subnet spans all ADs automatically
   private_subnets = [
@@ -89,8 +89,8 @@ module "vcn_custom_dns" {
 
   name           = "${local.name}-custom-dns"
   compartment_id = var.compartment_id
-  tenancy_id     = var.tenancy_id
-  cidr           = "10.1.0.0/16"
+
+  cidr = "10.1.0.0/16"
 
   # Regional subnets — ads = [] (default); each subnet spans all ADs automatically
   # Private-only VCN — no IGW, no public subnets; DNS via custom forwarders

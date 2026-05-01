@@ -87,4 +87,9 @@ variable "retention_duration" {
   description = "Log retention duration in days"
   type        = number
   default     = 30
+
+  validation {
+    condition     = contains([30, 60, 90, 120, 150, 180], var.retention_duration)
+    error_message = "retention_duration must be a 30-day increment between 30 and 180 (30, 60, 90, 120, 150, 180)."
+  }
 }

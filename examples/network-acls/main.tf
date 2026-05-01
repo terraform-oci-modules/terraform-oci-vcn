@@ -3,7 +3,7 @@ provider "oci" {
 }
 
 locals {
-  name   = "ex-${basename(path.cwd)}"
+  name   = "ex-network-acls"
   region = "us-ashburn-1"
 
   vcn_cidr = "10.0.0.0/16"
@@ -34,8 +34,8 @@ module "vcn" {
 
   name           = local.name
   compartment_id = var.compartment_id
-  tenancy_id     = var.tenancy_id
-  cidr           = local.vcn_cidr
+
+  cidr = local.vcn_cidr
 
   # Regional subnets — ads = [] (default); each subnet spans all ADs automatically
   # Public subnets — internet-facing (IGW route)

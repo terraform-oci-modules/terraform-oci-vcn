@@ -3,7 +3,7 @@ provider "oci" {
 }
 
 locals {
-  name   = "ex-${basename(path.cwd)}"
+  name   = "ex-complete"
   region = "us-ashburn-1"
 
   vcn_cidr = "10.0.0.0/16"
@@ -36,8 +36,8 @@ module "vcn" {
 
   name           = local.name
   compartment_id = var.compartment_id
-  tenancy_id     = var.tenancy_id
-  cidr           = local.vcn_cidr
+
+  cidr = local.vcn_cidr
 
   # AD-specific subnet placement: pin subnets to ADs 1, 2, 3.
   # Remove this line (or set ads = []) to use regional subnets instead.
