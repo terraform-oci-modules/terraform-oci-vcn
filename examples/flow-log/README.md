@@ -11,32 +11,7 @@ Both subnets are **regional** (`ads` not set) — each spans all availability do
 
 ## Architecture
 
-```mermaid
-graph TD
-    Internet((Internet))
-    OracleSvc[(Oracle Services)]
-
-    subgraph Region[OCI Region · us-ashburn-1]
-        subgraph VCN[VCN · 10.0.0.0/16 · regional subnets]
-            pub[Public · 10.0.128.0/20]
-            priv[Private · 10.0.0.0/20]
-        end
-        NAT[NAT Gateway]
-        SGW[Service Gateway]
-
-        subgraph Logging[OCI Logging Service]
-            LG[Log Group]
-            FL1[Flow Log · public\ncreate_log_group = true]
-            FL2[Flow Log · private\nreuses log group]
-        end
-    end
-
-    Internet <--> pub
-    priv --> NAT --> Internet
-    priv --> SGW --> OracleSvc
-    pub -. captures traffic .-> FL1 --> LG
-    priv -. captures traffic .-> FL2 --> LG
-```
+![Image](./flow-log.png)
 
 ## Usage
 
@@ -54,7 +29,7 @@ Note that this example may create resources which can cost money (NAT Gateway, f
 ## Requirements
 
 | Name | Version |
-|------|---------|
+| ---- | ------- |
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.5 |
 | <a name="requirement_oci"></a> [oci](#requirement\_oci) | >= 5.0 |
 
@@ -65,7 +40,7 @@ No providers.
 ## Modules
 
 | Name | Source | Version |
-|------|--------|---------|
+| ---- | ------ | ------- |
 | <a name="module_flow_log_private"></a> [flow\_log\_private](#module\_flow\_log\_private) | ../../modules/flow-log | n/a |
 | <a name="module_flow_log_public"></a> [flow\_log\_public](#module\_flow\_log\_public) | ../../modules/flow-log | n/a |
 | <a name="module_vcn"></a> [vcn](#module\_vcn) | ../../ | n/a |
@@ -77,13 +52,13 @@ No resources.
 ## Inputs
 
 | Name | Description | Type | Default | Required |
-|------|-------------|------|---------|:--------:|
+| ---- | ----------- | ---- | ------- | :------: |
 | <a name="input_compartment_id"></a> [compartment\_id](#input\_compartment\_id) | The OCID of the compartment where resources will be created | `string` | n/a | yes |
 
 ## Outputs
 
 | Name | Description |
-|------|-------------|
+| ---- | ----------- |
 | <a name="output_flow_log_private_id"></a> [flow\_log\_private\_id](#output\_flow\_log\_private\_id) | The OCID of the flow log for the private subnet |
 | <a name="output_flow_log_public_id"></a> [flow\_log\_public\_id](#output\_flow\_log\_public\_id) | The OCID of the flow log for the public subnet |
 | <a name="output_flow_log_public_log_group_id"></a> [flow\_log\_public\_log\_group\_id](#output\_flow\_log\_public\_log\_group\_id) | The OCID of the log group created for the public subnet flow log |

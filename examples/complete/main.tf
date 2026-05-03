@@ -20,12 +20,11 @@ locals {
 #
 # Demonstrates:
 #  - All four subnet types (public, private, database, intra)
-#  - AD-specific subnet placement across 3 ADs
+#  - Regional subnets (span all ADs)
 #  - Internet Gateway, NAT Gateway (single), Service Gateway
 #  - Dedicated database subnet route table
 #  - Per-subnet route tables (public + intra)
 #  - Custom DHCP options (search domain + VcnLocalPlusInternet resolver)
-#  - Per-AD subnet tags (public + private tiers)
 #  - Flow logs enabled
 #  - Default security list lockdown (default)
 #  - Custom NAT route rules
@@ -39,29 +38,25 @@ module "vcn" {
 
   cidr = local.vcn_cidr
 
-  # AD-specific subnet placement: pin subnets to ADs 1, 2, 3.
-  # Remove this line (or set ads = []) to use regional subnets instead.
-  ads = [1, 2, 3]
-
-  # Public subnets — one per AD; internet-facing (IGW route), public IPs eligible
+  # Public subnets — regional (span all ADs); internet-facing (IGW route), public IPs eligible
   public_subnets = [
-    cidrsubnet(local.vcn_cidr, 4, 8),  # 10.0.128.0/20 — AD-1
-    cidrsubnet(local.vcn_cidr, 4, 9),  # 10.0.144.0/20 — AD-2
-    cidrsubnet(local.vcn_cidr, 4, 10), # 10.0.160.0/20 — AD-3
+    cidrsubnet(local.vcn_cidr, 4, 8),  # 10.0.128.0/20
+    cidrsubnet(local.vcn_cidr, 4, 9),  # 10.0.144.0/20
+    cidrsubnet(local.vcn_cidr, 4, 10), # 10.0.160.0/20
   ]
 
-  # Private subnets — one per AD; outbound via NAT, no inbound from internet
+  # Private subnets — regional; outbound via NAT, no inbound from internet
   private_subnets = [
-    cidrsubnet(local.vcn_cidr, 4, 0), # 10.0.0.0/20  — AD-1
-    cidrsubnet(local.vcn_cidr, 4, 1), # 10.0.16.0/20 — AD-2
-    cidrsubnet(local.vcn_cidr, 4, 2), # 10.0.32.0/20 — AD-3
+    cidrsubnet(local.vcn_cidr, 4, 0), # 10.0.0.0/20
+    cidrsubnet(local.vcn_cidr, 4, 1), # 10.0.16.0/20
+    cidrsubnet(local.vcn_cidr, 4, 2), # 10.0.32.0/20
   ]
 
-  # Database subnets — one per AD; dedicated route table (set below)
+  # Database subnets — regional; dedicated route table (set below)
   database_subnets = [
-    cidrsubnet(local.vcn_cidr, 4, 4), # 10.0.64.0/20  — AD-1
-    cidrsubnet(local.vcn_cidr, 4, 5), # 10.0.80.0/20  — AD-2
-    cidrsubnet(local.vcn_cidr, 4, 6), # 10.0.96.0/20  — AD-3
+    cidrsubnet(local.vcn_cidr, 4, 4), # 10.0.64.0/20
+    cidrsubnet(local.vcn_cidr, 4, 5), # 10.0.80.0/20
+    cidrsubnet(local.vcn_cidr, 4, 6), # 10.0.96.0/20
   ]
   create_database_subnet_route_table = true
 
@@ -85,18 +80,6 @@ module "vcn" {
   enable_dhcp_options      = true
   dhcp_options_domain_name = "example.internal"
   dhcp_options_server_type = "VcnLocalPlusInternet"
-
-  # Per-AD freeform tags — applied on top of subnet_tags for the matching AD
-  public_subnet_tags_per_ad = {
-    "NATD:US-ASHBURN-AD-1" = { "Tier" = "public", "AD" = "ad-1" }
-    "NATD:US-ASHBURN-AD-2" = { "Tier" = "public", "AD" = "ad-2" }
-    "NATD:US-ASHBURN-AD-3" = { "Tier" = "public", "AD" = "ad-3" }
-  }
-  private_subnet_tags_per_ad = {
-    "NATD:US-ASHBURN-AD-1" = { "Tier" = "private", "AD" = "ad-1" }
-    "NATD:US-ASHBURN-AD-2" = { "Tier" = "private", "AD" = "ad-2" }
-    "NATD:US-ASHBURN-AD-3" = { "Tier" = "private", "AD" = "ad-3" }
-  }
 
   # Flow logs (OCI Logging service)
   enable_flow_log             = true
