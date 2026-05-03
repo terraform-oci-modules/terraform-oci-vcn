@@ -160,14 +160,14 @@ This is an independent community module and is **not affiliated with, endorsed b
 ## Requirements
 
 | Name | Version |
-|------|---------|
+| ---- | ------- |
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.5 |
 | <a name="requirement_oci"></a> [oci](#requirement\_oci) | >= 5.0 |
 
 ## Providers
 
 | Name | Version |
-|------|---------|
+| ---- | ------- |
 | <a name="provider_oci"></a> [oci](#provider\_oci) | >= 5.0 |
 
 ## Modules
@@ -177,7 +177,7 @@ No modules.
 ## Resources
 
 | Name | Type |
-|------|------|
+| ---- | ---- |
 | [oci_core_default_security_list.lockdown](https://registry.terraform.io/providers/oracle/oci/latest/docs/resources/core_default_security_list) | resource |
 | [oci_core_default_security_list.restore_default](https://registry.terraform.io/providers/oracle/oci/latest/docs/resources/core_default_security_list) | resource |
 | [oci_core_dhcp_options.this](https://registry.terraform.io/providers/oracle/oci/latest/docs/resources/core_dhcp_options) | resource |
@@ -207,7 +207,7 @@ No modules.
 ## Inputs
 
 | Name | Description | Type | Default | Required |
-|------|-------------|------|---------|:--------:|
+| ---- | ----------- | ---- | ------- | :------: |
 | <a name="input_ads"></a> [ads](#input\_ads) | List of availability domain numbers (e.g. [1, 2, 3]) to pin subnets to specific ADs.<br/><br/>OCI supports two subnet placement modes:<br/>  - Regional (default, recommended): leave ads = [] — subnets span all ADs in the<br/>    region automatically. This is the simplest and most resilient choice for most workloads.<br/>  - AD-specific: set ads = [1, 2, 3] — each subnet is pinned to one AD. Use this only<br/>    when you need workload-level AD affinity (e.g. bare metal, local NVMe, AD-local services).<br/><br/>When ads is set, subnets are distributed round-robin across the listed ADs so you can<br/>create more subnets than ADs (e.g. 6 subnets across 3 ADs gives two subnets per AD). | `list(number)` | `[]` | no |
 | <a name="input_attached_drg_id"></a> [attached\_drg\_id](#input\_attached\_drg\_id) | OCID of a DRG already attached to the VCN. Used for symbolic 'drg' route rules | `string` | `null` | no |
 | <a name="input_cidr"></a> [cidr](#input\_cidr) | The primary IPv4 CIDR block for the VCN | `string` | `"10.0.0.0/16"` | no |
@@ -296,7 +296,7 @@ No modules.
 ## Outputs
 
 | Name | Description |
-|------|-------------|
+| ---- | ----------- |
 | <a name="output_ad_names"></a> [ad\_names](#output\_ad\_names) | Resolved availability domain names for the ADs specified in var.ads |
 | <a name="output_ads"></a> [ads](#output\_ads) | A list of availability domain numbers specified as argument to this module |
 | <a name="output_database_route_table_ids"></a> [database\_route\_table\_ids](#output\_database\_route\_table\_ids) | List of OCIDs of the dedicated database route tables (one per NAT GW when one\_nat\_gateway\_per\_ad=true) |

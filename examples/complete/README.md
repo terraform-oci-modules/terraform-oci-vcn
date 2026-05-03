@@ -8,47 +8,7 @@ There are public, private, database, and intra (fully isolated, no outbound rout
 
 ## Architecture
 
-```mermaid
-graph TD
-    Internet((Internet))
-    OracleSvc[(Oracle Services)]
-
-    subgraph Region[OCI Region · us-ashburn-1]
-        IGW[Internet Gateway]
-        NAT[NAT Gateway]
-        SGW[Service Gateway]
-
-        subgraph VCN[VCN · 10.0.0.0/16 · AD-pinned subnets]
-            subgraph Pub[Public Subnets · AD-pinned · per-subnet route tables]
-                pub1[AD-1 · 10.0.128.0/20]
-                pub2[AD-2 · 10.0.144.0/20]
-                pub3[AD-3 · 10.0.160.0/20]
-            end
-            subgraph Priv[Private Subnets · AD-pinned · NAT route table]
-                priv1[AD-1 · 10.0.0.0/20]
-                priv2[AD-2 · 10.0.16.0/20]
-                priv3[AD-3 · 10.0.32.0/20]
-            end
-            subgraph DB[Database Subnets · AD-pinned · dedicated route table]
-                db1[AD-1 · 10.0.64.0/20]
-                db2[AD-2 · 10.0.80.0/20]
-                db3[AD-3 · 10.0.96.0/20]
-            end
-            subgraph Intra[Intra Subnets · AD-pinned · no route table]
-                i1[10.0.52.0/24]
-                i2[10.0.53.0/24]
-            end
-        end
-    end
-
-    Internet <--> IGW
-    IGW <--> pub1 & pub2 & pub3
-    priv1 & priv2 & priv3 --> NAT --> Internet
-    priv1 & priv2 & priv3 --> SGW
-    db1 & db2 & db3 --> NAT
-    db1 & db2 & db3 --> SGW
-    SGW --> OracleSvc
-```
+![Image](./complete.png))
 
 ## Usage
 
@@ -66,7 +26,7 @@ Note that this example may create resources which can cost money (NAT Gateway, f
 ## Requirements
 
 | Name | Version |
-|------|---------|
+| ---- | ------- |
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.5 |
 | <a name="requirement_oci"></a> [oci](#requirement\_oci) | >= 5.0 |
 
@@ -77,7 +37,7 @@ No providers.
 ## Modules
 
 | Name | Source | Version |
-|------|--------|---------|
+| ---- | ------ | ------- |
 | <a name="module_vcn"></a> [vcn](#module\_vcn) | ../../ | n/a |
 
 ## Resources
@@ -87,13 +47,13 @@ No resources.
 ## Inputs
 
 | Name | Description | Type | Default | Required |
-|------|-------------|------|---------|:--------:|
+| ---- | ----------- | ---- | ------- | :------: |
 | <a name="input_compartment_id"></a> [compartment\_id](#input\_compartment\_id) | The OCID of the compartment where resources will be created | `string` | n/a | yes |
 
 ## Outputs
 
 | Name | Description |
-|------|-------------|
+| ---- | ----------- |
 | <a name="output_ad_names"></a> [ad\_names](#output\_ad\_names) | Resolved availability domain names |
 | <a name="output_ads"></a> [ads](#output\_ads) | AD numbers specified as input |
 | <a name="output_database_route_table_ids"></a> [database\_route\_table\_ids](#output\_database\_route\_table\_ids) | List of OCIDs of the dedicated database route tables |

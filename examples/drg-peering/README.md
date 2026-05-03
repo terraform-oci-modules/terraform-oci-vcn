@@ -22,44 +22,8 @@ Subnets in both VCNs are **regional** (`ads` not set) — each spans all availab
 
 ## Architecture
 
-```mermaid
-graph LR
-    Internet((Internet))
-    OracleSvc[(Oracle Services)]
+![Image](./drg-peering.png)
 
-    subgraph Ashburn[OCI Region · us-ashburn-1]
-        subgraph VCNA[VCN · 10.0.0.0/16 · regional subnets]
-            pubA1[Public · 10.0.128.0/20]
-            pubA2[Public · 10.0.144.0/20]
-            privA1[Private · 10.0.0.0/20]
-            privA2[Private · 10.0.16.0/20]
-        end
-        IGW[IGW]
-        NAT_A[NAT]
-        SGW_A[SGW]
-        DRG_A[DRG]
-        RPC_A[RPC · requestor]
-    end
-
-    subgraph Chicago[OCI Region · us-chicago-1]
-        subgraph VCNC[VCN · 10.1.0.0/16 · regional subnets]
-            privC1[Private · 10.1.0.0/20]
-            privC2[Private · 10.1.16.0/20]
-        end
-        SGW_C[SGW]
-        DRG_C[DRG]
-        RPC_C[RPC · acceptor]
-    end
-
-    Internet <--> IGW <--> pubA1 & pubA2
-    privA1 & privA2 --> NAT_A --> Internet
-    privA1 & privA2 --> SGW_A --> OracleSvc
-    privA1 & privA2 --> DRG_A --> RPC_A
-    RPC_A <-.cross-region.-> RPC_C
-    RPC_C --> DRG_C
-    privC1 & privC2 --> DRG_C
-    privC1 & privC2 --> SGW_C --> OracleSvc
-```
 
 ## Usage
 
@@ -77,28 +41,28 @@ Note that this example creates resources in two OCI regions (`us-ashburn-1` and 
 ## Requirements
 
 | Name | Version |
-|------|---------|
+| ---- | ------- |
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.5 |
 | <a name="requirement_oci"></a> [oci](#requirement\_oci) | >= 5.0 |
 
 ## Providers
 
 | Name | Version |
-|------|---------|
+| ---- | ------- |
 | <a name="provider_oci.ashburn"></a> [oci.ashburn](#provider\_oci.ashburn) | >= 5.0 |
 | <a name="provider_oci.chicago"></a> [oci.chicago](#provider\_oci.chicago) | >= 5.0 |
 
 ## Modules
 
 | Name | Source | Version |
-|------|--------|---------|
+| ---- | ------ | ------- |
 | <a name="module_vcn_ashburn"></a> [vcn\_ashburn](#module\_vcn\_ashburn) | ../../ | n/a |
 | <a name="module_vcn_chicago"></a> [vcn\_chicago](#module\_vcn\_chicago) | ../../ | n/a |
 
 ## Resources
 
 | Name | Type |
-|------|------|
+| ---- | ---- |
 | [oci_core_drg.ashburn](https://registry.terraform.io/providers/oracle/oci/latest/docs/resources/core_drg) | resource |
 | [oci_core_drg.chicago](https://registry.terraform.io/providers/oracle/oci/latest/docs/resources/core_drg) | resource |
 | [oci_core_drg_attachment.ashburn](https://registry.terraform.io/providers/oracle/oci/latest/docs/resources/core_drg_attachment) | resource |
@@ -109,13 +73,13 @@ Note that this example creates resources in two OCI regions (`us-ashburn-1` and 
 ## Inputs
 
 | Name | Description | Type | Default | Required |
-|------|-------------|------|---------|:--------:|
+| ---- | ----------- | ---- | ------- | :------: |
 | <a name="input_compartment_id"></a> [compartment\_id](#input\_compartment\_id) | The OCID of the compartment where resources will be created in both regions | `string` | n/a | yes |
 
 ## Outputs
 
 | Name | Description |
-|------|-------------|
+| ---- | ----------- |
 | <a name="output_ashburn_drg_id"></a> [ashburn\_drg\_id](#output\_ashburn\_drg\_id) | The OCID of the Ashburn Dynamic Routing Gateway |
 | <a name="output_ashburn_internet_gateway_id"></a> [ashburn\_internet\_gateway\_id](#output\_ashburn\_internet\_gateway\_id) | The OCID of the Ashburn Internet Gateway |
 | <a name="output_ashburn_nat_ids"></a> [ashburn\_nat\_ids](#output\_ashburn\_nat\_ids) | List of OCIDs of Ashburn NAT Gateways |
