@@ -44,14 +44,14 @@ module "flow_log" {
 ## Requirements
 
 | Name | Version |
-|------|---------|
+| ---- | ------- |
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.5 |
 | <a name="requirement_oci"></a> [oci](#requirement\_oci) | >= 5.0 |
 
 ## Providers
 
 | Name | Version |
-|------|---------|
+| ---- | ------- |
 | <a name="provider_oci"></a> [oci](#provider\_oci) | >= 5.0 |
 
 ## Modules
@@ -61,14 +61,14 @@ No modules.
 ## Resources
 
 | Name | Type |
-|------|------|
+| ---- | ---- |
 | [oci_logging_log.this](https://registry.terraform.io/providers/oracle/oci/latest/docs/resources/logging_log) | resource |
 | [oci_logging_log_group.this](https://registry.terraform.io/providers/oracle/oci/latest/docs/resources/logging_log_group) | resource |
 
 ## Inputs
 
 | Name | Description | Type | Default | Required |
-|------|-------------|------|---------|:--------:|
+| ---- | ----------- | ---- | ------- | :------: |
 | <a name="input_compartment_id"></a> [compartment\_id](#input\_compartment\_id) | The OCID of the compartment where the log group and log will be created | `string` | n/a | yes |
 | <a name="input_create"></a> [create](#input\_create) | Determines whether resources will be created (affects all resources) | `bool` | `true` | no |
 | <a name="input_create_log_group"></a> [create\_log\_group](#input\_create\_log\_group) | Determines whether to create an OCI Logging log group for the flow log. Set to false to supply an existing log\_group\_id | `bool` | `true` | no |
@@ -87,7 +87,7 @@ No modules.
 ## Outputs
 
 | Name | Description |
-|------|-------------|
+| ---- | ----------- |
 | <a name="output_display_name"></a> [display\_name](#output\_display\_name) | The display name of the flow log |
 | <a name="output_id"></a> [id](#output\_id) | The OCID of the flow log |
 | <a name="output_log_group_display_name"></a> [log\_group\_display\_name](#output\_log\_group\_display\_name) | The display name of the log group |

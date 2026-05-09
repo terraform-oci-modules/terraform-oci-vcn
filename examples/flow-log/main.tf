@@ -3,7 +3,7 @@ provider "oci" {
 }
 
 locals {
-  name   = "ex-${basename(path.cwd)}"
+  name   = "ex-flow-log"
   region = "us-ashburn-1"
 
   vcn_cidr = "10.0.0.0/16"
@@ -25,11 +25,12 @@ module "vcn" {
 
   name           = local.name
   compartment_id = var.compartment_id
-  tenancy_id     = var.tenancy_id
-  cidr           = local.vcn_cidr
 
-  public_subnets  = [cidrsubnet(local.vcn_cidr, 4, 8)]
-  private_subnets = [cidrsubnet(local.vcn_cidr, 4, 0)]
+  cidr = local.vcn_cidr
+
+  # Regional subnets — ads = [] (default); each subnet spans all ADs automatically
+  public_subnets  = [cidrsubnet(local.vcn_cidr, 4, 8)] # 10.0.128.0/20 — internet-facing
+  private_subnets = [cidrsubnet(local.vcn_cidr, 4, 0)] # 10.0.0.0/20  — outbound via NAT
 
   enable_nat_gateway     = true
   single_nat_gateway     = true
@@ -44,7 +45,7 @@ module "vcn" {
 ################################################################################
 # Flow Log — standalone submodule usage
 #
-# Demonstrates: examples/flow-log in terraform-aws-vpc.
+# Demonstrates: examples/flow-log in terraform-oci-vcn.
 #
 # Two patterns are shown:
 #   1. Subnet-level flow log on the first public subnet (new log group created)

@@ -3,7 +3,7 @@ provider "oci" {
 }
 
 locals {
-  name   = "ex-${basename(path.cwd)}"
+  name   = "ex-service-gateway"
   region = "us-ashburn-1"
 
   vcn_cidr = "10.0.0.0/16"
@@ -38,15 +38,23 @@ module "vcn" {
 
   name           = local.name
   compartment_id = var.compartment_id
-  tenancy_id     = var.tenancy_id
-  cidr           = local.vcn_cidr
 
-  # Private subnets — no public subnets, no IGW
-  private_subnets = [cidrsubnet(local.vcn_cidr, 4, 0), cidrsubnet(local.vcn_cidr, 4, 1), cidrsubnet(local.vcn_cidr, 4, 2)]
+  cidr = local.vcn_cidr
 
-  # Database subnets with their own dedicated route table
-  # The dedicated RT receives the SGW rule automatically when create_service_gateway = true
-  database_subnets                   = [cidrsubnet(local.vcn_cidr, 4, 4), cidrsubnet(local.vcn_cidr, 4, 5), cidrsubnet(local.vcn_cidr, 4, 6)]
+  # Regional subnets — ads = [] (default); each subnet spans all ADs automatically
+  # Private subnets — no public subnets, no IGW; outbound to Oracle Services via SGW only
+  private_subnets = [
+    cidrsubnet(local.vcn_cidr, 4, 0), # 10.0.0.0/20
+    cidrsubnet(local.vcn_cidr, 4, 1), # 10.0.16.0/20
+    cidrsubnet(local.vcn_cidr, 4, 2), # 10.0.32.0/20
+  ]
+
+  # Database subnets — dedicated route table; the SGW route is added automatically
+  database_subnets = [
+    cidrsubnet(local.vcn_cidr, 4, 4), # 10.0.64.0/20
+    cidrsubnet(local.vcn_cidr, 4, 5), # 10.0.80.0/20
+    cidrsubnet(local.vcn_cidr, 4, 6), # 10.0.96.0/20
+  ]
   create_database_subnet_route_table = true
 
   # No internet access — Oracle Services via SGW only

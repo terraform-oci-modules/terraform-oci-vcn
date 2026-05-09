@@ -9,7 +9,7 @@ output "vcn_cidr_block" {
 }
 
 output "vcn_ipv6_cidr_blocks" {
-  description = "The Oracle-assigned IPv6 /56 CIDR block(s) of the VCN. Use these to carve /64 blocks for subnets"
+  description = "The Oracle-assigned IPv6 /56 CIDR block(s) of the VCN"
   value       = module.vcn.vcn_ipv6_cidr_blocks
 }
 
@@ -24,7 +24,7 @@ output "public_subnets_cidr_blocks" {
 }
 
 output "public_subnets_ipv6_cidr_blocks" {
-  description = "List of IPv6 CIDR blocks of public subnets (empty until public_subnet_ipv6_cidrs is set)"
+  description = "List of IPv6 /64 CIDR blocks of public subnets (auto-derived from the VCN /56)"
   value       = module.vcn.public_subnets_ipv6_cidr_blocks
 }
 

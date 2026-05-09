@@ -16,7 +16,14 @@ The Ashburn VCN has public and private subnets, an Internet Gateway, a NAT Gatew
 2. An RPC is created on each DRG. One side is the *requestor* — it sets `peer_id` and `peer_region_name` to initiate the connection. The other side is the *acceptor* and omits `peer_id`. Here Ashburn is the requestor and Chicago is the acceptor.
 3. Route tables on each VCN must have a route pointing the remote CIDR at the local DRG. This example uses the symbolic `"drg"` value in `nat_gateway_route_rules`, which the module resolves to the correct DRG OCID via `attached_drg_id`.
 
+Subnets in both VCNs are **regional** (`ads` not set) — each spans all availability domains automatically.
+
 [Read more about OCI DRG Remote Peering](https://docs.oracle.com/en-us/iaas/Content/Network/Tasks/remoteVCNpeering.htm).
+
+## Architecture
+
+![Image](./drg-peering.png)
+
 
 ## Usage
 
@@ -34,28 +41,28 @@ Note that this example creates resources in two OCI regions (`us-ashburn-1` and 
 ## Requirements
 
 | Name | Version |
-|------|---------|
-| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.5 |
+| ---- | ------- |
+| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.6 |
 | <a name="requirement_oci"></a> [oci](#requirement\_oci) | >= 5.0 |
 
 ## Providers
 
 | Name | Version |
-|------|---------|
+| ---- | ------- |
 | <a name="provider_oci.ashburn"></a> [oci.ashburn](#provider\_oci.ashburn) | >= 5.0 |
 | <a name="provider_oci.chicago"></a> [oci.chicago](#provider\_oci.chicago) | >= 5.0 |
 
 ## Modules
 
 | Name | Source | Version |
-|------|--------|---------|
+| ---- | ------ | ------- |
 | <a name="module_vcn_ashburn"></a> [vcn\_ashburn](#module\_vcn\_ashburn) | ../../ | n/a |
 | <a name="module_vcn_chicago"></a> [vcn\_chicago](#module\_vcn\_chicago) | ../../ | n/a |
 
 ## Resources
 
 | Name | Type |
-|------|------|
+| ---- | ---- |
 | [oci_core_drg.ashburn](https://registry.terraform.io/providers/oracle/oci/latest/docs/resources/core_drg) | resource |
 | [oci_core_drg.chicago](https://registry.terraform.io/providers/oracle/oci/latest/docs/resources/core_drg) | resource |
 | [oci_core_drg_attachment.ashburn](https://registry.terraform.io/providers/oracle/oci/latest/docs/resources/core_drg_attachment) | resource |
@@ -66,14 +73,13 @@ Note that this example creates resources in two OCI regions (`us-ashburn-1` and 
 ## Inputs
 
 | Name | Description | Type | Default | Required |
-|------|-------------|------|---------|:--------:|
+| ---- | ----------- | ---- | ------- | :------: |
 | <a name="input_compartment_id"></a> [compartment\_id](#input\_compartment\_id) | The OCID of the compartment where resources will be created in both regions | `string` | n/a | yes |
-| <a name="input_tenancy_id"></a> [tenancy\_id](#input\_tenancy\_id) | The OCID of the tenancy (used to resolve availability domain names) | `string` | `null` | no |
 
 ## Outputs
 
 | Name | Description |
-|------|-------------|
+| ---- | ----------- |
 | <a name="output_ashburn_drg_id"></a> [ashburn\_drg\_id](#output\_ashburn\_drg\_id) | The OCID of the Ashburn Dynamic Routing Gateway |
 | <a name="output_ashburn_internet_gateway_id"></a> [ashburn\_internet\_gateway\_id](#output\_ashburn\_internet\_gateway\_id) | The OCID of the Ashburn Internet Gateway |
 | <a name="output_ashburn_nat_ids"></a> [ashburn\_nat\_ids](#output\_ashburn\_nat\_ids) | List of OCIDs of Ashburn NAT Gateways |
