@@ -42,7 +42,7 @@ Note that this example creates resources in two OCI regions (`us-ashburn-1` and 
 
 | Name | Version |
 | ---- | ------- |
-| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.5 |
+| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.6 |
 | <a name="requirement_oci"></a> [oci](#requirement\_oci) | >= 5.0 |
 
 ## Providers
