@@ -3,7 +3,7 @@ provider "oci" {
 }
 
 locals {
-  name   = "ex-${basename(path.cwd)}"
+  name   = "ex-network-acls"
   region = "us-ashburn-1"
 
   vcn_cidr = "10.0.0.0/16"
@@ -34,13 +34,29 @@ module "vcn" {
 
   name           = local.name
   compartment_id = var.compartment_id
-  tenancy_id     = var.tenancy_id
-  cidr           = local.vcn_cidr
 
-  public_subnets   = [cidrsubnet(local.vcn_cidr, 4, 8), cidrsubnet(local.vcn_cidr, 4, 9)]
-  private_subnets  = [cidrsubnet(local.vcn_cidr, 4, 0), cidrsubnet(local.vcn_cidr, 4, 1)]
-  database_subnets = [cidrsubnet(local.vcn_cidr, 4, 4), cidrsubnet(local.vcn_cidr, 4, 5)]
-  intra_subnets    = [cidrsubnet(local.vcn_cidr, 8, 52)]
+  cidr = local.vcn_cidr
+
+  # Regional subnets — ads = [] (default); each subnet spans all ADs automatically
+  # Public subnets — internet-facing (IGW route)
+  public_subnets = [
+    cidrsubnet(local.vcn_cidr, 4, 8), # 10.0.128.0/20
+    cidrsubnet(local.vcn_cidr, 4, 9), # 10.0.144.0/20
+  ]
+  # Private subnets — outbound via NAT, no inbound from internet
+  private_subnets = [
+    cidrsubnet(local.vcn_cidr, 4, 0), # 10.0.0.0/20
+    cidrsubnet(local.vcn_cidr, 4, 1), # 10.0.16.0/20
+  ]
+  # Database subnets — share the private (NAT) route table by default
+  database_subnets = [
+    cidrsubnet(local.vcn_cidr, 4, 4), # 10.0.64.0/20
+    cidrsubnet(local.vcn_cidr, 4, 5), # 10.0.80.0/20
+  ]
+  # Intra subnet — dedicated empty route table (no rules — fully isolated)
+  intra_subnets = [
+    cidrsubnet(local.vcn_cidr, 8, 52), # 10.0.52.0/24
+  ]
 
   enable_nat_gateway     = true
   single_nat_gateway     = true

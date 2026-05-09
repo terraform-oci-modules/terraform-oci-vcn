@@ -18,9 +18,13 @@ Each VCN gets one LPG. One side acts as the *requestor* (sets `peer_id` to the o
 spoke.lpg["to-hub"].peer_id = hub.lpg["to-spoke"].id
 ```
 
-After peering, each VCN's route table must have a route pointing the remote CIDR at its own LPG. This example uses the symbolic `"lpg@<key>"` notation in `internet_gateway_route_rules` and `nat_gateway_route_rules`.
+After peering, each VCN's route table must have a route pointing the remote CIDR at its own LPG. This example uses the symbolic `"lpg@<key>"` notation in `internet_gateway_route_rules` and `nat_gateway_route_rules`. Subnets in both VCNs are **regional** (`ads` not set) — each spans all availability domains automatically.
 
 [Read more about OCI Local Peering Gateways](https://docs.oracle.com/en-us/iaas/Content/Network/Tasks/localVCNpeering.htm).
+
+## Architecture
+
+![Image](./local-peering.png)
 
 ## Usage
 
@@ -38,8 +42,8 @@ Note that this example may create resources which can cost money (NAT Gateway, f
 ## Requirements
 
 | Name | Version |
-|------|---------|
-| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.5 |
+| ---- | ------- |
+| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.6 |
 | <a name="requirement_oci"></a> [oci](#requirement\_oci) | >= 5.0 |
 
 ## Providers
@@ -49,7 +53,7 @@ No providers.
 ## Modules
 
 | Name | Source | Version |
-|------|--------|---------|
+| ---- | ------ | ------- |
 | <a name="module_vcn_hub"></a> [vcn\_hub](#module\_vcn\_hub) | ../../ | n/a |
 | <a name="module_vcn_spoke"></a> [vcn\_spoke](#module\_vcn\_spoke) | ../../ | n/a |
 
@@ -60,14 +64,13 @@ No resources.
 ## Inputs
 
 | Name | Description | Type | Default | Required |
-|------|-------------|------|---------|:--------:|
+| ---- | ----------- | ---- | ------- | :------: |
 | <a name="input_compartment_id"></a> [compartment\_id](#input\_compartment\_id) | The OCID of the compartment where resources will be created | `string` | n/a | yes |
-| <a name="input_tenancy_id"></a> [tenancy\_id](#input\_tenancy\_id) | The OCID of the tenancy (used to resolve availability domain names) | `string` | `null` | no |
 
 ## Outputs
 
 | Name | Description |
-|------|-------------|
+| ---- | ----------- |
 | <a name="output_hub_internet_gateway_id"></a> [hub\_internet\_gateway\_id](#output\_hub\_internet\_gateway\_id) | The OCID of the hub Internet Gateway |
 | <a name="output_hub_lpg_ids"></a> [hub\_lpg\_ids](#output\_hub\_lpg\_ids) | Map of LPG name to OCID for hub Local Peering Gateways |
 | <a name="output_hub_nat_ids"></a> [hub\_nat\_ids](#output\_hub\_nat\_ids) | List of OCIDs of hub NAT Gateways |

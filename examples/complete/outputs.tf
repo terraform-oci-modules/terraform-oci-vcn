@@ -119,9 +119,9 @@ output "private_route_table_ids" {
   value       = module.vcn.private_route_table_ids
 }
 
-output "database_route_table_id" {
-  description = "The OCID of the dedicated database route table"
-  value       = module.vcn.database_route_table_id
+output "database_route_table_ids" {
+  description = "List of OCIDs of the dedicated database route tables"
+  value       = module.vcn.database_route_table_ids
 }
 
 output "intra_route_table_id" {

@@ -62,16 +62,17 @@ while being idiomatic OCI.
 | Freeform tags per tier    | `<tier>_subnet_tags`                                        | `<tier>_subnet_tags`                              | ✅                  |
 | Defined tags per tier     | —                                                           | `<tier>_subnet_defined_tags`                      | OCI-only ✅         |
 | Per-AZ/AD tags            | `<tier>_subnet_tags_per_az`                                 | `<tier>_subnet_tags_per_ad`                       | ✅                  |
-| IPv6 prefixes/CIDRs       | `<tier>_subnet_ipv6_prefixes`                               | `<tier>_subnet_ipv6_cidrs` (explicit /64 strings) | ✅ (see note below) |
+| IPv6 prefixes/CIDRs       | `<tier>_subnet_ipv6_prefixes`                               | Auto-derived from VCN /56 (no input needed)       | ✅ (see note below) |
 | IPv6-native mode          | `<tier>_subnet_ipv6_native`                                 | —                                                 | N/A                |
 | DNS64                     | `<tier>_subnet_enable_dns64`                                | —                                                 | N/A                |
 | Private DNS hostname type | `<tier>_subnet_private_dns_hostname_type_on_launch`         | —                                                 | N/A                |
 | Resource-name DNS records | `<tier>_subnet_enable_resource_name_dns_*_record_on_launch` | —                                                 | N/A                |
 
 > **IPv6 subnet CIDRs**: AWS takes integer prefix offsets and computes `/64` blocks via
-> `cidrsubnet` at plan time. OCI assigns the VCN's `/56` block at apply time (not plan time),
-> so automatic computation is not possible. Users pass explicit `/64` strings after a first
-> apply reveals the VCN's `/56`. See `examples/ipv6-dualstack/` for the two-step workflow.
+> `cidrsubnet` at plan time. OCI assigns the VCN's `/56` block at apply time, but since the
+> module uses `cidrsubnet(oci_core_vcn.this[0].ipv6cidr_blocks[0], 8, index)` internally,
+> Terraform resolves the dependency automatically — no manual CIDR input and no two-step apply.
+> Public subnets get offsets 0…N, private offsets N…M, database and intra continue sequentially.
 
 ---
 
@@ -282,7 +283,7 @@ explicit subnet group registration. OCI DBaaS and PaaS services use subnets dire
 | `<tier>_subnet_suffix`                   | `<tier>_subnet_suffix`                                          | Name suffix                                           |
 | `<tier>_subnet_tags`                     | `<tier>_subnet_tags`                                            | Per-tier freeform tags                                |
 | `<tier>_subnet_tags_per_az`              | `<tier>_subnet_tags_per_ad`                                     | Per-AD/AZ tags                                        |
-| `<tier>_subnet_ipv6_prefixes`            | `<tier>_subnet_ipv6_cidrs`                                      | AWS: integer offsets. OCI: explicit /64 strings       |
+| `<tier>_subnet_ipv6_prefixes`            | `enable_ipv6` (auto-derives /64s internally)                    | AWS: integer offsets. OCI: auto-computed from VCN /56 |
 | `create_igw`                             | `create_igw`                                                    | Identical                                             |
 | `igw_tags`                               | `igw_tags`                                                      | Identical                                             |
 | `enable_nat_gateway`                     | `enable_nat_gateway`                                            | Identical                                             |

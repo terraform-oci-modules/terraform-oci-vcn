@@ -160,14 +160,14 @@ This is an independent community module and is **not affiliated with, endorsed b
 ## Requirements
 
 | Name | Version |
-|------|---------|
-| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.5 |
+| ---- | ------- |
+| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.6 |
 | <a name="requirement_oci"></a> [oci](#requirement\_oci) | >= 5.0 |
 
 ## Providers
 
 | Name | Version |
-|------|---------|
+| ---- | ------- |
 | <a name="provider_oci"></a> [oci](#provider\_oci) | >= 5.0 |
 
 ## Modules
@@ -177,7 +177,7 @@ No modules.
 ## Resources
 
 | Name | Type |
-|------|------|
+| ---- | ---- |
 | [oci_core_default_security_list.lockdown](https://registry.terraform.io/providers/oracle/oci/latest/docs/resources/core_default_security_list) | resource |
 | [oci_core_default_security_list.restore_default](https://registry.terraform.io/providers/oracle/oci/latest/docs/resources/core_default_security_list) | resource |
 | [oci_core_dhcp_options.this](https://registry.terraform.io/providers/oracle/oci/latest/docs/resources/core_dhcp_options) | resource |
@@ -207,7 +207,7 @@ No modules.
 ## Inputs
 
 | Name | Description | Type | Default | Required |
-|------|-------------|------|---------|:--------:|
+| ---- | ----------- | ---- | ------- | :------: |
 | <a name="input_ads"></a> [ads](#input\_ads) | List of availability domain numbers (e.g. [1, 2, 3]) to pin subnets to specific ADs.<br/><br/>OCI supports two subnet placement modes:<br/>  - Regional (default, recommended): leave ads = [] — subnets span all ADs in the<br/>    region automatically. This is the simplest and most resilient choice for most workloads.<br/>  - AD-specific: set ads = [1, 2, 3] — each subnet is pinned to one AD. Use this only<br/>    when you need workload-level AD affinity (e.g. bare metal, local NVMe, AD-local services).<br/><br/>When ads is set, subnets are distributed round-robin across the listed ADs so you can<br/>create more subnets than ADs (e.g. 6 subnets across 3 ADs gives two subnets per AD). | `list(number)` | `[]` | no |
 | <a name="input_attached_drg_id"></a> [attached\_drg\_id](#input\_attached\_drg\_id) | OCID of a DRG already attached to the VCN. Used for symbolic 'drg' route rules | `string` | `null` | no |
 | <a name="input_cidr"></a> [cidr](#input\_cidr) | The primary IPv4 CIDR block for the VCN | `string` | `"10.0.0.0/16"` | no |
@@ -225,7 +225,6 @@ No modules.
 | <a name="input_database_outbound_security_rules"></a> [database\_outbound\_security\_rules](#input\_database\_outbound\_security\_rules) | Outbound (egress) security rules for the database dedicated security list | <pre>list(object({<br/>    protocol         = string<br/>    destination      = string<br/>    destination_type = optional(string, "CIDR_BLOCK")<br/>    description      = optional(string, null)<br/>    stateless        = optional(bool, false)<br/>    tcp_options = optional(object({<br/>      min = number<br/>      max = number<br/>    }), null)<br/>    udp_options = optional(object({<br/>      min = number<br/>      max = number<br/>    }), null)<br/>    icmp_options = optional(object({<br/>      type = number<br/>      code = optional(number, null)<br/>    }), null)<br/>  }))</pre> | <pre>[<br/>  {<br/>    "description": "Allow all outbound traffic",<br/>    "destination": "0.0.0.0/0",<br/>    "destination_type": "CIDR_BLOCK",<br/>    "protocol": "all"<br/>  }<br/>]</pre> | no |
 | <a name="input_database_route_table_tags"></a> [database\_route\_table\_tags](#input\_database\_route\_table\_tags) | Additional freeform tags for the database route tables | `map(string)` | `{}` | no |
 | <a name="input_database_subnet_defined_tags"></a> [database\_subnet\_defined\_tags](#input\_database\_subnet\_defined\_tags) | Additional defined tags for the database subnets, merged with var.defined\_tags | `map(string)` | `{}` | no |
-| <a name="input_database_subnet_ipv6_cidrs"></a> [database\_subnet\_ipv6\_cidrs](#input\_database\_subnet\_ipv6\_cidrs) | List of IPv6 CIDR blocks for database subnets. Length must match database\_subnets. Requires enable\_ipv6 = true | `list(string)` | `[]` | no |
 | <a name="input_database_subnet_names"></a> [database\_subnet\_names](#input\_database\_subnet\_names) | Explicit display names for database subnets. If empty, names are generated | `list(string)` | `[]` | no |
 | <a name="input_database_subnet_suffix"></a> [database\_subnet\_suffix](#input\_database\_subnet\_suffix) | Suffix to append to database subnet names | `string` | `"db"` | no |
 | <a name="input_database_subnet_tags"></a> [database\_subnet\_tags](#input\_database\_subnet\_tags) | Additional freeform tags for the database subnets | `map(string)` | `{}` | no |
@@ -239,7 +238,7 @@ No modules.
 | <a name="input_enable_dhcp_options"></a> [enable\_dhcp\_options](#input\_enable\_dhcp\_options) | Controls if a custom DHCP options set is created and associated with all subnets. When false, subnets use the VCN default DHCP options (VcnLocalPlusInternet resolver) | `bool` | `false` | no |
 | <a name="input_enable_dns_hostnames"></a> [enable\_dns\_hostnames](#input\_enable\_dns\_hostnames) | Should be true to enable DNS hostnames in the VCN (sets vcn\_dns\_label) | `bool` | `true` | no |
 | <a name="input_enable_flow_log"></a> [enable\_flow\_log](#input\_enable\_flow\_log) | Whether or not to enable VCN Flow Logs (OCI Logging service) | `bool` | `false` | no |
-| <a name="input_enable_ipv6"></a> [enable\_ipv6](#input\_enable\_ipv6) | Requests an Oracle-provided IPv6 CIDR block for the VCN. Subnets must be assigned explicit IPv6 CIDR blocks via <tier>\_subnet\_ipv6\_cidrs | `bool` | `false` | no |
+| <a name="input_enable_ipv6"></a> [enable\_ipv6](#input\_enable\_ipv6) | Requests an Oracle-provided IPv6 /56 CIDR block for the VCN. The module automatically derives a /64 for each subnet from that /56 — no manual CIDR input required. Public subnet 0 gets offset 0, private subnet 0 gets offset N\_public, etc. | `bool` | `false` | no |
 | <a name="input_enable_nat_gateway"></a> [enable\_nat\_gateway](#input\_enable\_nat\_gateway) | Should be true if you want to provision NAT Gateways for each of your private networks | `bool` | `false` | no |
 | <a name="input_flow_log_retention_duration"></a> [flow\_log\_retention\_duration](#input\_flow\_log\_retention\_duration) | Log retention duration in days for VCN flow logs. Allowed values: 30, 60, 90, 180, 365 | `number` | `30` | no |
 | <a name="input_flow_log_tags"></a> [flow\_log\_tags](#input\_flow\_log\_tags) | Additional freeform tags for the flow log resources | `map(string)` | `{}` | no |
@@ -251,12 +250,11 @@ No modules.
 | <a name="input_intra_outbound_security_rules"></a> [intra\_outbound\_security\_rules](#input\_intra\_outbound\_security\_rules) | Outbound (egress) security rules for the intra dedicated security list | <pre>list(object({<br/>    protocol         = string<br/>    destination      = string<br/>    destination_type = optional(string, "CIDR_BLOCK")<br/>    description      = optional(string, null)<br/>    stateless        = optional(bool, false)<br/>    tcp_options = optional(object({<br/>      min = number<br/>      max = number<br/>    }), null)<br/>    udp_options = optional(object({<br/>      min = number<br/>      max = number<br/>    }), null)<br/>    icmp_options = optional(object({<br/>      type = number<br/>      code = optional(number, null)<br/>    }), null)<br/>  }))</pre> | <pre>[<br/>  {<br/>    "description": "Allow all outbound traffic",<br/>    "destination": "0.0.0.0/0",<br/>    "destination_type": "CIDR_BLOCK",<br/>    "protocol": "all"<br/>  }<br/>]</pre> | no |
 | <a name="input_intra_route_table_tags"></a> [intra\_route\_table\_tags](#input\_intra\_route\_table\_tags) | Additional freeform tags for the intra route table | `map(string)` | `{}` | no |
 | <a name="input_intra_subnet_defined_tags"></a> [intra\_subnet\_defined\_tags](#input\_intra\_subnet\_defined\_tags) | Additional defined tags for the intra subnets, merged with var.defined\_tags | `map(string)` | `{}` | no |
-| <a name="input_intra_subnet_ipv6_cidrs"></a> [intra\_subnet\_ipv6\_cidrs](#input\_intra\_subnet\_ipv6\_cidrs) | List of IPv6 CIDR blocks for intra subnets. Length must match intra\_subnets. Requires enable\_ipv6 = true | `list(string)` | `[]` | no |
 | <a name="input_intra_subnet_names"></a> [intra\_subnet\_names](#input\_intra\_subnet\_names) | Explicit display names for intra subnets. If empty, names are generated | `list(string)` | `[]` | no |
 | <a name="input_intra_subnet_suffix"></a> [intra\_subnet\_suffix](#input\_intra\_subnet\_suffix) | Suffix to append to intra subnet names | `string` | `"intra"` | no |
 | <a name="input_intra_subnet_tags"></a> [intra\_subnet\_tags](#input\_intra\_subnet\_tags) | Additional freeform tags for the intra subnets | `map(string)` | `{}` | no |
 | <a name="input_intra_subnet_tags_per_ad"></a> [intra\_subnet\_tags\_per\_ad](#input\_intra\_subnet\_tags\_per\_ad) | Additional freeform tags for the intra subnets where the primary key is the AD name (e.g. "NATD:US-ASHBURN-AD-1") | `map(map(string))` | `{}` | no |
-| <a name="input_intra_subnets"></a> [intra\_subnets](#input\_intra\_subnets) | A list of intra subnet CIDR blocks inside the VCN (fully isolated, no outbound route) | `list(string)` | `[]` | no |
+| <a name="input_intra_subnets"></a> [intra\_subnets](#input\_intra\_subnets) | A list of intra subnet CIDR blocks inside the VCN. Each gets a dedicated empty route table (no rules — fully isolated, no NAT/IGW/SGW routes) | `list(string)` | `[]` | no |
 | <a name="input_local_peering_gateways"></a> [local\_peering\_gateways](#input\_local\_peering\_gateways) | Map of Local Peering Gateways to attach to the VCN. Key is the LPG name, value is an object with optional peer\_id and route\_table\_id | `map(any)` | `null` | no |
 | <a name="input_lockdown_default_seclist"></a> [lockdown\_default\_seclist](#input\_lockdown\_default\_seclist) | Whether to remove all default security rules from the VCN Default Security List. Recommended true for security best practice | `bool` | `true` | no |
 | <a name="input_name"></a> [name](#input\_name) | Name to be used on all the resources as identifier | `string` | `""` | no |
@@ -271,7 +269,6 @@ No modules.
 | <a name="input_private_outbound_security_rules"></a> [private\_outbound\_security\_rules](#input\_private\_outbound\_security\_rules) | Outbound (egress) security rules for the private dedicated security list | <pre>list(object({<br/>    protocol         = string<br/>    destination      = string<br/>    destination_type = optional(string, "CIDR_BLOCK")<br/>    description      = optional(string, null)<br/>    stateless        = optional(bool, false)<br/>    tcp_options = optional(object({<br/>      min = number<br/>      max = number<br/>    }), null)<br/>    udp_options = optional(object({<br/>      min = number<br/>      max = number<br/>    }), null)<br/>    icmp_options = optional(object({<br/>      type = number<br/>      code = optional(number, null)<br/>    }), null)<br/>  }))</pre> | <pre>[<br/>  {<br/>    "description": "Allow all outbound traffic",<br/>    "destination": "0.0.0.0/0",<br/>    "destination_type": "CIDR_BLOCK",<br/>    "protocol": "all"<br/>  }<br/>]</pre> | no |
 | <a name="input_private_route_table_tags"></a> [private\_route\_table\_tags](#input\_private\_route\_table\_tags) | Additional freeform tags for the private route tables | `map(string)` | `{}` | no |
 | <a name="input_private_subnet_defined_tags"></a> [private\_subnet\_defined\_tags](#input\_private\_subnet\_defined\_tags) | Additional defined tags for the private subnets, merged with var.defined\_tags | `map(string)` | `{}` | no |
-| <a name="input_private_subnet_ipv6_cidrs"></a> [private\_subnet\_ipv6\_cidrs](#input\_private\_subnet\_ipv6\_cidrs) | List of IPv6 CIDR blocks for private subnets. Length must match private\_subnets. Requires enable\_ipv6 = true | `list(string)` | `[]` | no |
 | <a name="input_private_subnet_names"></a> [private\_subnet\_names](#input\_private\_subnet\_names) | Explicit display names for private subnets. If empty, names are generated | `list(string)` | `[]` | no |
 | <a name="input_private_subnet_suffix"></a> [private\_subnet\_suffix](#input\_private\_subnet\_suffix) | Suffix to append to private subnet names | `string` | `"private"` | no |
 | <a name="input_private_subnet_tags"></a> [private\_subnet\_tags](#input\_private\_subnet\_tags) | Additional freeform tags for the private subnets | `map(string)` | `{}` | no |
@@ -283,7 +280,6 @@ No modules.
 | <a name="input_public_outbound_security_rules"></a> [public\_outbound\_security\_rules](#input\_public\_outbound\_security\_rules) | Outbound (egress) security rules for the public dedicated security list | <pre>list(object({<br/>    protocol         = string<br/>    destination      = string<br/>    destination_type = optional(string, "CIDR_BLOCK")<br/>    description      = optional(string, null)<br/>    stateless        = optional(bool, false)<br/>    tcp_options = optional(object({<br/>      min = number<br/>      max = number<br/>    }), null)<br/>    udp_options = optional(object({<br/>      min = number<br/>      max = number<br/>    }), null)<br/>    icmp_options = optional(object({<br/>      type = number<br/>      code = optional(number, null)<br/>    }), null)<br/>  }))</pre> | <pre>[<br/>  {<br/>    "description": "Allow all outbound traffic",<br/>    "destination": "0.0.0.0/0",<br/>    "destination_type": "CIDR_BLOCK",<br/>    "protocol": "all"<br/>  }<br/>]</pre> | no |
 | <a name="input_public_route_table_tags"></a> [public\_route\_table\_tags](#input\_public\_route\_table\_tags) | Additional freeform tags for the public route table | `map(string)` | `{}` | no |
 | <a name="input_public_subnet_defined_tags"></a> [public\_subnet\_defined\_tags](#input\_public\_subnet\_defined\_tags) | Additional defined tags for the public subnets, merged with var.defined\_tags | `map(string)` | `{}` | no |
-| <a name="input_public_subnet_ipv6_cidrs"></a> [public\_subnet\_ipv6\_cidrs](#input\_public\_subnet\_ipv6\_cidrs) | List of IPv6 CIDR blocks for public subnets. Length must match public\_subnets. Requires enable\_ipv6 = true | `list(string)` | `[]` | no |
 | <a name="input_public_subnet_names"></a> [public\_subnet\_names](#input\_public\_subnet\_names) | Explicit display names for public subnets. If empty, names are generated | `list(string)` | `[]` | no |
 | <a name="input_public_subnet_suffix"></a> [public\_subnet\_suffix](#input\_public\_subnet\_suffix) | Suffix to append to public subnet names | `string` | `"public"` | no |
 | <a name="input_public_subnet_tags"></a> [public\_subnet\_tags](#input\_public\_subnet\_tags) | Additional freeform tags for the public subnets | `map(string)` | `{}` | no |
@@ -293,17 +289,17 @@ No modules.
 | <a name="input_service_gateway_tags"></a> [service\_gateway\_tags](#input\_service\_gateway\_tags) | Additional freeform tags for the Service Gateway | `map(string)` | `{}` | no |
 | <a name="input_single_nat_gateway"></a> [single\_nat\_gateway](#input\_single\_nat\_gateway) | Should be true if you want to provision a single shared NAT Gateway across all private networks | `bool` | `false` | no |
 | <a name="input_tags"></a> [tags](#input\_tags) | A map of freeform tags to add to all resources | `map(string)` | `{}` | no |
-| <a name="input_tenancy_id"></a> [tenancy\_id](#input\_tenancy\_id) | The OCID of the tenancy, used to resolve availability domain names.<br/><br/>Optional — when null (default), the module uses var.compartment\_id to query ADs,<br/>which works for any compartment in the tenancy. Set this explicitly only when your<br/>compartment lacks IAM permission to list ADs, which is rare. | `string` | `null` | no |
+| <a name="input_tenancy_id"></a> [tenancy\_id](#input\_tenancy\_id) | Deprecated — no longer needed. The module resolves availability domains using<br/>var.compartment\_id, which works for any compartment in the tenancy.<br/><br/>Retained for backward compatibility only. If set, it overrides compartment\_id<br/>for the AD lookup data source. Will be removed in the next major version. | `string` | `null` | no |
 | <a name="input_vcn_dns_label"></a> [vcn\_dns\_label](#input\_vcn\_dns\_label) | A DNS label for the VCN. When null and enable\_dns\_hostnames is true, derived from var.name. Set to empty string to disable DNS | `string` | `null` | no |
 | <a name="input_vcn_tags"></a> [vcn\_tags](#input\_vcn\_tags) | Additional freeform tags for the VCN | `map(string)` | `{}` | no |
 
 ## Outputs
 
 | Name | Description |
-|------|-------------|
+| ---- | ----------- |
 | <a name="output_ad_names"></a> [ad\_names](#output\_ad\_names) | Resolved availability domain names for the ADs specified in var.ads |
 | <a name="output_ads"></a> [ads](#output\_ads) | A list of availability domain numbers specified as argument to this module |
-| <a name="output_database_route_table_id"></a> [database\_route\_table\_id](#output\_database\_route\_table\_id) | The OCID of the dedicated database route table (if created) |
+| <a name="output_database_route_table_ids"></a> [database\_route\_table\_ids](#output\_database\_route\_table\_ids) | List of OCIDs of the dedicated database route tables (one per NAT GW when one\_nat\_gateway\_per\_ad=true) |
 | <a name="output_database_security_list_id"></a> [database\_security\_list\_id](#output\_database\_security\_list\_id) | The OCID of the dedicated database security list (null if not created) |
 | <a name="output_database_subnet_objects"></a> [database\_subnet\_objects](#output\_database\_subnet\_objects) | A list of all database subnet objects (full attributes) |
 | <a name="output_database_subnets"></a> [database\_subnets](#output\_database\_subnets) | List of OCIDs of database subnets |

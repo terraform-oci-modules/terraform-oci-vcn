@@ -19,7 +19,14 @@ Two VCNs are created side-by-side to show both supported DNS server types:
 
 - `CustomDnsServer` — bypasses OCI's resolver entirely. All DNS queries are sent to the IP addresses listed in `dhcp_options_domain_name_servers`. Use this when instances must resolve names from an on-premises or custom DNS infrastructure.
 
+Subnets in both VCNs are **regional** (`ads` not set) — each spans all availability domains automatically.
+
 [Read more about OCI DHCP Options](https://docs.oracle.com/en-us/iaas/Content/Network/Tasks/managingDHCP.htm).
+
+## Architecture
+
+![Image](./dhcp-options.png)
+
 
 ## Usage
 
@@ -37,8 +44,8 @@ Note that this example may create resources which can cost money (NAT Gateway, S
 ## Requirements
 
 | Name | Version |
-|------|---------|
-| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.5 |
+| ---- | ------- |
+| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.6 |
 | <a name="requirement_oci"></a> [oci](#requirement\_oci) | >= 5.0 |
 
 ## Providers
@@ -48,7 +55,7 @@ No providers.
 ## Modules
 
 | Name | Source | Version |
-|------|--------|---------|
+| ---- | ------ | ------- |
 | <a name="module_vcn_custom_dns"></a> [vcn\_custom\_dns](#module\_vcn\_custom\_dns) | ../../ | n/a |
 | <a name="module_vcn_search_domain"></a> [vcn\_search\_domain](#module\_vcn\_search\_domain) | ../../ | n/a |
 
@@ -59,14 +66,13 @@ No resources.
 ## Inputs
 
 | Name | Description | Type | Default | Required |
-|------|-------------|------|---------|:--------:|
+| ---- | ----------- | ---- | ------- | :------: |
 | <a name="input_compartment_id"></a> [compartment\_id](#input\_compartment\_id) | The OCID of the compartment where resources will be created | `string` | n/a | yes |
-| <a name="input_tenancy_id"></a> [tenancy\_id](#input\_tenancy\_id) | The OCID of the tenancy (used to resolve availability domain names) | `string` | `null` | no |
 
 ## Outputs
 
 | Name | Description |
-|------|-------------|
+| ---- | ----------- |
 | <a name="output_custom_dns_default_dhcp_options_id"></a> [custom\_dns\_default\_dhcp\_options\_id](#output\_custom\_dns\_default\_dhcp\_options\_id) | The OCID of the VCN-default DHCP options set (not the managed custom set) |
 | <a name="output_custom_dns_dhcp_options_id"></a> [custom\_dns\_dhcp\_options\_id](#output\_custom\_dns\_dhcp\_options\_id) | The OCID of the custom DHCP options set (CustomDnsServer) |
 | <a name="output_custom_dns_private_subnets"></a> [custom\_dns\_private\_subnets](#output\_custom\_dns\_private\_subnets) | List of OCIDs of private subnets in the custom-DNS VCN |

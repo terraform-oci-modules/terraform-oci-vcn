@@ -59,8 +59,8 @@ locals {
 }
 
 # Data source: resolve AD numbers → AD names.
-# Uses tenancy_id when provided, otherwise falls back to compartment_id —
-# the OCI ADs API works with any compartment in the tenancy.
+# Uses compartment_id by default (works for any compartment in the tenancy).
+# Falls back to tenancy_id only when explicitly set (deprecated, backward compat).
 data "oci_identity_availability_domains" "ads" {
   compartment_id = coalesce(var.tenancy_id, var.compartment_id)
 }
@@ -135,6 +135,7 @@ locals {
       cidr         = cidr
       display_name = length(var.public_subnet_names) > idx ? var.public_subnet_names[idx] : "${var.name}-${var.public_subnet_suffix}-${idx + 1}"
       ad           = length(local.ad_names) > 0 ? local.ad_names[idx % length(local.ad_names)] : null
+      ipv6_index   = idx
     }
   ]
 }
@@ -149,7 +150,7 @@ resource "oci_core_subnet" "public" {
   availability_domain = local.public_subnet_objects[count.index].ad
   # Public subnets: prohibit_public_ip = false so instances can get public IPs
   prohibit_public_ip_on_vnic = false
-  ipv6cidr_block             = var.enable_ipv6 && length(var.public_subnet_ipv6_cidrs) > count.index ? var.public_subnet_ipv6_cidrs[count.index] : null
+  ipv6cidr_block             = var.enable_ipv6 ? cidrsubnet(oci_core_vcn.this[0].ipv6cidr_blocks[0], 8, local.public_subnet_objects[count.index].ipv6_index) : null
   dhcp_options_id            = var.enable_dhcp_options ? oci_core_dhcp_options.this[0].id : null
   route_table_id             = var.create_igw ? element(oci_core_route_table.ig[*].id, var.create_multiple_public_route_tables ? count.index : 0) : null
   security_list_ids          = local.create_public_security_list ? [oci_core_security_list.public[0].id] : null
@@ -178,6 +179,7 @@ locals {
       cidr         = cidr
       display_name = length(var.private_subnet_names) > idx ? var.private_subnet_names[idx] : "${var.name}-${var.private_subnet_suffix}-${idx + 1}"
       ad           = length(local.ad_names) > 0 ? local.ad_names[idx % length(local.ad_names)] : null
+      ipv6_index   = idx + length(var.public_subnets)
       # Which NAT GW route table does this subnet use?
       # single → index 0; one_per_ad → index = (idx % ad count); else → index = idx
       nat_rt_index = (
@@ -200,7 +202,7 @@ resource "oci_core_subnet" "private" {
   display_name               = local.private_subnet_objects[count.index].display_name
   availability_domain        = local.private_subnet_objects[count.index].ad
   prohibit_public_ip_on_vnic = true
-  ipv6cidr_block             = var.enable_ipv6 && length(var.private_subnet_ipv6_cidrs) > count.index ? var.private_subnet_ipv6_cidrs[count.index] : null
+  ipv6cidr_block             = var.enable_ipv6 ? cidrsubnet(oci_core_vcn.this[0].ipv6cidr_blocks[0], 8, local.private_subnet_objects[count.index].ipv6_index) : null
   dhcp_options_id            = var.enable_dhcp_options ? oci_core_dhcp_options.this[0].id : null
   route_table_id = (
     var.enable_nat_gateway
@@ -233,8 +235,30 @@ locals {
       cidr         = cidr
       display_name = length(var.database_subnet_names) > idx ? var.database_subnet_names[idx] : "${var.name}-${var.database_subnet_suffix}-${idx + 1}"
       ad           = length(local.ad_names) > 0 ? local.ad_names[idx % length(local.ad_names)] : null
+      ipv6_index   = idx + length(var.public_subnets) + length(var.private_subnets)
+      # Which NAT GW / route table does this subnet use?
+      # Same logic as private subnets — keeps DB traffic AD-local when one_nat_gateway_per_ad=true.
+      nat_rt_index = (
+        var.single_nat_gateway
+        ? 0
+        : var.one_nat_gateway_per_ad
+        ? (length(local.ad_names) > 0 ? idx % length(local.ad_names) : 0)
+        : idx
+      )
     }
   ]
+
+  # How many dedicated database route tables?
+  #   - When IGW route is requested or single NAT, a single shared RT suffices.
+  #   - Otherwise, one per NAT GW so each DB subnet routes through its AD-local NAT.
+  #     This mirrors the AWS VPC module's database route table count logic.
+  num_database_route_tables = (
+    var.create_database_internet_gateway_route || var.single_nat_gateway
+    ? 1
+    : local.nat_gateway_count > 0
+    ? local.nat_gateway_count
+    : 1
+  )
 }
 
 resource "oci_core_subnet" "database" {
@@ -246,14 +270,15 @@ resource "oci_core_subnet" "database" {
   display_name               = local.database_subnet_objects[count.index].display_name
   availability_domain        = local.database_subnet_objects[count.index].ad
   prohibit_public_ip_on_vnic = true
-  ipv6cidr_block             = var.enable_ipv6 && length(var.database_subnet_ipv6_cidrs) > count.index ? var.database_subnet_ipv6_cidrs[count.index] : null
+  ipv6cidr_block             = var.enable_ipv6 ? cidrsubnet(oci_core_vcn.this[0].ipv6cidr_blocks[0], 8, local.database_subnet_objects[count.index].ipv6_index) : null
   dhcp_options_id            = var.enable_dhcp_options ? oci_core_dhcp_options.this[0].id : null
   route_table_id = (
     var.create_database_subnet_route_table
-    ? oci_core_route_table.database[0].id
+    ? element(oci_core_route_table.database[*].id,
+    var.create_database_internet_gateway_route || var.single_nat_gateway ? 0 : local.database_subnet_objects[count.index].nat_rt_index)
     : (
       var.enable_nat_gateway
-      ? oci_core_route_table.nat[0].id
+      ? oci_core_route_table.nat[local.database_subnet_objects[count.index].nat_rt_index].id
       : null
     )
   )
@@ -272,13 +297,15 @@ resource "oci_core_subnet" "database" {
   }
 }
 
-# Dedicated database route table (optional — service gateway route for DB traffic)
+# Dedicated database route table (optional — service gateway route for DB traffic).
+# When one_nat_gateway_per_ad=true, creates one RT per NAT GW so each DB subnet
+# routes through its AD-local NAT gateway (mirrors the AWS VPC module pattern).
 resource "oci_core_route_table" "database" {
-  count = local.create_vcn && var.create_database_subnet_route_table && length(var.database_subnets) > 0 ? 1 : 0
+  count = local.create_vcn && var.create_database_subnet_route_table && length(var.database_subnets) > 0 ? local.num_database_route_tables : 0
 
   compartment_id = var.compartment_id
   vcn_id         = oci_core_vcn.this[0].id
-  display_name   = "${var.name}-${var.database_subnet_suffix}-rt"
+  display_name   = local.num_database_route_tables > 1 ? "${var.name}-${var.database_subnet_suffix}-rt-${count.index + 1}" : "${var.name}-${var.database_subnet_suffix}-rt"
 
   # Route to service gateway when available
   dynamic "route_rules" {
@@ -291,13 +318,13 @@ resource "oci_core_route_table" "database" {
     }
   }
 
-  # Route to NAT gateway when available
+  # Route to NAT gateway when available — indexes into the correct NAT GW per RT
   dynamic "route_rules" {
     for_each = var.enable_nat_gateway ? [1] : []
     content {
       destination       = local.anywhere
       destination_type  = "CIDR_BLOCK"
-      network_entity_id = oci_core_nat_gateway.this[0].id
+      network_entity_id = oci_core_nat_gateway.this[count.index < local.nat_gateway_count ? count.index : 0].id
       description       = "Auto-generated: NAT Gateway as default gateway"
     }
   }
@@ -313,7 +340,7 @@ resource "oci_core_route_table" "database" {
     }
   }
 
-  freeform_tags = merge({ "Name" = "${var.name}-${var.database_subnet_suffix}-rt" }, var.tags, var.database_route_table_tags)
+  freeform_tags = merge({ "Name" = local.num_database_route_tables > 1 ? "${var.name}-${var.database_subnet_suffix}-rt-${count.index + 1}" : "${var.name}-${var.database_subnet_suffix}-rt" }, var.tags, var.database_route_table_tags)
   defined_tags  = var.defined_tags
 
   lifecycle {
@@ -332,6 +359,7 @@ locals {
       cidr         = cidr
       display_name = length(var.intra_subnet_names) > idx ? var.intra_subnet_names[idx] : "${var.name}-${var.intra_subnet_suffix}-${idx + 1}"
       ad           = length(local.ad_names) > 0 ? local.ad_names[idx % length(local.ad_names)] : null
+      ipv6_index   = idx + length(var.public_subnets) + length(var.private_subnets) + length(var.database_subnets)
     }
   ]
 }
@@ -345,11 +373,10 @@ resource "oci_core_subnet" "intra" {
   display_name               = local.intra_subnet_objects[count.index].display_name
   availability_domain        = local.intra_subnet_objects[count.index].ad
   prohibit_public_ip_on_vnic = true
-  ipv6cidr_block             = var.enable_ipv6 && length(var.intra_subnet_ipv6_cidrs) > count.index ? var.intra_subnet_ipv6_cidrs[count.index] : null
+  ipv6cidr_block             = var.enable_ipv6 ? cidrsubnet(oci_core_vcn.this[0].ipv6cidr_blocks[0], 8, local.intra_subnet_objects[count.index].ipv6_index) : null
   dhcp_options_id            = var.enable_dhcp_options ? oci_core_dhcp_options.this[0].id : null
-  # No route table — intra subnets are fully isolated (use VCN default/empty RT)
-  route_table_id    = element(oci_core_route_table.intra[*].id, var.create_multiple_intra_route_tables ? count.index : 0)
-  security_list_ids = local.create_intra_security_list ? [oci_core_security_list.intra[0].id] : null
+  route_table_id             = element(oci_core_route_table.intra[*].id, var.create_multiple_intra_route_tables ? count.index : 0)
+  security_list_ids          = local.create_intra_security_list ? [oci_core_security_list.intra[0].id] : null
 
   freeform_tags = merge(
     { "Name" = local.intra_subnet_objects[count.index].display_name },
@@ -538,6 +565,10 @@ resource "oci_core_nat_gateway" "this" {
   defined_tags = var.defined_tags
 
   lifecycle {
+    precondition {
+      condition     = !(var.single_nat_gateway && var.one_nat_gateway_per_ad)
+      error_message = "single_nat_gateway and one_nat_gateway_per_ad are mutually exclusive. Set only one to true."
+    }
     ignore_changes = [defined_tags, freeform_tags]
   }
 }
