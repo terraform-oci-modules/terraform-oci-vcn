@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.3.0](https://github.com/terraform-oci-modules/terraform-oci-vcn/compare/v0.2.0...v0.3.0) (2026-05-09)
+
+### Features
+
+* Add diagrams for all examples and fix code/doc accuracy ([#2](https://github.com/terraform-oci-modules/terraform-oci-vcn/issues/2)) ([152d452](https://github.com/terraform-oci-modules/terraform-oci-vcn/commit/152d4520a476c7642000ebe29b1b58a0f24a1157))
+
 ## [0.2.0](https://github.com/terraform-oci-modules/terraform-oci-vcn/compare/v0.1.0...v0.2.0) (2026-03-02)
 
 ### Features
