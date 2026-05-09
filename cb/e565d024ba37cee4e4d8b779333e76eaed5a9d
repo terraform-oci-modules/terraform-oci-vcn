@@ -1,0 +1,39 @@
+examples/drg-peering/versions.tf
+  s_e8fe22a1d70a32::t_34526b44027584 2
+examples/network-acls/versions.tf
+  s_e8fe22a1d70a32::t_34526b44027584 2
+examples/secondary-cidr-blocks/versions.tf
+  s_e8fe22a1d70a32::t_34526b44027584 2
+examples/simple/versions.tf
+  s_e8fe22a1d70a32::t_34526b44027584 2
+examples/separate-route-tables/versions.tf
+  s_e8fe22a1d70a32::t_34526b44027584 2
+examples/flow-log/versions.tf
+  s_e8fe22a1d70a32::t_34526b44027584 2
+examples/ipv6-dualstack/versions.tf
+  s_e8fe22a1d70a32::t_34526b44027584 2
+examples/local-peering/versions.tf
+  s_e8fe22a1d70a32::t_34526b44027584 2
+examples/complete/versions.tf
+  s_e8fe22a1d70a32::t_34526b44027584 2
+examples/service-gateway/versions.tf
+  s_e8fe22a1d70a32::t_34526b44027584 2
+examples/dhcp-options/versions.tf
+  s_e8fe22a1d70a32::t_34526b44027584 2
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.4",
+  "base_commit_sha": "cbe565d024ba37cee4e4d8b779333e76eaed5a9d",
+  "prompts": {},
+  "sessions": {
+    "s_e8fe22a1d70a32": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f5d35206-83e1-4684-a531-23845a1c148f",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "Alexis F. <alexisfr@gmail.com>"
+    }
+  }
+}
