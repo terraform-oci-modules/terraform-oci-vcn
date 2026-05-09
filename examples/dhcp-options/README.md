@@ -25,7 +25,7 @@ Subnets in both VCNs are **regional** (`ads` not set) — each spans all availab
 
 ## Architecture
 
-![Image](./dhcp-options.png))
+![Image](./dhcp-options.png)
 
 
 ## Usage

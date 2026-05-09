@@ -48,12 +48,12 @@ module "vcn" {
     cidrsubnet(local.vcn_cidr, 4, 0), # 10.0.0.0/20
     cidrsubnet(local.vcn_cidr, 4, 1), # 10.0.16.0/20
   ]
-  # Database subnets — no outbound route (isolated unless create_database_subnet_route_table = true)
+  # Database subnets — share the private (NAT) route table by default
   database_subnets = [
     cidrsubnet(local.vcn_cidr, 4, 4), # 10.0.64.0/20
     cidrsubnet(local.vcn_cidr, 4, 5), # 10.0.80.0/20
   ]
-  # Intra subnet — fully isolated, no route table entries
+  # Intra subnet — dedicated empty route table (no rules — fully isolated)
   intra_subnets = [
     cidrsubnet(local.vcn_cidr, 8, 52), # 10.0.52.0/24
   ]

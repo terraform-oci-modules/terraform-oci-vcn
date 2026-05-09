@@ -51,7 +51,7 @@ module "vcn" {
     cidrsubnet(local.vcn_cidr, 4, 1), # 10.0.16.0/20
   ]
 
-  # Intra subnets — carved from the secondary CIDR, fully isolated (no route table entries)
+  # Intra subnets — carved from the secondary CIDR; dedicated empty route table (no rules — fully isolated)
   # OCI allows mixing CIDRs from any block attached to the VCN
   intra_subnets = [
     cidrsubnet(local.secondary_cidr, 4, 0), # 10.1.0.0/20
