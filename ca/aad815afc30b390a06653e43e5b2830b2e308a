@@ -1,0 +1,19 @@
+versions.tf
+  s_e8fe22a1d70a32::t_8aef88209afaf2 2
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.4",
+  "base_commit_sha": "caaad815afc30b390a06653e43e5b2830b2e308a",
+  "prompts": {},
+  "sessions": {
+    "s_e8fe22a1d70a32": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f5d35206-83e1-4684-a531-23845a1c148f",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "Alexis F. <alexisfr@gmail.com>"
+    }
+  }
+}
