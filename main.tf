@@ -375,8 +375,8 @@ resource "oci_core_subnet" "intra" {
   prohibit_public_ip_on_vnic = true
   ipv6cidr_block             = var.enable_ipv6 ? cidrsubnet(oci_core_vcn.this[0].ipv6cidr_blocks[0], 8, local.intra_subnet_objects[count.index].ipv6_index) : null
   dhcp_options_id            = var.enable_dhcp_options ? oci_core_dhcp_options.this[0].id : null
-  route_table_id    = element(oci_core_route_table.intra[*].id, var.create_multiple_intra_route_tables ? count.index : 0)
-  security_list_ids = local.create_intra_security_list ? [oci_core_security_list.intra[0].id] : null
+  route_table_id             = element(oci_core_route_table.intra[*].id, var.create_multiple_intra_route_tables ? count.index : 0)
+  security_list_ids          = local.create_intra_security_list ? [oci_core_security_list.intra[0].id] : null
 
   freeform_tags = merge(
     { "Name" = local.intra_subnet_objects[count.index].display_name },
