@@ -16,6 +16,11 @@ crash.log
 # control as they are data points which are potentially sensitive and subject
 # to change depending on the environment.
 *.tfvars
+*.tfvars.json
+
+# Terraform plan output files
+*.tfplan
+*.tfplan.json
 
 # Ignore override files as they are usually used to override resources locally and so
 # are not checked in
@@ -45,5 +50,6 @@ oci_api_key*.pem
 # OCI CLI config contains tenancy/user OCIDs and key paths
 .oci/config
 
-# Draw.io backup files
-*drawio.bkp
+# Draw.io backup and lock files
+*.drawio.bkp
+.~lock.*.drawio#
