@@ -1,0 +1,43 @@
+examples/dhcp-options/README.md
+  h_6b74be09941b42 28
+examples/network-acls/network-acls.drawio
+  e8fe22a1d70a325f 1,205,208
+examples/secondary-cidr-blocks/main.tf
+  e8fe22a1d70a325f 54
+examples/service-gateway/README.md
+  e8fe22a1d70a325f 24
+variables.tf
+  e8fe22a1d70a325f 283
+examples/complete/main.tf
+  e8fe22a1d70a325f 63
+examples/complete/complete.drawio
+  e8fe22a1d70a325f 1,229,232
+examples/secondary-cidr-blocks/secondary-cidr-blocks.drawio
+  e8fe22a1d70a325f 1,184,187
+examples/network-acls/main.tf
+  e8fe22a1d70a325f 51,56
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.4",
+  "base_commit_sha": "468c12dd33b3fa76511d21651563e5d44eff8fbc",
+  "prompts": {
+    "e8fe22a1d70a325f": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f5d35206-83e1-4684-a531-23845a1c148f",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "Alexis F. <alexisfr@gmail.com>",
+      "total_additions": 941,
+      "total_deletions": 15,
+      "accepted_lines": 630,
+      "overriden_lines": 1
+    }
+  },
+  "humans": {
+    "h_6b74be09941b42": {
+      "author": "Alexis F."
+    }
+  }
+}
