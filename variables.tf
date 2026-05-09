@@ -280,7 +280,7 @@ variable "database_route_table_tags" {
 ################################################################################
 
 variable "intra_subnets" {
-  description = "A list of intra subnet CIDR blocks inside the VCN (fully isolated, no outbound route)"
+  description = "A list of intra subnet CIDR blocks inside the VCN. Each gets a dedicated empty route table (no rules — fully isolated, no NAT/IGW/SGW routes)"
   type        = list(string)
   default     = []
 }

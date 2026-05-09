@@ -60,7 +60,7 @@ module "vcn" {
   ]
   create_database_subnet_route_table = true
 
-  # Intra subnets — fully isolated, no outbound route; smaller /24 blocks
+  # Intra subnets — dedicated empty route table per subnet (no rules — fully isolated)
   intra_subnets = [
     cidrsubnet(local.vcn_cidr, 8, 52), # 10.0.52.0/24
     cidrsubnet(local.vcn_cidr, 8, 53), # 10.0.53.0/24
