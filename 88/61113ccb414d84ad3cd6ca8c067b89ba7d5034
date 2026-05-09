@@ -1,0 +1,29 @@
+main.tf
+  s_e8fe22a1d70a32::t_59db8eae4c356f 378-379
+examples/network-acls/network-acls.drawio
+  s_e8fe22a1d70a32::t_1bdf3333639bca 208
+examples/complete/complete.drawio
+  s_e8fe22a1d70a32::t_1bdf3333639bca 232
+README.md
+  s_e8fe22a1d70a32::t_7f73bbaaddd82d 164,257
+examples/secondary-cidr-blocks/secondary-cidr-blocks.drawio
+  s_e8fe22a1d70a32::t_1bdf3333639bca 187
+.github/workflows/pre-commit.yml
+  s_e8fe22a1d70a32::t_1debf1f6291c8f 10
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.4",
+  "base_commit_sha": "8861113ccb414d84ad3cd6ca8c067b89ba7d5034",
+  "prompts": {},
+  "sessions": {
+    "s_e8fe22a1d70a32": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f5d35206-83e1-4684-a531-23845a1c148f",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "Alexis F. <alexisfr@gmail.com>"
+    }
+  }
+}
