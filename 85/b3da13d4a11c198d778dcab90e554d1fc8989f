@@ -1,0 +1,39 @@
+examples/ipv6-dualstack/README.md
+  s_e8fe22a1d70a32::t_5c5fa5afe8b0c9 52
+examples/network-acls/README.md
+  s_e8fe22a1d70a32::t_5c5fa5afe8b0c9 30
+examples/simple/README.md
+  s_e8fe22a1d70a32::t_5c5fa5afe8b0c9 30
+examples/secondary-cidr-blocks/README.md
+  s_e8fe22a1d70a32::t_5c5fa5afe8b0c9 30
+examples/local-peering/README.md
+  s_e8fe22a1d70a32::t_5c5fa5afe8b0c9 46
+examples/separate-route-tables/README.md
+  s_e8fe22a1d70a32::t_5c5fa5afe8b0c9 30
+examples/complete/README.md
+  s_e8fe22a1d70a32::t_5c5fa5afe8b0c9 30
+examples/drg-peering/README.md
+  s_e8fe22a1d70a32::t_5c5fa5afe8b0c9 45
+examples/dhcp-options/README.md
+  s_e8fe22a1d70a32::t_5c5fa5afe8b0c9 48
+examples/flow-log/README.md
+  s_e8fe22a1d70a32::t_5c5fa5afe8b0c9 33
+examples/service-gateway/README.md
+  s_e8fe22a1d70a32::t_5c5fa5afe8b0c9 45
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.4",
+  "base_commit_sha": "85b3da13d4a11c198d778dcab90e554d1fc8989f",
+  "prompts": {},
+  "sessions": {
+    "s_e8fe22a1d70a32": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f5d35206-83e1-4684-a531-23845a1c148f",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "Alexis F. <alexisfr@gmail.com>"
+    }
+  }
+}
