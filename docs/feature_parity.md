@@ -54,19 +54,19 @@ while being idiomatic OCI.
 
 ### Per-tier interface (all four OCI tiers)
 
-| Sub-feature               | AWS                                                         | OCI                                               | Status             |
-| ------------------------- | ----------------------------------------------------------- | ------------------------------------------------- | ------------------ |
-| CIDR list                 | `<tier>_subnets`                                            | `<tier>_subnets`                                  | ✅                  |
-| Custom names list         | `<tier>_subnet_names`                                       | `<tier>_subnet_names`                             | ✅                  |
-| Name suffix               | `<tier>_subnet_suffix`                                      | `<tier>_subnet_suffix`                            | ✅                  |
-| Freeform tags per tier    | `<tier>_subnet_tags`                                        | `<tier>_subnet_tags`                              | ✅                  |
-| Defined tags per tier     | —                                                           | `<tier>_subnet_defined_tags`                      | OCI-only ✅         |
-| Per-AZ/AD tags            | `<tier>_subnet_tags_per_az`                                 | `<tier>_subnet_tags_per_ad`                       | ✅                  |
-| IPv6 prefixes/CIDRs       | `<tier>_subnet_ipv6_prefixes`                               | Auto-derived from VCN /56 (no input needed)       | ✅ (see note below) |
-| IPv6-native mode          | `<tier>_subnet_ipv6_native`                                 | —                                                 | N/A                |
-| DNS64                     | `<tier>_subnet_enable_dns64`                                | —                                                 | N/A                |
-| Private DNS hostname type | `<tier>_subnet_private_dns_hostname_type_on_launch`         | —                                                 | N/A                |
-| Resource-name DNS records | `<tier>_subnet_enable_resource_name_dns_*_record_on_launch` | —                                                 | N/A                |
+| Sub-feature               | AWS                                                         | OCI                                         | Status             |
+| ------------------------- | ----------------------------------------------------------- | ------------------------------------------- | ------------------ |
+| CIDR list                 | `<tier>_subnets`                                            | `<tier>_subnets`                            | ✅                  |
+| Custom names list         | `<tier>_subnet_names`                                       | `<tier>_subnet_names`                       | ✅                  |
+| Name suffix               | `<tier>_subnet_suffix`                                      | `<tier>_subnet_suffix`                      | ✅                  |
+| Freeform tags per tier    | `<tier>_subnet_tags`                                        | `<tier>_subnet_tags`                        | ✅                  |
+| Defined tags per tier     | —                                                           | `<tier>_subnet_defined_tags`                | OCI-only ✅         |
+| Per-AZ/AD tags            | `<tier>_subnet_tags_per_az`                                 | `<tier>_subnet_tags_per_ad`                 | ✅                  |
+| IPv6 prefixes/CIDRs       | `<tier>_subnet_ipv6_prefixes`                               | Auto-derived from VCN /56 (no input needed) | ✅ (see note below) |
+| IPv6-native mode          | `<tier>_subnet_ipv6_native`                                 | —                                           | N/A                |
+| DNS64                     | `<tier>_subnet_enable_dns64`                                | —                                           | N/A                |
+| Private DNS hostname type | `<tier>_subnet_private_dns_hostname_type_on_launch`         | —                                           | N/A                |
+| Resource-name DNS records | `<tier>_subnet_enable_resource_name_dns_*_record_on_launch` | —                                           | N/A                |
 
 > **IPv6 subnet CIDRs**: AWS takes integer prefix offsets and computes `/64` blocks via
 > `cidrsubnet` at plan time. OCI assigns the VCN's `/56` block at apply time, but since the

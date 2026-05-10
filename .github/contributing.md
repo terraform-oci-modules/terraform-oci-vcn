@@ -24,11 +24,11 @@ with the project.
 
 Before contributing you need the following tools installed locally:
 
-- `terraform` >= 1.5
+- `terraform` >= 1.6
 - `pre-commit` — `pip3 install pre-commit`
-- `tflint` v0.59.1 — see [DEVELOPMENT.md](../../DEVELOPMENT.md)
-- `terraform-docs` v0.20.0 — see [DEVELOPMENT.md](../../DEVELOPMENT.md)
-- `oci` CLI — for running examples against a real tenancy
+- `tflint` v0.59.1
+- `terraform-docs` v0.20.0
+- OCI credentials configured (environment variables, config file, or instance principal) — required for running tests against a real tenancy
 
 After cloning, register the git hooks once:
 
@@ -36,8 +36,7 @@ After cloning, register the git hooks once:
 pre-commit install
 ```
 
-See [DEVELOPMENT.md](../../DEVELOPMENT.md) for the full setup guide including
-OCI authentication and day-to-day workflow.
+See [docs/testing.md](../docs/testing.md) for the full guide on running the automated tests locally.
 
 ## Checklists for Contributions
 
@@ -48,6 +47,9 @@ OCI authentication and day-to-day workflow.
 - [ ] Pre-commit hooks pass locally: `pre-commit run --all-files`
 - [ ] New examples or changed examples validate cleanly:
       `terraform -chdir=examples/<name> init -backend=false && terraform -chdir=examples/<name> validate`
+- [ ] Automated tests pass for any touched examples (requires OCI credentials and `TF_VAR_compartment_id`):
+      `cd examples/<name> && terraform init && terraform test`
+      (see [docs/testing.md](../docs/testing.md) for setup details)
 
 ## Semantic Pull Requests
 

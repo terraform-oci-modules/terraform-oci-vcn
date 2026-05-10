@@ -120,6 +120,10 @@ OCI supports two tag types, both mapped:
 - [wrappers](wrappers) — Terragrunt-style `for_each` wrapper for the root module
 - [wrappers/flow-log](wrappers/flow-log) — `for_each` wrapper for the flow-log submodule
 
+## Testing
+
+Each example ships with a [`terraform test`](https://developer.hashicorp.com/terraform/language/tests) file that applies real OCI resources, asserts key outputs, then destroys on completion. See [docs/testing.md](docs/testing.md) for prerequisites, OCI auth setup, and how to run the tests.
+
 ## AWS → OCI Feature Parity
 
 See [docs/feature_parity.md](docs/feature_parity.md) for a detailed comparison between this module

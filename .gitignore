@@ -50,6 +50,7 @@ oci_api_key*.pem
 # OCI CLI config contains tenancy/user OCIDs and key paths
 .oci/config
 
-# Draw.io backup and lock files
-*.drawio.bkp
 .~lock.*.drawio#
+
+# Backup files
+*.bkp
