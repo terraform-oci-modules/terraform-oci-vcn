@@ -22,6 +22,7 @@ $ terraform apply
 
 Note that this example may create resources which can cost money (NAT Gateway, for example). Run `terraform destroy` when you don't need these resources.
 
+
 <!-- BEGIN_TF_DOCS -->
 ## Requirements
 
