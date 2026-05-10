@@ -1,0 +1,29 @@
+.github/workflows/pre-commit.yml
+  s_4b250a94b801a7::t_2ba37a5ce9ed25 36,98
+  s_4b250a94b801a7::t_41c79189a89d83 70,136
+  s_4b250a94b801a7::t_8b41a8749e38cb 21,66,129
+.github/workflows/lock.yml
+  s_4b250a94b801a7::t_ac2808239df6af 7-10
+  s_4b250a94b801a7::t_220e2af7858453 15
+.github/workflows/stale-actions.yaml
+  s_4b250a94b801a7::t_b7af27db43cff6 10
+.github/workflows/release.yml
+  s_4b250a94b801a7::t_b4b02ee1231cc6 39
+  s_4b250a94b801a7::t_ac46c0734aa0dc 21
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.4",
+  "base_commit_sha": "5acd48dfae9909c7d0ab7e8b409dcfa4e855a239",
+  "prompts": {},
+  "sessions": {
+    "s_4b250a94b801a7": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "6823eddd-fe11-4295-aaad-10e619bf0d5b",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "Alexis F. <alexisfr@gmail.com>"
+    }
+  }
+}
