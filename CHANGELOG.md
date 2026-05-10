@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.0](https://github.com/terraform-oci-modules/terraform-oci-vcn/compare/v0.1.0...v0.2.0) (2026-05-10)
+
+### Features
+
+* Add diagrams for all examples and fix code/doc accuracy ([#2](https://github.com/terraform-oci-modules/terraform-oci-vcn/issues/2)) ([a8461f9](https://github.com/terraform-oci-modules/terraform-oci-vcn/commit/a8461f93071efd710e1af40b436ac413a9ca2ea9))
+* Align variable names with terraform-aws-modules/vpc/aws interface ([#1](https://github.com/terraform-oci-modules/terraform-oci-vcn/issues/1)) ([51ba3fe](https://github.com/terraform-oci-modules/terraform-oci-vcn/commit/51ba3fea4a14b05fd2d665acac782f7f2648dd4b))
+
 ## [0.3.0](https://github.com/terraform-oci-modules/terraform-oci-vcn/compare/v0.2.0...v0.3.0) (2026-05-09)
 
 ### Features
