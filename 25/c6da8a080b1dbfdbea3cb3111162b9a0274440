@@ -1,0 +1,39 @@
+.github/contributing.md
+  s_3dde6e22d1629a::t_ab477b62a49eb7 29-31,39
+  s_3dde6e22d1629a::t_1b6452d05f34e4 50-51
+  s_3dde6e22d1629a::t_f3547a3f5b0109 52
+  s_3dde6e22d1629a::t_fc852982f8ba03 27
+docs/testing.md
+  s_3dde6e22d1629a::t_9042359e1ee237 9-10,39
+  s_3dde6e22d1629a::t_d47013ad71aada 1-8,11-38
+README.md
+  s_3dde6e22d1629a::t_312817df346130 123-124,126
+  s_3dde6e22d1629a::t_31dbe32580f967 125
+.gitignore
+  h_3082bb12c46fa2 54-56
+examples/simple/README.md
+  s_3dde6e22d1629a::t_46b8e2450ae3a4 25
+docs/feature_parity.md
+  h_3082bb12c46fa2 58
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.4",
+  "base_commit_sha": "25c6da8a080b1dbfdbea3cb3111162b9a0274440",
+  "prompts": {},
+  "humans": {
+    "h_3082bb12c46fa2": {
+      "author": "Alexis F. <alexisfr@gmail.com>"
+    }
+  },
+  "sessions": {
+    "s_3dde6e22d1629a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "49b42bda-82bb-4f0d-b416-37225da396c3",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "Alexis F. <alexisfr@gmail.com>"
+    }
+  }
+}
