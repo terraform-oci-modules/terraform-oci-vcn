@@ -853,8 +853,8 @@ variable "flow_log_retention_duration" {
   default     = 30
 
   validation {
-    condition     = contains([30, 60, 90, 120, 150, 180], var.flow_log_retention_duration)
-    error_message = "flow_log_retention_duration must be a 30-day increment between 30 and 180 (30, 60, 90, 120, 150, 180)."
+    condition     = contains([30, 60, 90, 180, 365], var.flow_log_retention_duration)
+    error_message = "flow_log_retention_duration must be one of: 30, 60, 90, 180, 365."
   }
 }
 
