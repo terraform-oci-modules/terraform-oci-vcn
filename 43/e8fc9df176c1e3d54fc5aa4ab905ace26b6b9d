@@ -1,0 +1,19 @@
+variables.tf
+  s_4b250a94b801a7::t_c164bb75c5be16 856-857
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.4",
+  "base_commit_sha": "43e8fc9df176c1e3d54fc5aa4ab905ace26b6b9d",
+  "prompts": {},
+  "sessions": {
+    "s_4b250a94b801a7": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "6823eddd-fe11-4295-aaad-10e619bf0d5b",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "Alexis F. <alexisfr@gmail.com>"
+    }
+  }
+}
