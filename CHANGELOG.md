@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.4.0](https://github.com/terraform-oci-modules/terraform-oci-vcn/compare/v0.3.0...v0.4.0) (2026-05-10)
+
+### Features
+
+* support 365-day flow log retention and fix release history ([43e8fc9](https://github.com/terraform-oci-modules/terraform-oci-vcn/commit/43e8fc9df176c1e3d54fc5aa4ab905ace26b6b9d))
+
 ## [0.3.0](https://github.com/terraform-oci-modules/terraform-oci-vcn/compare/v0.2.0...v0.3.0) (2026-05-09)
 
 ### Features
