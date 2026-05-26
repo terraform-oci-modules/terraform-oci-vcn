@@ -1,6 +1,10 @@
 run "creates_simple_vcn" {
   command = apply
 
+  module {
+    source = "./examples/simple"
+  }
+
   assert {
     condition     = output.vcn_id != null
     error_message = "VCN must be created"

@@ -36,7 +36,7 @@ module "vcn" {
   name           = local.name
   compartment_id = var.compartment_id
 
-  cidr = local.vcn_cidr
+  vcn_cidr_block = local.vcn_cidr
 
   # Public subnets — regional (span all ADs); internet-facing (IGW route), public IPs eligible
   public_subnets = [

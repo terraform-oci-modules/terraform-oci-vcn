@@ -1,5 +1,9 @@
-run "creates_complete_vcn" {
+run "creates_separate_route_tables" {
   command = apply
+
+  module {
+    source = "./examples/separate-route-tables"
+  }
 
   assert {
     condition     = output.vcn_id != null
@@ -22,8 +26,8 @@ run "creates_complete_vcn" {
     error_message = "Expected 3 database subnets"
   }
   assert {
-    condition     = length(output.intra_subnets) == 2
-    error_message = "Expected 2 intra subnets"
+    condition     = length(output.database_route_table_ids) > 0
+    error_message = "Dedicated database route table must be created (create_database_subnet_route_table = true)"
   }
   assert {
     condition     = output.internet_gateway_id != null
@@ -31,27 +35,11 @@ run "creates_complete_vcn" {
   }
   assert {
     condition     = length(output.nat_ids) == 1
-    error_message = "Expected exactly 1 NAT Gateway (single_nat_gateway = true)"
+    error_message = "Expected 1 NAT Gateway (single_nat_gateway = true)"
   }
   assert {
     condition     = output.service_gateway_id != null
     error_message = "Service Gateway must be created"
-  }
-  assert {
-    condition     = length(output.flow_log_ids) > 0
-    error_message = "Flow logs must be created (enable_flow_log = true)"
-  }
-  assert {
-    condition     = length(output.flow_log_group_ids) > 0
-    error_message = "Flow log groups must be created"
-  }
-  assert {
-    condition     = length(output.database_route_table_ids) > 0
-    error_message = "Database route table must be created (create_database_subnet_route_table = true)"
-  }
-  assert {
-    condition     = output.intra_route_table_id != null
-    error_message = "Intra route table must be created"
   }
   assert {
     condition     = length(output.private_route_table_ids) == 1
@@ -59,6 +47,6 @@ run "creates_complete_vcn" {
   }
   assert {
     condition     = output.public_route_table_id != null
-    error_message = "Public route table must be created"
+    error_message = "Public (IGW) route table must be created"
   }
 }

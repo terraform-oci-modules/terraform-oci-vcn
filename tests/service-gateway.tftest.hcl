@@ -1,6 +1,10 @@
 run "creates_service_gateway_only_vcn" {
   command = apply
 
+  module {
+    source = "./examples/service-gateway"
+  }
+
   assert {
     condition     = output.vcn_id != null
     error_message = "VCN must be created"

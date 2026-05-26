@@ -3,9 +3,8 @@ module "wrapper" {
 
   for_each = var.items
 
-  ads                                    = try(each.value.ads, var.defaults.ads, [])
   attached_drg_id                        = try(each.value.attached_drg_id, var.defaults.attached_drg_id, null)
-  cidr                                   = try(each.value.cidr, var.defaults.cidr, "10.0.0.0/16")
+  availability_domain_numbers            = try(each.value.availability_domain_numbers, var.defaults.availability_domain_numbers, [])
   compartment_id                         = try(each.value.compartment_id, var.defaults.compartment_id)
   create_database_internet_gateway_route = try(each.value.create_database_internet_gateway_route, var.defaults.create_database_internet_gateway_route, false)
   create_database_subnet_route_table     = try(each.value.create_database_subnet_route_table, var.defaults.create_database_subnet_route_table, false)
@@ -140,7 +139,7 @@ module "wrapper" {
   service_gateway_tags       = try(each.value.service_gateway_tags, var.defaults.service_gateway_tags, {})
   single_nat_gateway         = try(each.value.single_nat_gateway, var.defaults.single_nat_gateway, false)
   tags                       = try(each.value.tags, var.defaults.tags, {})
-  tenancy_id                 = try(each.value.tenancy_id, var.defaults.tenancy_id, null)
+  vcn_cidr_block             = try(each.value.vcn_cidr_block, var.defaults.vcn_cidr_block, "10.0.0.0/16")
   vcn_dns_label              = try(each.value.vcn_dns_label, var.defaults.vcn_dns_label, null)
   vcn_tags                   = try(each.value.vcn_tags, var.defaults.vcn_tags, {})
 }

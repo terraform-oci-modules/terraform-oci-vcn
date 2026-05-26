@@ -64,7 +64,7 @@ module "vcn_ashburn" {
   name           = "${local.name}-ashburn"
   compartment_id = var.compartment_id
 
-  cidr = local.vcn_cidr_ashburn
+  vcn_cidr_block = local.vcn_cidr_ashburn
 
   # Regional subnets — ads = [] (default); each subnet spans all ADs automatically
   public_subnets = [
@@ -111,7 +111,7 @@ module "vcn_chicago" {
   name           = "${local.name}-chicago"
   compartment_id = var.compartment_id
 
-  cidr = local.vcn_cidr_chicago
+  vcn_cidr_block = local.vcn_cidr_chicago
 
   # Regional subnets — ads = [] (default); each subnet spans all ADs automatically
   # Chicago is a private spoke — no internet access, cross-region traffic via DRG

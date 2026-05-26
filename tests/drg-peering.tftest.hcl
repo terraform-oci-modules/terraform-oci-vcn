@@ -1,6 +1,10 @@
 run "creates_drg_peering" {
   command = apply
 
+  module {
+    source = "./examples/drg-peering"
+  }
+
   assert {
     condition     = output.ashburn_vcn_id != null
     error_message = "Ashburn VCN must be created"

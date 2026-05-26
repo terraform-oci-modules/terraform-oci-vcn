@@ -33,7 +33,7 @@ module "vcn" {
   name           = local.name
   compartment_id = var.compartment_id
 
-  cidr = local.vcn_cidr
+  vcn_cidr_block = local.vcn_cidr
 
   # Attach a secondary CIDR block
   secondary_cidr_blocks = [local.secondary_cidr]

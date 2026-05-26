@@ -1,6 +1,10 @@
 run "creates_local_peering" {
   command = apply
 
+  module {
+    source = "./examples/local-peering"
+  }
+
   assert {
     condition     = output.hub_vcn_id != null
     error_message = "Hub VCN must be created"

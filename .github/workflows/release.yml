@@ -12,13 +12,18 @@ on:
       - "**/*.tf"
       - ".github/workflows/release.yml"
 
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+
 jobs:
   release:
     name: Release
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           persist-credentials: false
           fetch-depth: 0
@@ -36,7 +41,7 @@ jobs:
             conventional-changelog-conventionalcommits@9.1.0
 
       - name: Release
-        uses: cycjimmy/semantic-release-action@v5
+        uses: cycjimmy/semantic-release-action@v6
         with:
           semantic_version: 25.0.0
         env:

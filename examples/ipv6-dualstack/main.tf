@@ -34,7 +34,7 @@ module "vcn" {
 
   vcn_dns_label = "exipv6dual"
 
-  cidr = "10.0.0.0/16"
+  vcn_cidr_block = "10.0.0.0/16"
 
   enable_ipv6 = true
 

@@ -1,6 +1,10 @@
 run "creates_ipv6_dualstack_vcn" {
   command = apply
 
+  module {
+    source = "./examples/ipv6-dualstack"
+  }
+
   assert {
     condition     = output.vcn_id != null
     error_message = "VCN must be created"

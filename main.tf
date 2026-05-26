@@ -3,16 +3,16 @@ locals {
   create_vcn = var.create_vcn
 
   # Resolve availability domain numbers to tenancy-specific AD names.
-  # var.ads accepts a list of integers like [1, 2, 3].
+  # var.availability_domain_numbers accepts a list of integers like [1, 2, 3].
   # data.oci_identity_availability_domains returns ADs sorted by name (AD-1, AD-2, AD-3).
   # We map each number to the zero-indexed entry in that sorted list.
   availability_domains = data.oci_identity_availability_domains.ads.availability_domains
   ad_names = [
-    for n in var.ads : local.availability_domains[n - 1].name
+    for n in var.availability_domain_numbers : local.availability_domains[n - 1].name
   ]
 
   # VCN CIDR blocks — primary + any secondary CIDRs
-  vcn_cidr_blocks = concat([var.cidr], var.secondary_cidr_blocks)
+  vcn_cidr_blocks = concat([var.vcn_cidr_block], var.secondary_cidr_blocks)
 
   # DNS label: when enable_dns_hostnames=true and no explicit label given, derive from name.
   # OCI DNS labels: alphanumeric, max 15 chars, must start with a letter.
@@ -32,8 +32,8 @@ locals {
 
   # NAT Gateway count logic:
   #   single_nat_gateway=true   → 1
-  #   one_nat_gateway_per_ad    → one per AD when ads is set; falls back to one per
-  #                               private subnet when ads=[] (regional mode has no ADs to pin to)
+  #   one_nat_gateway_per_ad    → one per AD when availability_domain_numbers is set; falls back to one per
+  #                               private subnet when availability_domain_numbers=[] (regional mode has no ADs to pin to)
   #   otherwise                 → one per private subnet
   nat_gateway_count = (
     var.enable_nat_gateway == false
@@ -41,7 +41,7 @@ locals {
     : var.single_nat_gateway
     ? 1
     : var.one_nat_gateway_per_ad
-    ? (length(var.ads) > 0 ? length(var.ads) : length(var.private_subnets))
+    ? (length(var.availability_domain_numbers) > 0 ? length(var.availability_domain_numbers) : length(var.private_subnets))
     : length(var.private_subnets)
   )
 
@@ -59,10 +59,8 @@ locals {
 }
 
 # Data source: resolve AD numbers → AD names.
-# Uses compartment_id by default (works for any compartment in the tenancy).
-# Falls back to tenancy_id only when explicitly set (deprecated, backward compat).
 data "oci_identity_availability_domains" "ads" {
-  compartment_id = coalesce(var.tenancy_id, var.compartment_id)
+  compartment_id = var.compartment_id
 }
 
 ################################################################################
@@ -489,7 +487,7 @@ resource "oci_core_route_table" "ig" {
     content {
       destination       = route_rules.value.destination
       destination_type  = route_rules.value.destination_type
-      network_entity_id = oci_core_local_peering_gateway.this[split("@", route_rules.value.network_entity_id)[1]].id
+      network_entity_id = oci_core_local_peering_gateway.lpg[split("@", route_rules.value.network_entity_id)[1]].id
       description       = lookup(route_rules.value, "description", null)
     }
   }
@@ -635,7 +633,7 @@ resource "oci_core_route_table" "nat" {
     content {
       destination       = route_rules.value.destination
       destination_type  = route_rules.value.destination_type
-      network_entity_id = oci_core_local_peering_gateway.this[split("@", route_rules.value.network_entity_id)[1]].id
+      network_entity_id = oci_core_local_peering_gateway.lpg[split("@", route_rules.value.network_entity_id)[1]].id
       description       = lookup(route_rules.value, "description", null)
     }
   }
@@ -702,7 +700,7 @@ resource "oci_core_service_gateway" "this" {
 # Local Peering Gateway (LPG) — OCI-specific
 ################################################################################
 
-resource "oci_core_local_peering_gateway" "this" {
+resource "oci_core_local_peering_gateway" "lpg" {
   for_each = local.create_vcn ? (var.local_peering_gateways != null ? var.local_peering_gateways : {}) : {}
 
   compartment_id = var.compartment_id
@@ -789,4 +787,13 @@ resource "oci_core_default_security_list" "restore_default" {
   lifecycle {
     ignore_changes = [egress_security_rules, ingress_security_rules, defined_tags]
   }
+}
+
+################################################################################
+# Moved blocks
+################################################################################
+
+moved {
+  from = oci_core_local_peering_gateway.this
+  to   = oci_core_local_peering_gateway.lpg
 }

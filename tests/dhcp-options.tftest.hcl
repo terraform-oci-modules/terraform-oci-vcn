@@ -1,6 +1,10 @@
 run "creates_dhcp_vcns" {
   command = apply
 
+  module {
+    source = "./examples/dhcp-options"
+  }
+
   assert {
     condition     = output.search_domain_vcn_id != null
     error_message = "Search domain VCN must be created"

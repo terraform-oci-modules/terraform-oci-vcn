@@ -30,7 +30,7 @@ module "vcn" {
   name           = local.name
   compartment_id = var.compartment_id
 
-  cidr = local.vcn_cidr # 10.0.0.0/16
+  vcn_cidr_block = local.vcn_cidr # 10.0.0.0/16
 
   # Regional subnets — ads = [] (default) means each subnet spans all ADs.
   # Each /20 block holds 4,094 usable addresses.

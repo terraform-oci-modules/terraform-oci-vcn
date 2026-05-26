@@ -1,6 +1,6 @@
 # Testing
 
-Each example in this repository ships with a `terraform test` file that applies real OCI resources, asserts key outputs, then destroys everything on completion.
+The test suite lives in `tests/` — one `.tftest.hcl` file per example. All tests run from the module root via a single `terraform test` invocation.
 
 ## Prerequisites
 
@@ -15,21 +15,16 @@ Each example in this repository ships with a `terraform test` file that applies 
 
 ```bash
 export TF_VAR_compartment_id="ocid1.compartment.oc1.."
-cd examples/simple
 terraform init
-terraform test
+terraform test -filter=tests/simple.tftest.hcl
 ```
 
-## Running all examples
+## Running all tests
 
 ```bash
 export TF_VAR_compartment_id="ocid1.compartment.oc1.."
-
-for example in examples/*/; do
-  echo "=== ${example} ==="
-  terraform -chdir="${example}" init -upgrade -input=false
-  terraform -chdir="${example}" test
-done
+terraform init
+terraform test
 ```
 
 ## Notes

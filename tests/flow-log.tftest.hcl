@@ -1,6 +1,10 @@
 run "creates_flow_log_resources" {
   command = apply
 
+  module {
+    source = "./examples/flow-log"
+  }
+
   assert {
     condition     = output.vcn_id != null
     error_message = "VCN must be created"

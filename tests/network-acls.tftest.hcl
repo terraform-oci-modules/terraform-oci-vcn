@@ -1,6 +1,10 @@
 run "creates_network_acls" {
   command = apply
 
+  module {
+    source = "./examples/network-acls"
+  }
+
   assert {
     condition     = output.vcn_id != null
     error_message = "VCN must be created"

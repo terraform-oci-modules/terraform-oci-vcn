@@ -266,12 +266,12 @@ output "service_gateway_all_attributes" {
 
 output "lpg_ids" {
   description = "Map of LPG name to OCID for all created Local Peering Gateways"
-  value       = { for k, v in oci_core_local_peering_gateway.this : k => v.id }
+  value       = { for k, v in oci_core_local_peering_gateway.lpg : k => v.id }
 }
 
 output "lpg_all_attributes" {
   description = "All attributes of created Local Peering Gateways (full objects, auto-updating)"
-  value       = { for k, v in oci_core_local_peering_gateway.this : k => v }
+  value       = { for k, v in oci_core_local_peering_gateway.lpg : k => v }
 }
 
 ################################################################################
@@ -294,11 +294,11 @@ output "flow_log_ids" {
 
 output "ads" {
   description = "A list of availability domain numbers specified as argument to this module"
-  value       = var.ads
+  value       = var.availability_domain_numbers
 }
 
 output "ad_names" {
-  description = "Resolved availability domain names for the ADs specified in var.ads"
+  description = "Resolved availability domain names for the ADs specified in var.availability_domain_numbers"
   value       = local.ad_names
 }
 

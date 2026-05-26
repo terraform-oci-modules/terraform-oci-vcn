@@ -49,7 +49,7 @@ module "vcn_hub" {
   name           = "${local.name}-hub"
   compartment_id = var.compartment_id
 
-  cidr = local.hub_cidr
+  vcn_cidr_block = local.hub_cidr
 
   # Regional subnets — ads = [] (default); each subnet spans all ADs automatically
   # Hub public subnets — internet-facing; hub is the internet exit point for the spoke
@@ -103,7 +103,7 @@ module "vcn_spoke" {
   name           = "${local.name}-spoke"
   compartment_id = var.compartment_id
 
-  cidr = local.spoke_cidr
+  vcn_cidr_block = local.spoke_cidr
 
   # Regional subnets — ads = [] (default); each subnet spans all ADs automatically
   # Spoke private subnets — egress goes to hub via LPG, not directly to internet

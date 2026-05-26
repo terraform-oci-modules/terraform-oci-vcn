@@ -52,7 +52,7 @@ module "vcn_search_domain" {
   name           = "${local.name}-search-domain"
   compartment_id = var.compartment_id
 
-  cidr = local.vcn_cidr
+  vcn_cidr_block = local.vcn_cidr
 
   # Regional subnets — ads = [] (default); each subnet spans all ADs automatically
   private_subnets = [
@@ -90,7 +90,7 @@ module "vcn_custom_dns" {
   name           = "${local.name}-custom-dns"
   compartment_id = var.compartment_id
 
-  cidr = "10.1.0.0/16"
+  vcn_cidr_block = "10.1.0.0/16"
 
   # Regional subnets — ads = [] (default); each subnet spans all ADs automatically
   # Private-only VCN — no IGW, no public subnets; DNS via custom forwarders

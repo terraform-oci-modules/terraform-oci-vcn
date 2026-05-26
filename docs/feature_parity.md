@@ -20,7 +20,7 @@ while being idiomatic OCI.
 | ----------------------------- | -------------------------------------------------- | ---------------------------------------- | -------- |
 | Create toggle                 | `create_vpc`                                       | `create_vcn`                             | ✅        |
 | Resource name                 | `name`                                             | `name`                                   | ✅        |
-| Primary CIDR                  | `cidr`                                             | `cidr`                                   | ✅        |
+| Primary CIDR                  | `cidr`                                             | `vcn_cidr_block`                         | ✅        |
 | Secondary CIDRs               | `secondary_cidr_blocks` (list)                     | `secondary_cidr_blocks` (list)           | ✅        |
 | DNS hostnames                 | `enable_dns_hostnames`                             | `enable_dns_hostnames` + `vcn_dns_label` | ✅        |
 | DNS support                   | `enable_dns_support`                               | Always on in OCI                         | N/A      |
@@ -80,8 +80,8 @@ while being idiomatic OCI.
 
 | Feature                          | AWS                     | OCI                                                             | Status   |
 | -------------------------------- | ----------------------- | --------------------------------------------------------------- | -------- |
-| AZ / AD list input               | `azs` (AZ name strings) | `ads` (AD numbers: 1, 2, 3)                                     | ✅        |
-| Regional subnets (no AD pinning) | Implied when `azs = []` | `ads = []` → `availability_domain = null`                       | ✅        |
+| AZ / AD list input               | `azs` (AZ name strings) | `availability_domain_numbers` (AD numbers: 1, 2, 3)             | ✅        |
+| Regional subnets (no AD pinning) | Implied when `azs = []` | `availability_domain_numbers = []` → `availability_domain = null` | ✅        |
 | AD name resolution               | —                       | Resolved automatically from `oci_identity_availability_domains` | OCI-only |
 | AD names / IDs output            | `azs`                   | `ads`, `ad_names`                                               | ✅        |
 
@@ -272,9 +272,9 @@ explicit subnet group registration. OCI DBaaS and PaaS services use subnets dire
 | ---------------------------------------- | --------------------------------------------------------------- | ----------------------------------------------------- |
 | `create_vpc`                             | `create_vcn`                                                    | Master toggle                                         |
 | `name`                                   | `name`                                                          | Identical                                             |
-| `cidr`                                   | `cidr`                                                          | Primary CIDR block                                    |
+| `cidr`                                   | `vcn_cidr_block`                                                | Primary CIDR block                                    |
 | `secondary_cidr_blocks`                  | `secondary_cidr_blocks`                                         | Identical                                             |
-| `azs`                                    | `ads`                                                           | AWS: AZ name strings. OCI: integers (1/2/3)           |
+| `azs`                                    | `availability_domain_numbers`                                   | AWS: AZ name strings. OCI: integers (1/2/3)           |
 | `enable_dns_hostnames`                   | `enable_dns_hostnames`                                          | Identical                                             |
 | `enable_ipv6`                            | `enable_ipv6`                                                   | Enables IPv6 on VCN/VPC                               |
 | `tags`                                   | `freeform_tags` / `vcn_tags`                                    | OCI also has `defined_tags`                           |
@@ -346,7 +346,7 @@ explicit subnet group registration. OCI DBaaS and PaaS services use subnets dire
 | `tenancy_id`                                      | Used to resolve availability domain names                   |
 | `vcn_dns_label`                                   | OCI-specific VCN DNS label (regex-validated)                |
 | `defined_tags` / `<tier>_subnet_defined_tags`     | OCI's tag namespace system                                  |
-| `ads`                                             | AD numbers (1/2/3) for AD-pinned subnet placement           |
+| `availability_domain_numbers`                     | AD numbers (1/2/3) for AD-pinned subnet placement           |
 | `create_service_gateway` / `service_gateway_tags` | Private Oracle Services access without public internet      |
 | `lockdown_default_seclist`                        | Deny-all posture on the default security list               |
 | `attached_drg_id`                                 | Attach an existing Dynamic Routing Gateway                  |

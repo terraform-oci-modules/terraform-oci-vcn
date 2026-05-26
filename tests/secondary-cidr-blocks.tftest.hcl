@@ -1,6 +1,10 @@
 run "creates_secondary_cidr_vcn" {
   command = apply
 
+  module {
+    source = "./examples/secondary-cidr-blocks"
+  }
+
   assert {
     condition     = output.vcn_id != null
     error_message = "VCN must be created"

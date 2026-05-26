@@ -14,22 +14,6 @@ variable "compartment_id" {
   }
 }
 
-variable "tenancy_id" {
-  description = <<-EOT
-    Deprecated — no longer needed. The module resolves availability domains using
-    var.compartment_id, which works for any compartment in the tenancy.
-
-    Retained for backward compatibility only. If set, it overrides compartment_id
-    for the AD lookup data source. Will be removed in the next major version.
-  EOT
-  type        = string
-  default     = null
-
-  validation {
-    condition     = var.tenancy_id == null ? true : (can(regex("^ocid1\\.tenancy\\.oc1\\.", var.tenancy_id)) && length(var.tenancy_id) > 50)
-    error_message = "tenancy_id must be a valid OCI tenancy OCID (e.g. ocid1.tenancy.oc1..aaaaaa...) or null. Placeholder values are not accepted."
-  }
-}
 
 variable "tags" {
   description = "A map of freeform tags to add to all resources"
@@ -53,7 +37,7 @@ variable "name" {
   default     = ""
 }
 
-variable "cidr" {
+variable "vcn_cidr_block" {
   description = "The primary IPv4 CIDR block for the VCN"
   type        = string
   default     = "10.0.0.0/16"
@@ -65,7 +49,7 @@ variable "secondary_cidr_blocks" {
   default     = []
 }
 
-variable "ads" {
+variable "availability_domain_numbers" {
   description = <<-EOT
     List of availability domain numbers (e.g. [1, 2, 3]) to pin subnets to specific ADs.
 
@@ -82,7 +66,7 @@ variable "ads" {
   default     = []
 
   validation {
-    condition     = alltrue([for n in var.ads : n >= 1 && n <= 3])
+    condition     = alltrue([for n in var.availability_domain_numbers : n >= 1 && n <= 3])
     error_message = "All ads values must be between 1 and 3. OCI regions have at most 3 availability domains."
   }
 }
@@ -367,7 +351,7 @@ variable "single_nat_gateway" {
 }
 
 variable "one_nat_gateway_per_ad" {
-  description = "Should be true if you want one NAT Gateway per availability domain. Has no effect when ads = [] (regional subnets) — in that case a single NAT Gateway is sufficient since regional subnets already span all ADs. Requires var.ads to be set and var.single_nat_gateway to be false"
+  description = "Should be true if you want one NAT Gateway per availability domain. Has no effect when ads = [] (regional subnets) — in that case a single NAT Gateway is sufficient since regional subnets already span all ADs. Requires var.availability_domain_numbers to be set and var.single_nat_gateway to be false"
   type        = bool
   default     = false
 }
