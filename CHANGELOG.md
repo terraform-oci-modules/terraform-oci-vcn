@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.5.0](https://github.com/terraform-oci-modules/terraform-oci-vcn/compare/v0.4.0...v0.5.0) (2026-05-26)
+
+### Features
+
+* rename variables, consolidate tests, and harden CI ([19df0f2](https://github.com/terraform-oci-modules/terraform-oci-vcn/commit/19df0f296550cca2f4b7676909517373fc450172))
+
 ## [0.4.0](https://github.com/terraform-oci-modules/terraform-oci-vcn/compare/v0.3.0...v0.4.0) (2026-05-10)
 
 ### Features
