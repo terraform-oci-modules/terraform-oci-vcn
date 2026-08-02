@@ -54,9 +54,9 @@ variable "availability_domain_numbers" {
     List of availability domain numbers (e.g. [1, 2, 3]) to pin subnets to specific ADs.
 
     OCI supports two subnet placement modes:
-      - Regional (default, recommended): leave ads = [] — subnets span all ADs in the
+      - Regional (default, recommended): leave ads = [] - subnets span all ADs in the
         region automatically. This is the simplest and most resilient choice for most workloads.
-      - AD-specific: set ads = [1, 2, 3] — each subnet is pinned to one AD. Use this only
+      - AD-specific: set ads = [1, 2, 3] - each subnet is pinned to one AD. Use this only
         when you need workload-level AD affinity (e.g. bare metal, local NVMe, AD-local services).
 
     When ads is set, subnets are distributed round-robin across the listed ADs so you can
@@ -89,7 +89,7 @@ variable "vcn_dns_label" {
 }
 
 variable "enable_ipv6" {
-  description = "Requests an Oracle-provided IPv6 /56 CIDR block for the VCN. The module automatically derives a /64 for each subnet from that /56 — no manual CIDR input required. Public subnet 0 gets offset 0, private subnet 0 gets offset N_public, etc."
+  description = "Requests an Oracle-provided IPv6 /56 CIDR block for the VCN. The module automatically derives a /64 for each subnet from that /56 - no manual CIDR input required. Public subnet 0 gets offset 0, private subnet 0 gets offset N_public, etc."
   type        = bool
   default     = false
 }
@@ -248,7 +248,7 @@ variable "create_database_subnet_route_table" {
 }
 
 variable "create_database_internet_gateway_route" {
-  description = "Controls if an Internet Gateway route is added to the database route table. Requires create_database_subnet_route_table = true and create_igw = true. Use with caution — database subnets are normally private"
+  description = "Controls if an Internet Gateway route is added to the database route table. Requires create_database_subnet_route_table = true and create_igw = true. Use with caution - database subnets are normally private"
   type        = bool
   default     = false
 }
@@ -264,7 +264,7 @@ variable "database_route_table_tags" {
 ################################################################################
 
 variable "intra_subnets" {
-  description = "A list of intra subnet CIDR blocks inside the VCN. Each gets a dedicated empty route table (no rules — fully isolated, no NAT/IGW/SGW routes)"
+  description = "A list of intra subnet CIDR blocks inside the VCN. Each gets a dedicated empty route table (no rules - fully isolated, no NAT/IGW/SGW routes)"
   type        = list(string)
   default     = []
 }
@@ -351,7 +351,7 @@ variable "single_nat_gateway" {
 }
 
 variable "one_nat_gateway_per_ad" {
-  description = "Should be true if you want one NAT Gateway per availability domain. Has no effect when ads = [] (regional subnets) — in that case a single NAT Gateway is sufficient since regional subnets already span all ADs. Requires var.availability_domain_numbers to be set and var.single_nat_gateway to be false"
+  description = "Should be true if you want one NAT Gateway per availability domain. Has no effect when ads = [] (regional subnets) - in that case a single NAT Gateway is sufficient since regional subnets already span all ADs. Requires var.availability_domain_numbers to be set and var.single_nat_gateway to be false"
   type        = bool
   default     = false
 }

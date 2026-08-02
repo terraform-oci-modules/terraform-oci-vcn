@@ -16,21 +16,21 @@ locals {
 }
 
 ################################################################################
-# VCN Module — Service Gateway example
+# VCN Module - Service Gateway example
 #
 # Demonstrates a fully-private VCN with no Internet Gateway and no NAT Gateway.
 # All outbound traffic from private and database subnets is routed exclusively
-# through the Oracle Service Gateway (SGW) to Oracle Services Network —
+# through the Oracle Service Gateway (SGW) to Oracle Services Network -
 # typically used for Object Storage, Logging, Monitoring, Vault, and similar
 # managed services that are reachable without leaving Oracle's network.
 #
 # Key settings:
-#   create_service_gateway             = true   — explicit opt-in (OCI-specific flag)
-#   create_igw                         = false  — no public internet access
-#   enable_nat_gateway                 = false  — no NAT; Oracle Services via SGW only
-#   create_database_subnet_route_table = true   — dedicated RT for DB subnets; also
+#   create_service_gateway             = true   - explicit opt-in (OCI-specific flag)
+#   create_igw                         = false  - no public internet access
+#   enable_nat_gateway                 = false  - no NAT; Oracle Services via SGW only
+#   create_database_subnet_route_table = true   - dedicated RT for DB subnets; also
 #                                                 picks up the SGW route automatically
-#   service_gateway_tags               — optional extra freeform tags on the SGW
+#   service_gateway_tags               - optional extra freeform tags on the SGW
 ################################################################################
 
 module "vcn" {
@@ -41,15 +41,15 @@ module "vcn" {
 
   vcn_cidr_block = local.vcn_cidr
 
-  # Regional subnets — ads = [] (default); each subnet spans all ADs automatically
-  # Private subnets — no public subnets, no IGW; outbound to Oracle Services via SGW only
+  # Regional subnets - ads = [] (default); each subnet spans all ADs automatically
+  # Private subnets - no public subnets, no IGW; outbound to Oracle Services via SGW only
   private_subnets = [
     cidrsubnet(local.vcn_cidr, 4, 0), # 10.0.0.0/20
     cidrsubnet(local.vcn_cidr, 4, 1), # 10.0.16.0/20
     cidrsubnet(local.vcn_cidr, 4, 2), # 10.0.32.0/20
   ]
 
-  # Database subnets — dedicated route table; the SGW route is added automatically
+  # Database subnets - dedicated route table; the SGW route is added automatically
   database_subnets = [
     cidrsubnet(local.vcn_cidr, 4, 4), # 10.0.64.0/20
     cidrsubnet(local.vcn_cidr, 4, 5), # 10.0.80.0/20
@@ -57,7 +57,7 @@ module "vcn" {
   ]
   create_database_subnet_route_table = true
 
-  # No internet access — Oracle Services via SGW only
+  # No internet access - Oracle Services via SGW only
   create_igw             = false
   enable_nat_gateway     = false
   create_service_gateway = true

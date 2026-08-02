@@ -15,7 +15,7 @@ run "creates_service_gateway_only_vcn" {
   }
   assert {
     condition     = length(output.private_subnets) == 3
-    error_message = "Expected 3 private subnets (no public subnets — fully private VCN)"
+    error_message = "Expected 3 private subnets (no public subnets - fully private VCN)"
   }
   assert {
     condition     = length(output.database_subnets) == 3

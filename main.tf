@@ -11,7 +11,7 @@ locals {
     for n in var.availability_domain_numbers : local.availability_domains[n - 1].name
   ]
 
-  # VCN CIDR blocks — primary + any secondary CIDRs
+  # VCN CIDR blocks - primary + any secondary CIDRs
   vcn_cidr_blocks = concat([var.vcn_cidr_block], var.secondary_cidr_blocks)
 
   # DNS label: when enable_dns_hostnames=true and no explicit label given, derive from name.
@@ -95,7 +95,7 @@ resource "oci_core_dhcp_options" "this" {
   vcn_id         = oci_core_vcn.this[0].id
   display_name   = "${var.name}-dhcp-options"
 
-  # DNS option — always required
+  # DNS option - always required
   options {
     type        = "DomainNameServer"
     server_type = var.dhcp_options_server_type
@@ -103,7 +103,7 @@ resource "oci_core_dhcp_options" "this" {
     custom_dns_servers = var.dhcp_options_server_type == "CustomDnsServer" ? var.dhcp_options_domain_name_servers : []
   }
 
-  # Search domain option — only included when a value is provided
+  # Search domain option - only included when a value is provided
   dynamic "options" {
     for_each = var.dhcp_options_domain_name != "" ? [var.dhcp_options_domain_name] : []
     content {
@@ -235,7 +235,7 @@ locals {
       ad           = length(local.ad_names) > 0 ? local.ad_names[idx % length(local.ad_names)] : null
       ipv6_index   = idx + length(var.public_subnets) + length(var.private_subnets)
       # Which NAT GW / route table does this subnet use?
-      # Same logic as private subnets — keeps DB traffic AD-local when one_nat_gateway_per_ad=true.
+      # Same logic as private subnets - keeps DB traffic AD-local when one_nat_gateway_per_ad=true.
       nat_rt_index = (
         var.single_nat_gateway
         ? 0
@@ -295,7 +295,7 @@ resource "oci_core_subnet" "database" {
   }
 }
 
-# Dedicated database route table (optional — service gateway route for DB traffic).
+# Dedicated database route table (optional - service gateway route for DB traffic).
 # When one_nat_gateway_per_ad=true, creates one RT per NAT GW so each DB subnet
 # routes through its AD-local NAT gateway (mirrors the AWS VPC module pattern).
 resource "oci_core_route_table" "database" {
@@ -316,7 +316,7 @@ resource "oci_core_route_table" "database" {
     }
   }
 
-  # Route to NAT gateway when available — indexes into the correct NAT GW per RT
+  # Route to NAT gateway when available - indexes into the correct NAT GW per RT
   dynamic "route_rules" {
     for_each = var.enable_nat_gateway ? [1] : []
     content {
@@ -347,7 +347,7 @@ resource "oci_core_route_table" "database" {
 }
 
 ################################################################################
-# Intra Subnets (fully isolated — no outbound route)
+# Intra Subnets (fully isolated - no outbound route)
 ################################################################################
 
 locals {
@@ -397,7 +397,7 @@ resource "oci_core_route_table" "intra" {
   vcn_id         = oci_core_vcn.this[0].id
   display_name   = local.num_intra_route_tables > 1 ? "${var.name}-${var.intra_subnet_suffix}-rt-${count.index + 1}" : "${var.name}-${var.intra_subnet_suffix}-rt"
 
-  # No route_rules — intentionally empty for full isolation
+  # No route_rules - intentionally empty for full isolation
 
   freeform_tags = merge({ "Name" = local.num_intra_route_tables > 1 ? "${var.name}-${var.intra_subnet_suffix}-rt-${count.index + 1}" : "${var.name}-${var.intra_subnet_suffix}-rt" }, var.tags, var.intra_route_table_tags)
   defined_tags  = var.defined_tags
@@ -452,7 +452,7 @@ resource "oci_core_route_table" "ig" {
     }
   }
 
-  # Additional user-supplied rules — symbolic dispatch
+  # Additional user-supplied rules - symbolic dispatch
   dynamic "route_rules" {
     for_each = var.internet_gateway_route_rules != null ? {
       for k, v in var.internet_gateway_route_rules : k => v
@@ -517,7 +517,7 @@ resource "oci_core_route_table" "ig" {
 # NAT Gateway (NGW)
 ################################################################################
 
-# Reserved public IP for the first NAT gateway — created only when nat_gateway_public_ip_id = "RESERVED"
+# Reserved public IP for the first NAT gateway - created only when nat_gateway_public_ip_id = "RESERVED"
 resource "oci_core_public_ip" "nat" {
   count = local.create_vcn && var.enable_nat_gateway && var.nat_gateway_public_ip_id == "RESERVED" ? 1 : 0
 
@@ -598,7 +598,7 @@ resource "oci_core_route_table" "nat" {
     }
   }
 
-  # Additional user-supplied rules — symbolic dispatch
+  # Additional user-supplied rules - symbolic dispatch
   dynamic "route_rules" {
     for_each = var.nat_gateway_route_rules != null ? {
       for k, v in var.nat_gateway_route_rules : k => v
@@ -664,7 +664,7 @@ resource "oci_core_route_table" "nat" {
 }
 
 ################################################################################
-# Service Gateway (SGW) — OCI-specific
+# Service Gateway (SGW) - OCI-specific
 ################################################################################
 
 data "oci_core_services" "all_oci_services" {
@@ -697,7 +697,7 @@ resource "oci_core_service_gateway" "this" {
 }
 
 ################################################################################
-# Local Peering Gateway (LPG) — OCI-specific
+# Local Peering Gateway (LPG) - OCI-specific
 ################################################################################
 
 resource "oci_core_local_peering_gateway" "lpg" {
@@ -719,7 +719,7 @@ resource "oci_core_local_peering_gateway" "lpg" {
 }
 
 ################################################################################
-# VCN Default Security List — lockdown or restore
+# VCN Default Security List - lockdown or restore
 #
 # OCI creates a default security list on every VCN. Best practice is to lock it
 # down (remove all rules) and manage security explicitly on subnets.
@@ -732,7 +732,7 @@ resource "oci_core_default_security_list" "lockdown" {
 
   manage_default_resource_id = oci_core_vcn.this[0].default_security_list_id
 
-  # No ingress_security_rules / egress_security_rules blocks — removes all rules
+  # No ingress_security_rules / egress_security_rules blocks - removes all rules
 
   lifecycle {
     ignore_changes = [egress_security_rules, ingress_security_rules, defined_tags]

@@ -3,14 +3,14 @@
 Comparison between this module (`terraform-oci-modules/vcn/oci`) and the reference
 AWS module (`terraform-aws-modules/vpc/aws`).
 
-The goal is not 1:1 mapping — OCI and AWS have fundamentally different networking
-primitives — but to make the interface feel familiar to users coming from the AWS module,
+The goal is not 1:1 mapping - OCI and AWS have fundamentally different networking
+primitives - but to make the interface feel familiar to users coming from the AWS module,
 while being idiomatic OCI.
 
 **Legend:**
 - ✅ Implemented
 - N/A Not applicable to this cloud (architectural difference, not a gap)
-- OCI-only No AWS equivalent — intentional addition
+- OCI-only No AWS equivalent - intentional addition
 
 ---
 
@@ -24,15 +24,15 @@ while being idiomatic OCI.
 | Secondary CIDRs               | `secondary_cidr_blocks` (list)                     | `secondary_cidr_blocks` (list)           | ✅        |
 | DNS hostnames                 | `enable_dns_hostnames`                             | `enable_dns_hostnames` + `vcn_dns_label` | ✅        |
 | DNS support                   | `enable_dns_support`                               | Always on in OCI                         | N/A      |
-| DNS label                     | —                                                  | `vcn_dns_label` (regex-validated)        | OCI-only |
+| DNS label                     | -                                                  | `vcn_dns_label` (regex-validated)        | OCI-only |
 | IPv6                          | `enable_ipv6`                                      | `enable_ipv6` → `is_ipv6enabled` on VCN  | ✅        |
-| IPv6 via IPAM                 | `ipv6_ipam_pool_id`                                | —                                        | N/A      |
-| IPv4 via IPAM                 | `use_ipam_pool`, `ipv4_ipam_pool_id`               | —                                        | N/A      |
+| IPv6 via IPAM                 | `ipv6_ipam_pool_id`                                | -                                        | N/A      |
+| IPv4 via IPAM                 | `use_ipam_pool`, `ipv4_ipam_pool_id`               | -                                        | N/A      |
 | Instance tenancy              | `instance_tenancy`                                 | Not a VCN concept                        | N/A      |
-| Network address usage metrics | `enable_network_address_usage_metrics`             | —                                        | N/A      |
-| Block public access           | `vpc_block_public_access_options` / `*_exclusions` | —                                        | N/A      |
+| Network address usage metrics | `enable_network_address_usage_metrics`             | -                                        | N/A      |
+| Block public access           | `vpc_block_public_access_options` / `*_exclusions` | -                                        | N/A      |
 | Freeform tags                 | `tags`                                             | `freeform_tags` / `vcn_tags`             | ✅        |
-| Defined tags                  | —                                                  | `defined_tags`                           | OCI-only |
+| Defined tags                  | -                                                  | `defined_tags`                           | OCI-only |
 
 ---
 
@@ -44,9 +44,9 @@ while being idiomatic OCI.
 | Private          | ✅   | ✅   | ✅                    |
 | Database         | ✅   | ✅   | ✅                    |
 | Intra (isolated) | ✅   | ✅   | ✅                    |
-| Redshift         | ✅   | —   | N/A (see note below) |
-| ElastiCache      | ✅   | —   | N/A (see note below) |
-| Outpost          | ✅   | —   | N/A                  |
+| Redshift         | ✅   | -   | N/A (see note below) |
+| ElastiCache      | ✅   | -   | N/A (see note below) |
+| Outpost          | ✅   | -   | N/A                  |
 
 > **Redshift / ElastiCache tiers**: AWS added these because those services require
 > dedicated subnet groups. OCI has no equivalent managed services with that constraint;
@@ -60,18 +60,18 @@ while being idiomatic OCI.
 | Custom names list         | `<tier>_subnet_names`                                       | `<tier>_subnet_names`                       | ✅                  |
 | Name suffix               | `<tier>_subnet_suffix`                                      | `<tier>_subnet_suffix`                      | ✅                  |
 | Freeform tags per tier    | `<tier>_subnet_tags`                                        | `<tier>_subnet_tags`                        | ✅                  |
-| Defined tags per tier     | —                                                           | `<tier>_subnet_defined_tags`                | OCI-only ✅         |
+| Defined tags per tier     | -                                                           | `<tier>_subnet_defined_tags`                | OCI-only ✅         |
 | Per-AZ/AD tags            | `<tier>_subnet_tags_per_az`                                 | `<tier>_subnet_tags_per_ad`                 | ✅                  |
 | IPv6 prefixes/CIDRs       | `<tier>_subnet_ipv6_prefixes`                               | Auto-derived from VCN /56 (no input needed) | ✅ (see note below) |
-| IPv6-native mode          | `<tier>_subnet_ipv6_native`                                 | —                                           | N/A                |
-| DNS64                     | `<tier>_subnet_enable_dns64`                                | —                                           | N/A                |
-| Private DNS hostname type | `<tier>_subnet_private_dns_hostname_type_on_launch`         | —                                           | N/A                |
-| Resource-name DNS records | `<tier>_subnet_enable_resource_name_dns_*_record_on_launch` | —                                           | N/A                |
+| IPv6-native mode          | `<tier>_subnet_ipv6_native`                                 | -                                           | N/A                |
+| DNS64                     | `<tier>_subnet_enable_dns64`                                | -                                           | N/A                |
+| Private DNS hostname type | `<tier>_subnet_private_dns_hostname_type_on_launch`         | -                                           | N/A                |
+| Resource-name DNS records | `<tier>_subnet_enable_resource_name_dns_*_record_on_launch` | -                                           | N/A                |
 
 > **IPv6 subnet CIDRs**: AWS takes integer prefix offsets and computes `/64` blocks via
 > `cidrsubnet` at plan time. OCI assigns the VCN's `/56` block at apply time, but since the
 > module uses `cidrsubnet(oci_core_vcn.this[0].ipv6cidr_blocks[0], 8, index)` internally,
-> Terraform resolves the dependency automatically — no manual CIDR input and no two-step apply.
+> Terraform resolves the dependency automatically - no manual CIDR input and no two-step apply.
 > Public subnets get offsets 0…N, private offsets N…M, database and intra continue sequentially.
 
 ---
@@ -82,7 +82,7 @@ while being idiomatic OCI.
 | -------------------------------- | ----------------------- | --------------------------------------------------------------- | -------- |
 | AZ / AD list input               | `azs` (AZ name strings) | `availability_domain_numbers` (AD numbers: 1, 2, 3)             | ✅        |
 | Regional subnets (no AD pinning) | Implied when `azs = []` | `availability_domain_numbers = []` → `availability_domain = null` | ✅        |
-| AD name resolution               | —                       | Resolved automatically from `oci_identity_availability_domains` | OCI-only |
+| AD name resolution               | -                       | Resolved automatically from `oci_identity_availability_domains` | OCI-only |
 | AD names / IDs output            | `azs`                   | `ads`, `ad_names`                                               | ✅        |
 
 ---
@@ -100,9 +100,9 @@ while being idiomatic OCI.
 | Intra (isolated) route table        | Auto-created                                 | `oci_core_route_table.intra`                              | ✅                  |
 | Multiple intra route tables         | `create_multiple_intra_route_tables`         | `create_multiple_intra_route_tables`                      | ✅                  |
 | Route table tags (per tier)         | `*_route_table_tags`                         | `*_route_table_tags`                                      | ✅                  |
-| Redshift / ElastiCache route tables | ✅                                            | —                                                         | N/A                |
-| Custom route rules (symbolic)       | —                                            | `internet_gateway_route_rules`, `nat_gateway_route_rules` | OCI-only           |
-| VGW route propagation               | `propagate_*_route_tables_vgw`               | —                                                         | N/A                |
+| Redshift / ElastiCache route tables | ✅                                            | -                                                         | N/A                |
+| Custom route rules (symbolic)       | -                                            | `internet_gateway_route_rules`, `nat_gateway_route_rules` | OCI-only           |
+| VGW route propagation               | `propagate_*_route_tables_vgw`               | -                                                         | N/A                |
 
 > **Database → NAT**: OCI always includes NAT (and SGW when enabled) in the DB route table when
 > `create_database_subnet_route_table = true`. AWS makes this opt-in; OCI treats it as the only
@@ -115,7 +115,7 @@ while being idiomatic OCI.
 | Feature                | AWS                         | OCI                         | Status                                              |
 | ---------------------- | --------------------------- | --------------------------- | --------------------------------------------------- |
 | Create IGW             | `create_igw` (default true) | `create_igw` (default true) | ✅                                                   |
-| Egress-only IGW (IPv6) | `create_egress_only_igw`    | —                           | N/A (OCI's single IGW handles IPv4 and IPv6 egress) |
+| Egress-only IGW (IPv6) | `create_egress_only_igw`    | -                           | N/A (OCI's single IGW handles IPv4 and IPv6 egress) |
 | IGW tags               | `igw_tags`                  | `igw_tags`                  | ✅                                                   |
 
 ---
@@ -128,7 +128,7 @@ while being idiomatic OCI.
 | Single NAT GW           | `single_nat_gateway`                   | `single_nat_gateway`                 | ✅                                   |
 | One NAT per AZ/AD       | `one_nat_gateway_per_az`               | `one_nat_gateway_per_ad`             | ✅                                   |
 | Custom destination CIDR | `nat_gateway_destination_cidr_block`   | `nat_gateway_destination_cidr_block` | ✅                                   |
-| Reuse existing EIPs     | `reuse_nat_ips`, `external_nat_ip_ids` | —                                    | N/A (OCI NAT GW owns its public IP) |
+| Reuse existing EIPs     | `reuse_nat_ips`, `external_nat_ip_ids` | -                                    | N/A (OCI NAT GW owns its public IP) |
 | NAT GW tags             | `nat_gateway_tags`                     | `nat_gateway_tags`                   | ✅                                   |
 
 ---
@@ -169,8 +169,8 @@ DRG is intentionally out of scope for v1.
 | Search domain              | `dhcp_options_domain_name`                                                    | `dhcp_options_domain_name`                                                   | ✅                                                   |
 | DNS server type            | `dhcp_options_domain_name_servers` (list, magic string `"AmazonProvidedDNS"`) | `dhcp_options_server_type` (`"VcnLocalPlusInternet"` \| `"CustomDnsServer"`) | ✅ (see note below)                                  |
 | Custom DNS server IPs      | Part of the list above                                                        | `dhcp_options_domain_name_servers` (list)                                    | ✅                                                   |
-| NTP servers                | `dhcp_options_ntp_servers`                                                    | —                                                                            | N/A (OCI uses platform NTP; configured at OS level) |
-| NetBIOS options            | `dhcp_options_netbios_*`                                                      | —                                                                            | N/A                                                 |
+| NTP servers                | `dhcp_options_ntp_servers`                                                    | -                                                                            | N/A (OCI uses platform NTP; configured at OS level) |
+| NetBIOS options            | `dhcp_options_netbios_*`                                                      | -                                                                            | N/A                                                 |
 | DHCP options tags          | `dhcp_options_tags`                                                           | `dhcp_options_tags`                                                          | ✅                                                   |
 
 > **DNS server type**: AWS uses a flat list where `"AmazonProvidedDNS"` is a magic string for
@@ -183,9 +183,9 @@ DRG is intentionally out of scope for v1.
 
 | Feature               | AWS                            | OCI               | Status |
 | --------------------- | ------------------------------ | ----------------- | ------ |
-| Customer Gateway      | `customer_gateways` map        | —                 | N/A    |
+| Customer Gateway      | `customer_gateways` map        | -                 | N/A    |
 | VPN Gateway           | `enable_vpn_gateway`           | IPSec VPN via DRG | N/A    |
-| VPN route propagation | `propagate_*_route_tables_vgw` | —                 | N/A    |
+| VPN route propagation | `propagate_*_route_tables_vgw` | -                 | N/A    |
 
 > OCI IPSec VPN is configured via DRG and CPE resources, which are outside the VCN module scope.
 
@@ -195,10 +195,10 @@ DRG is intentionally out of scope for v1.
 
 | Feature                                         | AWS                             | OCI                        | Status                                                          |
 | ----------------------------------------------- | ------------------------------- | -------------------------- | --------------------------------------------------------------- |
-| Manage default VPC/VCN                          | `manage_default_vpc`            | —                          | N/A (OCI has no tenancy-level default VCN)                      |
+| Manage default VPC/VCN                          | `manage_default_vpc`            | -                          | N/A (OCI has no tenancy-level default VCN)                      |
 | Default security group / security list lockdown | `manage_default_security_group` | `lockdown_default_seclist` | ✅ (see note below)                                              |
-| Default network ACL                             | `manage_default_network_acl`    | —                          | N/A (OCI uses security lists, not NACLs as a separate resource) |
-| Default route table                             | `manage_default_route_table`    | —                          | N/A (handled via subnet-to-RT association)                      |
+| Default network ACL                             | `manage_default_network_acl`    | -                          | N/A (OCI uses security lists, not NACLs as a separate resource) |
+| Default route table                             | `manage_default_route_table`    | -                          | N/A (handled via subnet-to-RT association)                      |
 
 > **Default seclist lockdown**: OCI's `lockdown_default_seclist = true` removes all default rules
 > from the VCN's default security list (deny-all posture). The AWS module allows setting arbitrary
@@ -211,7 +211,7 @@ DRG is intentionally out of scope for v1.
 | Feature                              | AWS                                         | OCI                                           | Status     |
 | ------------------------------------ | ------------------------------------------- | --------------------------------------------- | ---------- |
 | Dedicated ACL/security list per tier | `<tier>_dedicated_network_acl` + rule lists | `<tier>_dedicated_security_list` + rule lists | ✅          |
-| Default seclist lockdown             | —                                           | `lockdown_default_seclist`                    | OCI-only ✅ |
+| Default seclist lockdown             | -                                           | `lockdown_default_seclist`                    | OCI-only ✅ |
 
 ---
 
@@ -222,9 +222,9 @@ explicit subnet group registration. OCI DBaaS and PaaS services use subnets dire
 
 | Feature                  | AWS                               | OCI | Status |
 | ------------------------ | --------------------------------- | --- | ------ |
-| DB subnet group          | `create_database_subnet_group`    | —   | N/A    |
-| Redshift subnet group    | `create_redshift_subnet_group`    | —   | N/A    |
-| ElastiCache subnet group | `create_elasticache_subnet_group` | —   | N/A    |
+| DB subnet group          | `create_database_subnet_group`    | -   | N/A    |
+| Redshift subnet group    | `create_redshift_subnet_group`    | -   | N/A    |
+| ElastiCache subnet group | `create_elasticache_subnet_group` | -   | N/A    |
 
 ---
 
@@ -235,13 +235,13 @@ explicit subnet group registration. OCI DBaaS and PaaS services use subnets dire
 | Enable flow logs              | `enable_flow_log`                                 | `enable_flow_log`                       | ✅                          |
 | Destination type              | CloudWatch / S3 / Kinesis (configurable)          | OCI Logging Service (fixed)             | ✅ (OCI-native)             |
 | Log retention                 | `flow_log_cloudwatch_log_group_retention_in_days` | `flow_log_retention_duration` (days)    | ✅                          |
-| IAM role for CloudWatch       | `create_flow_log_cloudwatch_iam_role`             | —                                       | N/A                        |
-| Custom log format             | `flow_log_log_format`                             | —                                       | N/A (OCI format is fixed)  |
-| Traffic type filter           | `flow_log_traffic_type`                           | —                                       | N/A (OCI logs all traffic) |
-| Aggregation interval          | `flow_log_max_aggregation_interval`               | —                                       | N/A                        |
-| S3 / Kinesis delivery         | `flow_log_destination_arn`                        | —                                       | N/A                        |
-| Cross-account delivery        | `flow_log_deliver_cross_account_role`             | —                                       | N/A                        |
-| Per-subnet log groups         | —                                                 | `oci_logging_log_group` per subnet type | OCI-only ✅                 |
+| IAM role for CloudWatch       | `create_flow_log_cloudwatch_iam_role`             | -                                       | N/A                        |
+| Custom log format             | `flow_log_log_format`                             | -                                       | N/A (OCI format is fixed)  |
+| Traffic type filter           | `flow_log_traffic_type`                           | -                                       | N/A (OCI logs all traffic) |
+| Aggregation interval          | `flow_log_max_aggregation_interval`               | -                                       | N/A                        |
+| S3 / Kinesis delivery         | `flow_log_destination_arn`                        | -                                       | N/A                        |
+| Cross-account delivery        | `flow_log_deliver_cross_account_role`             | -                                       | N/A                        |
+| Per-subnet log groups         | -                                                 | `oci_logging_log_group` per subnet type | OCI-only ✅                 |
 | Flow log tags                 | `vpc_flow_log_tags`                               | `flow_log_tags`                         | ✅                          |
 | Standalone flow-log submodule | `modules/flow-log`                                | `modules/flow-log`                      | ✅                          |
 
@@ -252,7 +252,7 @@ explicit subnet group registration. OCI DBaaS and PaaS services use subnets dire
 | Submodule               | AWS | OCI | Status                                                                                                        |
 | ----------------------- | --- | --- | ------------------------------------------------------------------------------------------------------------- |
 | `modules/flow-log`      | ✅   | ✅   | ✅                                                                                                             |
-| `modules/vpc-endpoints` | ✅   | —   | N/A (Oracle Services routed via SGW in root module; OCI Private Endpoint for third-party PaaS deferred to v2) |
+| `modules/vpc-endpoints` | ✅   | -   | N/A (Oracle Services routed via SGW in root module; OCI Private Endpoint for third-party PaaS deferred to v2) |
 
 ---
 
@@ -262,11 +262,11 @@ explicit subnet group registration. OCI DBaaS and PaaS services use subnets dire
 | ----------------------- | ------------------------- | -------------------- | ---------------------------- |
 | Root module wrapper     | `wrappers/`               | `wrappers/`          | ✅                            |
 | `flow-log` wrapper      | `wrappers/flow-log/`      | `wrappers/flow-log/` | ✅                            |
-| `vpc-endpoints` wrapper | `wrappers/vpc-endpoints/` | —                    | N/A (no endpoints submodule) |
+| `vpc-endpoints` wrapper | `wrappers/vpc-endpoints/` | -                    | N/A (no endpoints submodule) |
 
 ---
 
-## Variables — Matched (equivalent concept, different name)
+## Variables - Matched (equivalent concept, different name)
 
 | AWS                                      | OCI                                                             | Notes                                                 |
 | ---------------------------------------- | --------------------------------------------------------------- | ----------------------------------------------------- |
@@ -307,7 +307,7 @@ explicit subnet group registration. OCI DBaaS and PaaS services use subnets dire
 
 ---
 
-## Variables — AWS only (no OCI equivalent)
+## Variables - AWS only (no OCI equivalent)
 
 | AWS Variable                                                                                        | Reason not in OCI                             |
 | --------------------------------------------------------------------------------------------------- | --------------------------------------------- |
@@ -338,11 +338,11 @@ explicit subnet group registration. OCI DBaaS and PaaS services use subnets dire
 
 ---
 
-## Variables — OCI only (no AWS equivalent)
+## Variables - OCI only (no AWS equivalent)
 
 | OCI Variable                                      | What it does                                                |
 | ------------------------------------------------- | ----------------------------------------------------------- |
-| `compartment_id`                                  | Required OCI compartment scoping — no AWS concept           |
+| `compartment_id`                                  | Required OCI compartment scoping - no AWS concept           |
 | `tenancy_id`                                      | Used to resolve availability domain names                   |
 | `vcn_dns_label`                                   | OCI-specific VCN DNS label (regex-validated)                |
 | `defined_tags` / `<tier>_subnet_defined_tags`     | OCI's tag namespace system                                  |
@@ -357,7 +357,7 @@ explicit subnet group registration. OCI DBaaS and PaaS services use subnets dire
 
 ---
 
-## Outputs — Matched
+## Outputs - Matched
 
 | AWS                               | OCI                               | Notes                             |
 | --------------------------------- | --------------------------------- | --------------------------------- |
@@ -367,7 +367,7 @@ explicit subnet group registration. OCI DBaaS and PaaS services use subnets dire
 | `vpc_ipv6_cidr_block`             | `vcn_ipv6_cidr_blocks`            | IPv6 CIDRs                        |
 | `default_route_table_id`          | `default_route_table_id`          | Default route table               |
 | `default_security_group_id`       | `default_security_list_id`        | Default SG/seclist                |
-| `default_network_acl_id`          | —                                 | N/A in OCI                        |
+| `default_network_acl_id`          | -                                 | N/A in OCI                        |
 | `dhcp_options_id`                 | `dhcp_options_id`                 | Custom DHCP options ID            |
 | `igw_id`                          | `internet_gateway_id`             | Internet gateway                  |
 | `nat_ids`                         | `nat_ids`                         | NAT gateway IDs                   |
@@ -383,7 +383,7 @@ explicit subnet group registration. OCI DBaaS and PaaS services use subnets dire
 
 ---
 
-## Outputs — AWS only
+## Outputs - AWS only
 
 | AWS Output                                                              | Reason not in OCI                           |
 | ----------------------------------------------------------------------- | ------------------------------------------- |
@@ -407,7 +407,7 @@ explicit subnet group registration. OCI DBaaS and PaaS services use subnets dire
 
 ---
 
-## Outputs — OCI only
+## Outputs - OCI only
 
 | OCI Output                                              | What it exposes                                      |
 | ------------------------------------------------------- | ---------------------------------------------------- |
@@ -453,7 +453,7 @@ explicit subnet group registration. OCI DBaaS and PaaS services use subnets dire
 | ----------------------- | -------------------------------------------------------------------------------------------------------------- |
 | `simple`                | Minimal VCN: public + private + database subnets, NAT + SGW, IGW                                               |
 | `complete`              | All features: 4 tiers, dedicated security lists, multiple CIDRs, flow logs, DHCP options, DRG attachment, LPGs |
-| `flow-log`              | Standalone `modules/flow-log` — both VCN-level and per-subnet logging                                          |
+| `flow-log`              | Standalone `modules/flow-log` - both VCN-level and per-subnet logging                                          |
 | `ipv6-dualstack`        | Dual-stack VCN with explicit IPv6 CIDRs (two-step workflow documented)                                         |
 | `network-acls`          | Per-tier dedicated security lists with custom ingress/egress rules                                             |
 | `secondary-cidr-blocks` | Multiple CIDR blocks on one VCN, subnets spread across CIDRs                                                   |
@@ -474,7 +474,7 @@ explicit subnet group registration. OCI DBaaS and PaaS services use subnets dire
 | `outpost`                     | N/A        | AWS Outposts has no OCI equivalent                              |
 | `manage-default-vpc`          | N/A        | OCI has no tenancy-level default VCN                            |
 | `block-public-access`         | N/A        | No OCI equivalent                                               |
-| `issues` (regression tests)   | Not yet    | Deferred — add as test coverage grows                           |
+| `issues` (regression tests)   | Not yet    | Deferred - add as test coverage grows                           |
 | Complete VPN/Customer Gateway | N/A        | OCI VPN via DRG is out of module scope                          |
 
 #### AWS missing vs OCI
@@ -504,6 +504,6 @@ Gateways (hub-and-spoke VCN peering), DRG attachment, symbolic route rules (`"na
 default security list lockdown.
 
 **Potential future additions:**
-- OCI Private Endpoint submodule (third-party PaaS) — `modules/private-endpoint`
+- OCI Private Endpoint submodule (third-party PaaS) - `modules/private-endpoint`
 - `issues` / regression test example
 - Expanded VPN/IPSec connectivity via DRG (v2 scope)

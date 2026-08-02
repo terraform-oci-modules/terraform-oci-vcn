@@ -2,7 +2,7 @@
 
 Terraform module which creates VCN resources on Oracle Cloud Infrastructure (OCI).
 
-Designed to be familiar to users of the [terraform-aws-modules/vpc/aws](https://github.com/terraform-aws-modules/terraform-aws-vpc) module — same variable naming conventions, same file structure, same developer experience.
+Designed to be familiar to users of the [terraform-aws-modules/vpc/aws](https://github.com/terraform-aws-modules/terraform-aws-vpc) module - same variable naming conventions, same file structure, same developer experience.
 
 ## Usage
 
@@ -38,7 +38,7 @@ OCI has a concept with no direct AWS equivalent: subnets can be **regional** (de
 When `ads` is set, subnets are distributed round-robin across the listed ADs, so you can create more subnets than ADs (e.g. 6 subnets across 3 ADs = 2 subnets per AD).
 
 ```hcl
-# Regional subnets (default — no ads needed)
+# Regional subnets (default - no ads needed)
 module "vcn" {
   source = "terraform-oci-modules/vcn/oci"
   # ...
@@ -99,26 +99,26 @@ OCI supports two tag types, both mapped:
 
 ## Examples
 
-- [simple](examples/simple) — Minimal VCN: public + private + database subnets, NAT + SGW, IGW
-- [complete](examples/complete) — All features: 4 tiers, dedicated security lists, multiple CIDRs, flow logs, DHCP options, DRG, LPGs
-- [flow-log](examples/flow-log) — Standalone `modules/flow-log` usage at VCN and subnet level
-- [ipv6-dualstack](examples/ipv6-dualstack) — Dual-stack VCN with explicit IPv6 CIDRs (two-step workflow)
-- [network-acls](examples/network-acls) — Per-tier dedicated security lists with custom ingress/egress rules
-- [secondary-cidr-blocks](examples/secondary-cidr-blocks) — Multiple CIDR blocks, subnets spread across CIDRs
-- [separate-route-tables](examples/separate-route-tables) — Database subnet with dedicated route table
-- [dhcp-options](examples/dhcp-options) — Custom search domain + custom DNS servers
-- [local-peering](examples/local-peering) — Hub-and-spoke LPG topology between two VCNs
-- [service-gateway](examples/service-gateway) — Fully-private VCN with Oracle Services routing via SGW
-- [drg-peering](examples/drg-peering) — Cross-region DRG + Remote Peering Connection (us-ashburn-1 ↔ us-chicago-1)
+- [simple](examples/simple) - Minimal VCN: public + private + database subnets, NAT + SGW, IGW
+- [complete](examples/complete) - All features: 4 tiers, dedicated security lists, multiple CIDRs, flow logs, DHCP options, DRG, LPGs
+- [flow-log](examples/flow-log) - Standalone `modules/flow-log` usage at VCN and subnet level
+- [ipv6-dualstack](examples/ipv6-dualstack) - Dual-stack VCN with explicit IPv6 CIDRs (two-step workflow)
+- [network-acls](examples/network-acls) - Per-tier dedicated security lists with custom ingress/egress rules
+- [secondary-cidr-blocks](examples/secondary-cidr-blocks) - Multiple CIDR blocks, subnets spread across CIDRs
+- [separate-route-tables](examples/separate-route-tables) - Database subnet with dedicated route table
+- [dhcp-options](examples/dhcp-options) - Custom search domain + custom DNS servers
+- [local-peering](examples/local-peering) - Hub-and-spoke LPG topology between two VCNs
+- [service-gateway](examples/service-gateway) - Fully-private VCN with Oracle Services routing via SGW
+- [drg-peering](examples/drg-peering) - Cross-region DRG + Remote Peering Connection (us-ashburn-1 ↔ us-chicago-1)
 
 ## Submodules
 
-- [modules/flow-log](modules/flow-log) — standalone flow log for a single subnet or VCN
+- [modules/flow-log](modules/flow-log) - standalone flow log for a single subnet or VCN
 
 ## Wrappers
 
-- [wrappers](wrappers) — Terragrunt-style `for_each` wrapper for the root module
-- [wrappers/flow-log](wrappers/flow-log) — `for_each` wrapper for the flow-log submodule
+- [wrappers](wrappers) - Terragrunt-style `for_each` wrapper for the root module
+- [wrappers/flow-log](wrappers/flow-log) - `for_each` wrapper for the flow-log submodule
 
 ## Testing
 
@@ -213,9 +213,9 @@ No modules.
 | Name | Description | Type | Default | Required |
 | ---- | ----------- | ---- | ------- | :------: |
 | <a name="input_attached_drg_id"></a> [attached\_drg\_id](#input\_attached\_drg\_id) | OCID of a DRG already attached to the VCN. Used for symbolic 'drg' route rules | `string` | `null` | no |
-| <a name="input_availability_domain_numbers"></a> [availability\_domain\_numbers](#input\_availability\_domain\_numbers) | List of availability domain numbers (e.g. [1, 2, 3]) to pin subnets to specific ADs.<br/><br/>OCI supports two subnet placement modes:<br/>  - Regional (default, recommended): leave ads = [] — subnets span all ADs in the<br/>    region automatically. This is the simplest and most resilient choice for most workloads.<br/>  - AD-specific: set ads = [1, 2, 3] — each subnet is pinned to one AD. Use this only<br/>    when you need workload-level AD affinity (e.g. bare metal, local NVMe, AD-local services).<br/><br/>When ads is set, subnets are distributed round-robin across the listed ADs so you can<br/>create more subnets than ADs (e.g. 6 subnets across 3 ADs gives two subnets per AD). | `list(number)` | `[]` | no |
+| <a name="input_availability_domain_numbers"></a> [availability\_domain\_numbers](#input\_availability\_domain\_numbers) | List of availability domain numbers (e.g. [1, 2, 3]) to pin subnets to specific ADs.<br/><br/>OCI supports two subnet placement modes:<br/>  - Regional (default, recommended): leave ads = [] - subnets span all ADs in the<br/>    region automatically. This is the simplest and most resilient choice for most workloads.<br/>  - AD-specific: set ads = [1, 2, 3] - each subnet is pinned to one AD. Use this only<br/>    when you need workload-level AD affinity (e.g. bare metal, local NVMe, AD-local services).<br/><br/>When ads is set, subnets are distributed round-robin across the listed ADs so you can<br/>create more subnets than ADs (e.g. 6 subnets across 3 ADs gives two subnets per AD). | `list(number)` | `[]` | no |
 | <a name="input_compartment_id"></a> [compartment\_id](#input\_compartment\_id) | The OCID of the compartment where the VCN and all resources will be created | `string` | n/a | yes |
-| <a name="input_create_database_internet_gateway_route"></a> [create\_database\_internet\_gateway\_route](#input\_create\_database\_internet\_gateway\_route) | Controls if an Internet Gateway route is added to the database route table. Requires create\_database\_subnet\_route\_table = true and create\_igw = true. Use with caution — database subnets are normally private | `bool` | `false` | no |
+| <a name="input_create_database_internet_gateway_route"></a> [create\_database\_internet\_gateway\_route](#input\_create\_database\_internet\_gateway\_route) | Controls if an Internet Gateway route is added to the database route table. Requires create\_database\_subnet\_route\_table = true and create\_igw = true. Use with caution - database subnets are normally private | `bool` | `false` | no |
 | <a name="input_create_database_subnet_route_table"></a> [create\_database\_subnet\_route\_table](#input\_create\_database\_subnet\_route\_table) | Controls if a dedicated route table for database subnets should be created. When false, database subnets use the private route table | `bool` | `false` | no |
 | <a name="input_create_igw"></a> [create\_igw](#input\_create\_igw) | Controls if an Internet Gateway is created for public subnets | `bool` | `true` | no |
 | <a name="input_create_multiple_intra_route_tables"></a> [create\_multiple\_intra\_route\_tables](#input\_create\_multiple\_intra\_route\_tables) | When true, creates a dedicated route table for each intra subnet. When false, all intra subnets share a single route table | `bool` | `false` | no |
@@ -241,7 +241,7 @@ No modules.
 | <a name="input_enable_dhcp_options"></a> [enable\_dhcp\_options](#input\_enable\_dhcp\_options) | Controls if a custom DHCP options set is created and associated with all subnets. When false, subnets use the VCN default DHCP options (VcnLocalPlusInternet resolver) | `bool` | `false` | no |
 | <a name="input_enable_dns_hostnames"></a> [enable\_dns\_hostnames](#input\_enable\_dns\_hostnames) | Should be true to enable DNS hostnames in the VCN (sets vcn\_dns\_label) | `bool` | `true` | no |
 | <a name="input_enable_flow_log"></a> [enable\_flow\_log](#input\_enable\_flow\_log) | Whether or not to enable VCN Flow Logs (OCI Logging service) | `bool` | `false` | no |
-| <a name="input_enable_ipv6"></a> [enable\_ipv6](#input\_enable\_ipv6) | Requests an Oracle-provided IPv6 /56 CIDR block for the VCN. The module automatically derives a /64 for each subnet from that /56 — no manual CIDR input required. Public subnet 0 gets offset 0, private subnet 0 gets offset N\_public, etc. | `bool` | `false` | no |
+| <a name="input_enable_ipv6"></a> [enable\_ipv6](#input\_enable\_ipv6) | Requests an Oracle-provided IPv6 /56 CIDR block for the VCN. The module automatically derives a /64 for each subnet from that /56 - no manual CIDR input required. Public subnet 0 gets offset 0, private subnet 0 gets offset N\_public, etc. | `bool` | `false` | no |
 | <a name="input_enable_nat_gateway"></a> [enable\_nat\_gateway](#input\_enable\_nat\_gateway) | Should be true if you want to provision NAT Gateways for each of your private networks | `bool` | `false` | no |
 | <a name="input_flow_log_retention_duration"></a> [flow\_log\_retention\_duration](#input\_flow\_log\_retention\_duration) | Log retention duration in days for VCN flow logs. Allowed values: 30, 60, 90, 180, 365 | `number` | `30` | no |
 | <a name="input_flow_log_tags"></a> [flow\_log\_tags](#input\_flow\_log\_tags) | Additional freeform tags for the flow log resources | `map(string)` | `{}` | no |
@@ -257,7 +257,7 @@ No modules.
 | <a name="input_intra_subnet_suffix"></a> [intra\_subnet\_suffix](#input\_intra\_subnet\_suffix) | Suffix to append to intra subnet names | `string` | `"intra"` | no |
 | <a name="input_intra_subnet_tags"></a> [intra\_subnet\_tags](#input\_intra\_subnet\_tags) | Additional freeform tags for the intra subnets | `map(string)` | `{}` | no |
 | <a name="input_intra_subnet_tags_per_ad"></a> [intra\_subnet\_tags\_per\_ad](#input\_intra\_subnet\_tags\_per\_ad) | Additional freeform tags for the intra subnets where the primary key is the AD name (e.g. "NATD:US-ASHBURN-AD-1") | `map(map(string))` | `{}` | no |
-| <a name="input_intra_subnets"></a> [intra\_subnets](#input\_intra\_subnets) | A list of intra subnet CIDR blocks inside the VCN. Each gets a dedicated empty route table (no rules — fully isolated, no NAT/IGW/SGW routes) | `list(string)` | `[]` | no |
+| <a name="input_intra_subnets"></a> [intra\_subnets](#input\_intra\_subnets) | A list of intra subnet CIDR blocks inside the VCN. Each gets a dedicated empty route table (no rules - fully isolated, no NAT/IGW/SGW routes) | `list(string)` | `[]` | no |
 | <a name="input_local_peering_gateways"></a> [local\_peering\_gateways](#input\_local\_peering\_gateways) | Map of Local Peering Gateways to attach to the VCN. Key is the LPG name, value is an object with optional peer\_id and route\_table\_id | `map(any)` | `null` | no |
 | <a name="input_lockdown_default_seclist"></a> [lockdown\_default\_seclist](#input\_lockdown\_default\_seclist) | Whether to remove all default security rules from the VCN Default Security List. Recommended true for security best practice | `bool` | `true` | no |
 | <a name="input_name"></a> [name](#input\_name) | Name to be used on all the resources as identifier | `string` | `""` | no |
@@ -265,7 +265,7 @@ No modules.
 | <a name="input_nat_gateway_public_ip_id"></a> [nat\_gateway\_public\_ip\_id](#input\_nat\_gateway\_public\_ip\_id) | Controls the public IP attached to the first (or only) NAT Gateway:<br/>  - null (default): OCI assigns an ephemeral public IP automatically.<br/>  - "RESERVED": the module creates a new reserved public IP and attaches it.<br/>    Use this to get a stable, predictable outbound IP (e.g. for firewall allowlisting).<br/>  - "<ocid>": attach an existing reserved public IP by OCID.<br/>Has no effect when enable\_nat\_gateway = false.<br/>When multiple NAT gateways are created, only the first one gets this IP. | `string` | `null` | no |
 | <a name="input_nat_gateway_route_rules"></a> [nat\_gateway\_route\_rules](#input\_nat\_gateway\_route\_rules) | Additional route rules to add to the NAT Gateway route table(s). Use symbolic network\_entity\_id values: 'drg', 'nat\_gateway', 'lpg@<key>' | `list(map(string))` | `null` | no |
 | <a name="input_nat_gateway_tags"></a> [nat\_gateway\_tags](#input\_nat\_gateway\_tags) | Additional freeform tags for the NAT Gateways | `map(string)` | `{}` | no |
-| <a name="input_one_nat_gateway_per_ad"></a> [one\_nat\_gateway\_per\_ad](#input\_one\_nat\_gateway\_per\_ad) | Should be true if you want one NAT Gateway per availability domain. Has no effect when ads = [] (regional subnets) — in that case a single NAT Gateway is sufficient since regional subnets already span all ADs. Requires var.availability\_domain\_numbers to be set and var.single\_nat\_gateway to be false | `bool` | `false` | no |
+| <a name="input_one_nat_gateway_per_ad"></a> [one\_nat\_gateway\_per\_ad](#input\_one\_nat\_gateway\_per\_ad) | Should be true if you want one NAT Gateway per availability domain. Has no effect when ads = [] (regional subnets) - in that case a single NAT Gateway is sufficient since regional subnets already span all ADs. Requires var.availability\_domain\_numbers to be set and var.single\_nat\_gateway to be false | `bool` | `false` | no |
 | <a name="input_private_acl_tags"></a> [private\_acl\_tags](#input\_private\_acl\_tags) | Additional freeform tags for the private dedicated security list | `map(string)` | `{}` | no |
 | <a name="input_private_dedicated_security_list"></a> [private\_dedicated\_security\_list](#input\_private\_dedicated\_security\_list) | Whether to create a dedicated security list for private subnets and attach it | `bool` | `false` | no |
 | <a name="input_private_inbound_security_rules"></a> [private\_inbound\_security\_rules](#input\_private\_inbound\_security\_rules) | Inbound (ingress) security rules for the private dedicated security list | <pre>list(object({<br/>    protocol    = string<br/>    source      = string<br/>    source_type = optional(string, "CIDR_BLOCK")<br/>    description = optional(string, null)<br/>    stateless   = optional(bool, false)<br/>    tcp_options = optional(object({<br/>      min = number<br/>      max = number<br/>    }), null)<br/>    udp_options = optional(object({<br/>      min = number<br/>      max = number<br/>    }), null)<br/>    icmp_options = optional(object({<br/>      type = number<br/>      code = optional(number, null)<br/>    }), null)<br/>  }))</pre> | <pre>[<br/>  {<br/>    "description": "Allow all inbound traffic",<br/>    "protocol": "all",<br/>    "source": "0.0.0.0/0",<br/>    "source_type": "CIDR_BLOCK"<br/>  }<br/>]</pre> | no |

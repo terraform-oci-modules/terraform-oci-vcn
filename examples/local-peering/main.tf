@@ -28,8 +28,8 @@ locals {
 #
 # How OCI LPG peering works:
 #   - Each VCN gets one LPG resource.
-#   - One side is the "requestor" — it sets peer_id to the other LPG's OCID.
-#   - The other side is the "acceptor" — it omits peer_id and waits for the
+#   - One side is the "requestor" - it sets peer_id to the other LPG's OCID.
+#   - The other side is the "acceptor" - it omits peer_id and waits for the
 #     requestor to initiate.
 #   - Here the spoke drives the connection: spoke.lpg.peer_id = hub.lpg.id
 #
@@ -51,8 +51,8 @@ module "vcn_hub" {
 
   vcn_cidr_block = local.hub_cidr
 
-  # Regional subnets — ads = [] (default); each subnet spans all ADs automatically
-  # Hub public subnets — internet-facing; hub is the internet exit point for the spoke
+  # Regional subnets - ads = [] (default); each subnet spans all ADs automatically
+  # Hub public subnets - internet-facing; hub is the internet exit point for the spoke
   public_subnets = [
     cidrsubnet(local.hub_cidr, 4, 8), # 10.0.128.0/20
     cidrsubnet(local.hub_cidr, 4, 9), # 10.0.144.0/20
@@ -66,7 +66,7 @@ module "vcn_hub" {
   single_nat_gateway     = true
   create_service_gateway = true
 
-  # Create the hub-side LPG in acceptor mode (no peer_id — spoke initiates)
+  # Create the hub-side LPG in acceptor mode (no peer_id - spoke initiates)
   local_peering_gateways = {
     to-spoke = {}
   }
@@ -105,19 +105,19 @@ module "vcn_spoke" {
 
   vcn_cidr_block = local.spoke_cidr
 
-  # Regional subnets — ads = [] (default); each subnet spans all ADs automatically
-  # Spoke private subnets — egress goes to hub via LPG, not directly to internet
+  # Regional subnets - ads = [] (default); each subnet spans all ADs automatically
+  # Spoke private subnets - egress goes to hub via LPG, not directly to internet
   private_subnets = [
     cidrsubnet(local.spoke_cidr, 4, 0), # 10.1.0.0/20
     cidrsubnet(local.spoke_cidr, 4, 1), # 10.1.16.0/20
   ]
 
-  # Spoke has no IGW or NAT — it reaches the internet only via the hub
+  # Spoke has no IGW or NAT - it reaches the internet only via the hub
   create_igw             = false
   enable_nat_gateway     = false
   create_service_gateway = false
 
-  # Create the spoke-side LPG in requestor mode — sets peer_id to initiate peering
+  # Create the spoke-side LPG in requestor mode - sets peer_id to initiate peering
   local_peering_gateways = {
     to-hub = {
       peer_id = module.vcn_hub.lpg_ids["to-spoke"]

@@ -2,10 +2,10 @@
 
 Configuration in this directory demonstrates two patterns for attaching OCI flow logs to subnets using the standalone `modules/flow-log` submodule directly, without enabling the root module's built-in `enable_flow_log` toggle. This mirrors the `examples/flow-log` pattern from `terraform-aws-vpc`.
 
-**Pattern 1** — Public subnet flow log with its own dedicated log group (new `oci_logging_log_group` created).
-**Pattern 2** — Private subnet flow log that reuses the log group created in Pattern 1.
+**Pattern 1** - Public subnet flow log with its own dedicated log group (new `oci_logging_log_group` created).
+**Pattern 2** - Private subnet flow log that reuses the log group created in Pattern 1.
 
-Both subnets are **regional** (`ads` not set) — each spans all availability domains automatically.
+Both subnets are **regional** (`ads` not set) - each spans all availability domains automatically.
 
 [Read more about OCI flow logs](https://docs.oracle.com/en-us/iaas/Content/Network/Concepts/vcn_flow_logs.htm).
 

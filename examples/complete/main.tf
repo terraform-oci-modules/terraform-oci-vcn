@@ -16,7 +16,7 @@ locals {
 }
 
 ################################################################################
-# VCN Module — Complete example
+# VCN Module - Complete example
 #
 # Demonstrates:
 #  - All four subnet types (public, private, database, intra)
@@ -38,21 +38,21 @@ module "vcn" {
 
   vcn_cidr_block = local.vcn_cidr
 
-  # Public subnets — regional (span all ADs); internet-facing (IGW route), public IPs eligible
+  # Public subnets - regional (span all ADs); internet-facing (IGW route), public IPs eligible
   public_subnets = [
     cidrsubnet(local.vcn_cidr, 4, 8),  # 10.0.128.0/20
     cidrsubnet(local.vcn_cidr, 4, 9),  # 10.0.144.0/20
     cidrsubnet(local.vcn_cidr, 4, 10), # 10.0.160.0/20
   ]
 
-  # Private subnets — regional; outbound via NAT, no inbound from internet
+  # Private subnets - regional; outbound via NAT, no inbound from internet
   private_subnets = [
     cidrsubnet(local.vcn_cidr, 4, 0), # 10.0.0.0/20
     cidrsubnet(local.vcn_cidr, 4, 1), # 10.0.16.0/20
     cidrsubnet(local.vcn_cidr, 4, 2), # 10.0.32.0/20
   ]
 
-  # Database subnets — regional; dedicated route table (set below)
+  # Database subnets - regional; dedicated route table (set below)
   database_subnets = [
     cidrsubnet(local.vcn_cidr, 4, 4), # 10.0.64.0/20
     cidrsubnet(local.vcn_cidr, 4, 5), # 10.0.80.0/20
@@ -60,7 +60,7 @@ module "vcn" {
   ]
   create_database_subnet_route_table = true
 
-  # Intra subnets — dedicated empty route table per subnet (no rules — fully isolated)
+  # Intra subnets - dedicated empty route table per subnet (no rules - fully isolated)
   intra_subnets = [
     cidrsubnet(local.vcn_cidr, 8, 52), # 10.0.52.0/24
     cidrsubnet(local.vcn_cidr, 8, 53), # 10.0.53.0/24
@@ -76,7 +76,7 @@ module "vcn" {
   create_multiple_public_route_tables = true
   create_multiple_intra_route_tables  = true
 
-  # Custom DHCP options — search domain with OCI VCN resolver (default type)
+  # Custom DHCP options - search domain with OCI VCN resolver (default type)
   enable_dhcp_options      = true
   dhcp_options_domain_name = "example.internal"
   dhcp_options_server_type = "VcnLocalPlusInternet"

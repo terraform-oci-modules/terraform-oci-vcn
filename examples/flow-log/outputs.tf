@@ -27,7 +27,7 @@ output "private_subnets" {
 }
 
 ################################################################################
-# Flow Logs — public subnet (dedicated log group)
+# Flow Logs - public subnet (dedicated log group)
 ################################################################################
 
 output "flow_log_public_id" {
@@ -41,7 +41,7 @@ output "flow_log_public_log_group_id" {
 }
 
 ################################################################################
-# Flow Logs — private subnet (shared log group)
+# Flow Logs - private subnet (shared log group)
 ################################################################################
 
 output "flow_log_private_id" {

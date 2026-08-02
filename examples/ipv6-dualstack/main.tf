@@ -11,10 +11,10 @@ locals {
 }
 
 ################################################################################
-# VCN — dual-stack (IPv4 + IPv6)
+# VCN - dual-stack (IPv4 + IPv6)
 #
 # Setting enable_ipv6 = true causes OCI to assign a /56 prefix to the VCN and
-# the module automatically derives a /64 for every subnet — no manual CIDR
+# the module automatically derives a /64 for every subnet - no manual CIDR
 # input required, no two-step apply.
 #
 # Subnet /64 offsets (sequential across all tiers):
@@ -38,12 +38,12 @@ module "vcn" {
 
   enable_ipv6 = true
 
-  # Regional subnets — ads = [] (default); each subnet spans all ADs automatically
+  # Regional subnets - ads = [] (default); each subnet spans all ADs automatically
 
-  # Public subnets — internet-facing; each gets a /64 IPv6 prefix (offsets 0, 1, 2)
+  # Public subnets - internet-facing; each gets a /64 IPv6 prefix (offsets 0, 1, 2)
   public_subnets = ["10.0.128.0/20", "10.0.144.0/20", "10.0.160.0/20"]
 
-  # Private subnets — outbound via NAT; each gets a /64 IPv6 prefix (offsets 3, 4, 5)
+  # Private subnets - outbound via NAT; each gets a /64 IPv6 prefix (offsets 3, 4, 5)
   private_subnets = ["10.0.0.0/20", "10.0.16.0/20", "10.0.32.0/20"]
 
   create_igw         = true
