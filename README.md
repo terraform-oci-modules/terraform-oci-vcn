@@ -110,6 +110,7 @@ OCI supports two tag types, both mapped:
 - [local-peering](examples/local-peering) - Hub-and-spoke LPG topology between two VCNs
 - [service-gateway](examples/service-gateway) - Fully-private VCN with Oracle Services routing via SGW
 - [drg-peering](examples/drg-peering) - Cross-region DRG + Remote Peering Connection (us-ashburn-1 ↔ us-chicago-1)
+- [issues](examples/issues) - Regression tests for reported bugs (scaffold, empty until the first bug lands)
 
 ## Submodules
 

@@ -462,6 +462,12 @@ explicit subnet group registration. OCI DBaaS and PaaS services use subnets dire
 | `local-peering`         | Hub-and-spoke LPG topology: hub VCN ↔ spoke VCN via acceptor/requestor LPG pattern                             |
 | `service-gateway`       | Fully-private VCN (no IGW, no NAT); Oracle Services routing via SGW only                                       |
 | `drg-peering`           | Cross-region DRG + Remote Peering Connection: us-ashburn-1 ↔ us-chicago-1; multi-provider aliases              |
+| `issues`                | Regression tests for reported bugs (scaffold; empty until the first bug lands, see note below)                |
+
+> **`issues` scaffold**: mirrors AWS's `examples/issues` pattern (one `module` block per historical
+> bug, named `vcn_issue_<number>`, linking to the GitHub issue). No bugs have been reported against
+> this module yet, so the directory currently has no `module` blocks - just the README documenting
+> the convention for the next contributor who fixes one.
 
 ### Example gap analysis
 
@@ -474,7 +480,7 @@ explicit subnet group registration. OCI DBaaS and PaaS services use subnets dire
 | `outpost`                     | N/A        | AWS Outposts has no OCI equivalent                              |
 | `manage-default-vpc`          | N/A        | OCI has no tenancy-level default VCN                            |
 | `block-public-access`         | N/A        | No OCI equivalent                                               |
-| `issues` (regression tests)   | Not yet    | Deferred - add as test coverage grows                           |
+| `issues` (regression tests)   | Scaffolded | Directory + README exist; no bugs reported yet to regress against |
 | Complete VPN/Customer Gateway | N/A        | OCI VPN via DRG is out of module scope                          |
 
 #### AWS missing vs OCI
@@ -505,5 +511,4 @@ default security list lockdown.
 
 **Potential future additions:**
 - OCI Private Endpoint submodule (third-party PaaS) - `modules/private-endpoint`
-- `issues` / regression test example
 - Expanded VPN/IPSec connectivity via DRG (v2 scope)
