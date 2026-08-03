@@ -8,15 +8,15 @@ The example creates:
 Ashburn VCN (10.0.0.0/16) ── DRG-A ── RPC ── DRG-C ── Chicago VCN (10.1.0.0/16)
 ```
 
-The Ashburn VCN has public and private subnets, an Internet Gateway, a NAT Gateway, and a Service Gateway. The Chicago VCN has only private subnets and no internet egress — it communicates with Oracle Services via its own Service Gateway, and with Ashburn via the DRG cross-region link.
+The Ashburn VCN has public and private subnets, an Internet Gateway, a NAT Gateway, and a Service Gateway. The Chicago VCN has only private subnets and no internet egress - it communicates with Oracle Services via its own Service Gateway, and with Ashburn via the DRG cross-region link.
 
 **How OCI cross-region DRG peering works:**
 
 1. A DRG is created in each region and attached to its VCN.
-2. An RPC is created on each DRG. One side is the *requestor* — it sets `peer_id` and `peer_region_name` to initiate the connection. The other side is the *acceptor* and omits `peer_id`. Here Ashburn is the requestor and Chicago is the acceptor.
+2. An RPC is created on each DRG. One side is the *requestor* - it sets `peer_id` and `peer_region_name` to initiate the connection. The other side is the *acceptor* and omits `peer_id`. Here Ashburn is the requestor and Chicago is the acceptor.
 3. Route tables on each VCN must have a route pointing the remote CIDR at the local DRG. This example uses the symbolic `"drg"` value in `nat_gateway_route_rules`, which the module resolves to the correct DRG OCID via `attached_drg_id`.
 
-Subnets in both VCNs are **regional** (`ads` not set) — each spans all availability domains automatically.
+Subnets in both VCNs are **regional** (`ads` not set) - each spans all availability domains automatically.
 
 [Read more about OCI DRG Remote Peering](https://docs.oracle.com/en-us/iaas/Content/Network/Tasks/remoteVCNpeering.htm).
 

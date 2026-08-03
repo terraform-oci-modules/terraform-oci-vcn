@@ -16,7 +16,7 @@ locals {
 }
 
 ################################################################################
-# VCN Module — used here only to create a VCN and subnets
+# VCN Module - used here only to create a VCN and subnets
 # Flow logs are attached via the standalone modules/flow-log submodule below.
 ################################################################################
 
@@ -28,22 +28,22 @@ module "vcn" {
 
   vcn_cidr_block = local.vcn_cidr
 
-  # Regional subnets — ads = [] (default); each subnet spans all ADs automatically
-  public_subnets  = [cidrsubnet(local.vcn_cidr, 4, 8)] # 10.0.128.0/20 — internet-facing
-  private_subnets = [cidrsubnet(local.vcn_cidr, 4, 0)] # 10.0.0.0/20  — outbound via NAT
+  # Regional subnets - ads = [] (default); each subnet spans all ADs automatically
+  public_subnets  = [cidrsubnet(local.vcn_cidr, 4, 8)] # 10.0.128.0/20 - internet-facing
+  private_subnets = [cidrsubnet(local.vcn_cidr, 4, 0)] # 10.0.0.0/20  - outbound via NAT
 
   enable_nat_gateway     = true
   single_nat_gateway     = true
   create_service_gateway = true
 
-  # Root-module flow logs are disabled here — we attach them manually below
+  # Root-module flow logs are disabled here - we attach them manually below
   enable_flow_log = false
 
   tags = local.tags
 }
 
 ################################################################################
-# Flow Log — standalone submodule usage
+# Flow Log - standalone submodule usage
 #
 # Demonstrates: examples/flow-log in terraform-oci-vcn.
 #
@@ -52,7 +52,7 @@ module "vcn" {
 #   2. Subnet-level flow log on the first private subnet (shared log group)
 ################################################################################
 
-# Pattern 1 — public subnet flow log with its own log group
+# Pattern 1 - public subnet flow log with its own log group
 module "flow_log_public" {
   source = "../../modules/flow-log"
 
@@ -68,7 +68,7 @@ module "flow_log_public" {
   tags = local.tags
 }
 
-# Pattern 2 — private subnet flow log reusing the log group from pattern 1
+# Pattern 2 - private subnet flow log reusing the log group from pattern 1
 module "flow_log_private" {
   source = "../../modules/flow-log"
 

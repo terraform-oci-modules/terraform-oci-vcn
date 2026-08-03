@@ -16,9 +16,9 @@ locals {
 }
 
 ################################################################################
-# VCN Module — Network ACLs (Security Lists) example
+# VCN Module - Network ACLs (Security Lists) example
 #
-# Demonstrates per-tier dedicated security lists — the OCI equivalent of AWS
+# Demonstrates per-tier dedicated security lists - the OCI equivalent of AWS
 # dedicated Network ACLs. Each tier gets a dedicated oci_core_security_list
 # with explicit inbound/outbound rules instead of relying solely on the VCN
 # default security list.
@@ -37,23 +37,23 @@ module "vcn" {
 
   vcn_cidr_block = local.vcn_cidr
 
-  # Regional subnets — ads = [] (default); each subnet spans all ADs automatically
-  # Public subnets — internet-facing (IGW route)
+  # Regional subnets - ads = [] (default); each subnet spans all ADs automatically
+  # Public subnets - internet-facing (IGW route)
   public_subnets = [
     cidrsubnet(local.vcn_cidr, 4, 8), # 10.0.128.0/20
     cidrsubnet(local.vcn_cidr, 4, 9), # 10.0.144.0/20
   ]
-  # Private subnets — outbound via NAT, no inbound from internet
+  # Private subnets - outbound via NAT, no inbound from internet
   private_subnets = [
     cidrsubnet(local.vcn_cidr, 4, 0), # 10.0.0.0/20
     cidrsubnet(local.vcn_cidr, 4, 1), # 10.0.16.0/20
   ]
-  # Database subnets — share the private (NAT) route table by default
+  # Database subnets - share the private (NAT) route table by default
   database_subnets = [
     cidrsubnet(local.vcn_cidr, 4, 4), # 10.0.64.0/20
     cidrsubnet(local.vcn_cidr, 4, 5), # 10.0.80.0/20
   ]
-  # Intra subnet — dedicated empty route table (no rules — fully isolated)
+  # Intra subnet - dedicated empty route table (no rules - fully isolated)
   intra_subnets = [
     cidrsubnet(local.vcn_cidr, 8, 52), # 10.0.52.0/24
   ]

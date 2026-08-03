@@ -8,14 +8,14 @@ IPv6 CIDRs cannot be set in the same apply. Use the two-step workflow below.
 
 ## Two-step workflow
 
-**Step 1** — Apply with `enable_ipv6 = true` and no subnet IPv6 CIDRs:
+**Step 1** - Apply with `enable_ipv6 = true` and no subnet IPv6 CIDRs:
 
 ```sh
 terraform apply
 # Note the value of vcn_ipv6_cidr_blocks in the output, e.g. 2603:c020:4:ab00::/56
 ```
 
-**Step 2** — Carve `/64` blocks from the `/56` and set them on the subnets:
+**Step 2** - Carve `/64` blocks from the `/56` and set them on the subnets:
 
 ```hcl
 public_subnet_ipv6_cidrs = [
@@ -38,7 +38,7 @@ terraform apply
 - Private subnets do not have IPv6 outbound by default in this example. Add
   `private_subnet_ipv6_cidrs` and they will route IPv6 via the IGW as well.
 - IPv6-only subnets are not supported in OCI (`cidr_block` is always required).
-- Subnets are **regional** (`ads` not set) — each spans all availability domains automatically.
+- Subnets are **regional** (`ads` not set) - each spans all availability domains automatically.
 
 ## Architecture
 

@@ -9,7 +9,7 @@ locals {
   # Primary VCN CIDR
   vcn_cidr = "10.0.0.0/16"
 
-  # Secondary CIDR block — subnets can be carved from either CIDR
+  # Secondary CIDR block - subnets can be carved from either CIDR
   secondary_cidr = "10.1.0.0/16"
 
   tags = {
@@ -20,7 +20,7 @@ locals {
 }
 
 ################################################################################
-# VCN Module — Secondary CIDR Blocks example
+# VCN Module - Secondary CIDR Blocks example
 #
 # Demonstrates attaching a secondary IPv4 CIDR to the VCN and carving subnets
 # from both the primary and secondary CIDR ranges.
@@ -38,20 +38,20 @@ module "vcn" {
   # Attach a secondary CIDR block
   secondary_cidr_blocks = [local.secondary_cidr]
 
-  # Regional subnets — ads = [] (default); each subnet spans all ADs automatically
-  # Public subnets — from the primary CIDR, internet-facing
+  # Regional subnets - ads = [] (default); each subnet spans all ADs automatically
+  # Public subnets - from the primary CIDR, internet-facing
   public_subnets = [
     cidrsubnet(local.vcn_cidr, 4, 8), # 10.0.128.0/20
     cidrsubnet(local.vcn_cidr, 4, 9), # 10.0.144.0/20
   ]
 
-  # Private subnets — from the primary CIDR, outbound via NAT
+  # Private subnets - from the primary CIDR, outbound via NAT
   private_subnets = [
     cidrsubnet(local.vcn_cidr, 4, 0), # 10.0.0.0/20
     cidrsubnet(local.vcn_cidr, 4, 1), # 10.0.16.0/20
   ]
 
-  # Intra subnets — carved from the secondary CIDR; dedicated empty route table (no rules — fully isolated)
+  # Intra subnets - carved from the secondary CIDR; dedicated empty route table (no rules - fully isolated)
   # OCI allows mixing CIDRs from any block attached to the VCN
   intra_subnets = [
     cidrsubnet(local.secondary_cidr, 4, 0), # 10.1.0.0/20

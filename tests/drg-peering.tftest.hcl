@@ -61,12 +61,12 @@ run "creates_drg_peering" {
     condition     = output.chicago_rpc_id != null
     error_message = "Chicago RPC must be created"
   }
-  # Ashburn is the requestor — OCI provider waits for PEERED before completing apply.
+  # Ashburn is the requestor - OCI provider waits for PEERED before completing apply.
   assert {
     condition     = output.ashburn_rpc_peering_status == "PEERED"
     error_message = "Ashburn RPC (requestor) must reach PEERED state"
   }
-  # Chicago is the acceptor — its resource was created before Ashburn initiated
+  # Chicago is the acceptor - its resource was created before Ashburn initiated
   # the connection, so the state object is stale and stays "NEW" until refresh.
   # Ashburn reaching PEERED is sufficient proof that both sides are connected.
   assert {

@@ -15,11 +15,11 @@ Two VCNs are created side-by-side to show both supported DNS server types:
 
 **OCI DHCP server types:**
 
-- `VcnLocalPlusInternet` — uses OCI's built-in VCN resolver, which handles DNS for resources within the VCN and forwards public names to the internet. This is equivalent to `AmazonProvidedDNS` in AWS. Combined with `dhcp_options_domain_name`, unqualified hostnames (e.g. `db01`) are resolved as fully-qualified names (e.g. `db01.corp.example.internal`).
+- `VcnLocalPlusInternet` - uses OCI's built-in VCN resolver, which handles DNS for resources within the VCN and forwards public names to the internet. This is equivalent to `AmazonProvidedDNS` in AWS. Combined with `dhcp_options_domain_name`, unqualified hostnames (e.g. `db01`) are resolved as fully-qualified names (e.g. `db01.corp.example.internal`).
 
-- `CustomDnsServer` — bypasses OCI's resolver entirely. All DNS queries are sent to the IP addresses listed in `dhcp_options_domain_name_servers`. Use this when instances must resolve names from an on-premises or custom DNS infrastructure.
+- `CustomDnsServer` - bypasses OCI's resolver entirely. All DNS queries are sent to the IP addresses listed in `dhcp_options_domain_name_servers`. Use this when instances must resolve names from an on-premises or custom DNS infrastructure.
 
-Subnets in both VCNs are **regional** (`ads` not set) — each spans all availability domains automatically.
+Subnets in both VCNs are **regional** (`ads` not set) - each spans all availability domains automatically.
 
 [Read more about OCI DHCP Options](https://docs.oracle.com/en-us/iaas/Content/Network/Tasks/managingDHCP.htm).
 

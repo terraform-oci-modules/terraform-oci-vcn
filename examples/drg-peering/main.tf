@@ -1,4 +1,4 @@
-# Two provider aliases — one per region
+# Two provider aliases - one per region
 provider "oci" {
   alias  = "ashburn"
   region = local.region_ashburn
@@ -25,7 +25,7 @@ locals {
 }
 
 ################################################################################
-# VCN Module — DRG Peering example
+# VCN Module - DRG Peering example
 #
 # Demonstrates connecting two VCNs in different OCI regions using Dynamic
 # Routing Gateways (DRGs) and Remote Peering Connections (RPCs).
@@ -45,9 +45,9 @@ locals {
 #      nat_gateway_route_rules, which the module resolves via attached_drg_id.
 #
 # Key module settings:
-#   attached_drg_id          — tells the module which DRG to use for "drg" symbolic routes
-#   nat_gateway_route_rules  — adds a route for the remote VCN CIDR via the DRG
-#   single_nat_gateway       — one NAT GW per VCN (quota constraint)
+#   attached_drg_id          - tells the module which DRG to use for "drg" symbolic routes
+#   nat_gateway_route_rules  - adds a route for the remote VCN CIDR via the DRG
+#   single_nat_gateway       - one NAT GW per VCN (quota constraint)
 ################################################################################
 
 ################################################################################
@@ -66,7 +66,7 @@ module "vcn_ashburn" {
 
   vcn_cidr_block = local.vcn_cidr_ashburn
 
-  # Regional subnets — ads = [] (default); each subnet spans all ADs automatically
+  # Regional subnets - ads = [] (default); each subnet spans all ADs automatically
   public_subnets = [
     cidrsubnet(local.vcn_cidr_ashburn, 4, 8), # 10.0.128.0/20
     cidrsubnet(local.vcn_cidr_ashburn, 4, 9), # 10.0.144.0/20
@@ -113,14 +113,14 @@ module "vcn_chicago" {
 
   vcn_cidr_block = local.vcn_cidr_chicago
 
-  # Regional subnets — ads = [] (default); each subnet spans all ADs automatically
-  # Chicago is a private spoke — no internet access, cross-region traffic via DRG
+  # Regional subnets - ads = [] (default); each subnet spans all ADs automatically
+  # Chicago is a private spoke - no internet access, cross-region traffic via DRG
   private_subnets = [
     cidrsubnet(local.vcn_cidr_chicago, 4, 0), # 10.1.0.0/20
     cidrsubnet(local.vcn_cidr_chicago, 4, 1), # 10.1.16.0/20
   ]
 
-  # Chicago spoke has no internet access — traffic to Oracle Services via SGW,
+  # Chicago spoke has no internet access - traffic to Oracle Services via SGW,
   # and cross-region traffic back to Ashburn via DRG
   create_igw             = false
   enable_nat_gateway     = false
@@ -132,7 +132,7 @@ module "vcn_chicago" {
 }
 
 ################################################################################
-# DRGs — one per region
+# DRGs - one per region
 ################################################################################
 
 resource "oci_core_drg" "ashburn" {
@@ -150,7 +150,7 @@ resource "oci_core_drg" "chicago" {
 }
 
 ################################################################################
-# DRG Attachments — connect each DRG to its VCN
+# DRG Attachments - connect each DRG to its VCN
 ################################################################################
 
 resource "oci_core_drg_attachment" "ashburn" {
@@ -168,7 +168,7 @@ resource "oci_core_drg_attachment" "chicago" {
 }
 
 ################################################################################
-# Remote Peering Connections — cross-region DRG link
+# Remote Peering Connections - cross-region DRG link
 #
 # The Ashburn RPC is the requestor: it sets peer_id and peer_region_name to
 # initiate the connection. The Chicago RPC is the acceptor.

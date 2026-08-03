@@ -8,7 +8,7 @@ The example creates a hub-and-spoke topology:
 hub VCN (10.0.0.0/16)  ──LPG──  spoke VCN (10.1.0.0/16)
 ```
 
-The hub has public and private subnets, a NAT Gateway, and a Service Gateway. The spoke has only private subnets and no internet egress of its own — it reaches the internet exclusively via the hub.
+The hub has public and private subnets, a NAT Gateway, and a Service Gateway. The spoke has only private subnets and no internet egress of its own - it reaches the internet exclusively via the hub.
 
 **How OCI LPG peering works:**
 
@@ -18,7 +18,7 @@ Each VCN gets one LPG. One side acts as the *requestor* (sets `peer_id` to the o
 spoke.lpg["to-hub"].peer_id = hub.lpg["to-spoke"].id
 ```
 
-After peering, each VCN's route table must have a route pointing the remote CIDR at its own LPG. This example uses the symbolic `"lpg@<key>"` notation in `internet_gateway_route_rules` and `nat_gateway_route_rules`. Subnets in both VCNs are **regional** (`ads` not set) — each spans all availability domains automatically.
+After peering, each VCN's route table must have a route pointing the remote CIDR at its own LPG. This example uses the symbolic `"lpg@<key>"` notation in `internet_gateway_route_rules` and `nat_gateway_route_rules`. Subnets in both VCNs are **regional** (`ads` not set) - each spans all availability domains automatically.
 
 [Read more about OCI Local Peering Gateways](https://docs.oracle.com/en-us/iaas/Content/Network/Tasks/localVCNpeering.htm).
 

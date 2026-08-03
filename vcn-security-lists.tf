@@ -1,7 +1,7 @@
 ################################################################################
 # Per-tier Dedicated Security Lists
 #
-# OCI security lists are stateful, subnet-level firewall rules — the direct
+# OCI security lists are stateful, subnet-level firewall rules - the direct
 # equivalent of AWS Network ACLs (NACLs). Each tier has an opt-in flag:
 #   <tier>_dedicated_security_list = true
 #
