@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.6.0](https://github.com/terraform-oci-modules/terraform-oci-vcn/compare/v0.5.0...v0.6.0) (2026-08-03)
+
+### Features
+
+* Scaffold examples/issues for bug regression tests ([#1](https://github.com/terraform-oci-modules/terraform-oci-vcn/issues/1)) ([e09a92d](https://github.com/terraform-oci-modules/terraform-oci-vcn/commit/e09a92da68645a9722da4e5e8fcd470bd35a68ee))
+
 ## [0.5.0](https://github.com/terraform-oci-modules/terraform-oci-vcn/compare/v0.4.0...v0.5.0) (2026-05-26)
 
 ### Features
