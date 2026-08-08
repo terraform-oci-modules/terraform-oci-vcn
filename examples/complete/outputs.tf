@@ -147,12 +147,12 @@ output "flow_log_ids" {
 # Availability Domains
 ################################################################################
 
-output "ads" {
+output "availability_domains" {
   description = "AD numbers specified as input"
-  value       = module.vcn.ads
+  value       = module.vcn.availability_domains
 }
 
-output "ad_names" {
+output "availability_domain_names" {
   description = "Resolved availability domain names"
-  value       = module.vcn.ad_names
+  value       = module.vcn.availability_domain_names
 }

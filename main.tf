@@ -3,12 +3,12 @@ locals {
   create_vcn = var.create_vcn
 
   # Resolve availability domain numbers to tenancy-specific AD names.
-  # var.availability_domain_numbers accepts a list of integers like [1, 2, 3].
+  # var.availability_domains accepts a list of integers like [1, 2, 3].
   # data.oci_identity_availability_domains returns ADs sorted by name (AD-1, AD-2, AD-3).
   # We map each number to the zero-indexed entry in that sorted list.
-  availability_domains = data.oci_identity_availability_domains.ads.availability_domains
-  ad_names = [
-    for n in var.availability_domain_numbers : local.availability_domains[n - 1].name
+  all_availability_domains = data.oci_identity_availability_domains.ads.availability_domains
+  availability_domain_names = [
+    for n in var.availability_domains : local.all_availability_domains[n - 1].name
   ]
 
   # VCN CIDR blocks - primary + any secondary CIDRs
@@ -32,8 +32,8 @@ locals {
 
   # NAT Gateway count logic:
   #   single_nat_gateway=true   → 1
-  #   one_nat_gateway_per_ad    → one per AD when availability_domain_numbers is set; falls back to one per
-  #                               private subnet when availability_domain_numbers=[] (regional mode has no ADs to pin to)
+  #   one_nat_gateway_per_ad    → one per AD when availability_domains is set; falls back to one per
+  #                               private subnet when availability_domains=[] (regional mode has no ADs to pin to)
   #   otherwise                 → one per private subnet
   nat_gateway_count = (
     var.enable_nat_gateway == false
@@ -41,7 +41,7 @@ locals {
     : var.single_nat_gateway
     ? 1
     : var.one_nat_gateway_per_ad
-    ? (length(var.availability_domain_numbers) > 0 ? length(var.availability_domain_numbers) : length(var.private_subnets))
+    ? (length(var.availability_domains) > 0 ? length(var.availability_domains) : length(var.private_subnets))
     : length(var.private_subnets)
   )
 
@@ -132,7 +132,7 @@ locals {
       index        = idx
       cidr         = cidr
       display_name = length(var.public_subnet_names) > idx ? var.public_subnet_names[idx] : "${var.name}-${var.public_subnet_suffix}-${idx + 1}"
-      ad           = length(local.ad_names) > 0 ? local.ad_names[idx % length(local.ad_names)] : null
+      ad           = length(local.availability_domain_names) > 0 ? local.availability_domain_names[idx % length(local.availability_domain_names)] : null
       ipv6_index   = idx
     }
   ]
@@ -176,7 +176,7 @@ locals {
       index        = idx
       cidr         = cidr
       display_name = length(var.private_subnet_names) > idx ? var.private_subnet_names[idx] : "${var.name}-${var.private_subnet_suffix}-${idx + 1}"
-      ad           = length(local.ad_names) > 0 ? local.ad_names[idx % length(local.ad_names)] : null
+      ad           = length(local.availability_domain_names) > 0 ? local.availability_domain_names[idx % length(local.availability_domain_names)] : null
       ipv6_index   = idx + length(var.public_subnets)
       # Which NAT GW route table does this subnet use?
       # single → index 0; one_per_ad → index = (idx % ad count); else → index = idx
@@ -184,7 +184,7 @@ locals {
         var.single_nat_gateway
         ? 0
         : var.one_nat_gateway_per_ad
-        ? (length(local.ad_names) > 0 ? idx % length(local.ad_names) : 0)
+        ? (length(local.availability_domain_names) > 0 ? idx % length(local.availability_domain_names) : 0)
         : idx
       )
     }
@@ -232,7 +232,7 @@ locals {
       index        = idx
       cidr         = cidr
       display_name = length(var.database_subnet_names) > idx ? var.database_subnet_names[idx] : "${var.name}-${var.database_subnet_suffix}-${idx + 1}"
-      ad           = length(local.ad_names) > 0 ? local.ad_names[idx % length(local.ad_names)] : null
+      ad           = length(local.availability_domain_names) > 0 ? local.availability_domain_names[idx % length(local.availability_domain_names)] : null
       ipv6_index   = idx + length(var.public_subnets) + length(var.private_subnets)
       # Which NAT GW / route table does this subnet use?
       # Same logic as private subnets - keeps DB traffic AD-local when one_nat_gateway_per_ad=true.
@@ -240,7 +240,7 @@ locals {
         var.single_nat_gateway
         ? 0
         : var.one_nat_gateway_per_ad
-        ? (length(local.ad_names) > 0 ? idx % length(local.ad_names) : 0)
+        ? (length(local.availability_domain_names) > 0 ? idx % length(local.availability_domain_names) : 0)
         : idx
       )
     }
@@ -356,7 +356,7 @@ locals {
       index        = idx
       cidr         = cidr
       display_name = length(var.intra_subnet_names) > idx ? var.intra_subnet_names[idx] : "${var.name}-${var.intra_subnet_suffix}-${idx + 1}"
-      ad           = length(local.ad_names) > 0 ? local.ad_names[idx % length(local.ad_names)] : null
+      ad           = length(local.availability_domain_names) > 0 ? local.availability_domain_names[idx % length(local.availability_domain_names)] : null
       ipv6_index   = idx + length(var.public_subnets) + length(var.private_subnets) + length(var.database_subnets)
     }
   ]
@@ -723,12 +723,12 @@ resource "oci_core_local_peering_gateway" "lpg" {
 #
 # OCI creates a default security list on every VCN. Best practice is to lock it
 # down (remove all rules) and manage security explicitly on subnets.
-# Setting lockdown_default_seclist=false restores the OCI-default rules instead.
+# Setting lockdown_default_security_list=false restores the OCI-default rules instead.
 ################################################################################
 
 # Lockdown: replace all rules with an empty set
 resource "oci_core_default_security_list" "lockdown" {
-  count = local.create_vcn && var.lockdown_default_seclist ? 1 : 0
+  count = local.create_vcn && var.lockdown_default_security_list ? 1 : 0
 
   manage_default_resource_id = oci_core_vcn.this[0].default_security_list_id
 
@@ -741,7 +741,7 @@ resource "oci_core_default_security_list" "lockdown" {
 
 # Restore: re-apply OCI's factory default rules
 resource "oci_core_default_security_list" "restore_default" {
-  count = local.create_vcn && !var.lockdown_default_seclist ? 1 : 0
+  count = local.create_vcn && !var.lockdown_default_security_list ? 1 : 0
 
   manage_default_resource_id = oci_core_vcn.this[0].default_security_list_id
 

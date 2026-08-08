@@ -39,7 +39,7 @@ output "hub_service_gateway_id" {
 
 output "hub_lpg_ids" {
   description = "Map of LPG name to OCID for hub Local Peering Gateways"
-  value       = module.vcn_hub.lpg_ids
+  value       = module.vcn_hub.local_peering_gateway_ids
 }
 
 ################################################################################
@@ -63,5 +63,5 @@ output "spoke_private_subnets" {
 
 output "spoke_lpg_ids" {
   description = "Map of LPG name to OCID for spoke Local Peering Gateways"
-  value       = module.vcn_spoke.lpg_ids
+  value       = module.vcn_spoke.local_peering_gateway_ids
 }

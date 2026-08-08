@@ -38,7 +38,7 @@ terraform apply
 - Private subnets do not have IPv6 outbound by default in this example. Add
   `private_subnet_ipv6_cidrs` and they will route IPv6 via the IGW as well.
 - IPv6-only subnets are not supported in OCI (`cidr_block` is always required).
-- Subnets are **regional** (`ads` not set) - each spans all availability domains automatically.
+- Subnets are **regional** (`availability_domains` not set) - each spans all availability domains automatically.
 
 ## Architecture
 

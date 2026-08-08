@@ -35,7 +35,7 @@ module "vcn" {
 
   vcn_cidr_block = local.vcn_cidr
 
-  # Regional subnets - ads = [] (default); each subnet spans all ADs automatically
+  # Regional subnets - availability_domains = [] (default); each subnet spans all ADs automatically
   # Public subnets - internet-facing (IGW route), public IPs eligible
   public_subnets = [
     cidrsubnet(local.vcn_cidr, 4, 8),  # 10.0.128.0/20

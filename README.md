@@ -2,7 +2,7 @@
 
 Terraform module which creates VCN resources on Oracle Cloud Infrastructure (OCI).
 
-Designed to be familiar to users of the [terraform-aws-modules/vpc/aws](https://github.com/terraform-aws-modules/terraform-aws-vpc) module - same variable naming conventions, same file structure, same developer experience.
+Designed to be familiar to users of the [terraform-aws-modules/vpc/aws](https://github.com/terraform-aws-modules/terraform-aws-vpc) module: the same subnet-tier interface and file structure, with OCI resource names where the two clouds differ. See [docs/feature_parity.md](docs/feature_parity.md) for the full mapping.
 
 ## Usage
 
@@ -12,8 +12,7 @@ module "vcn" {
 
   name           = "my-vcn"
   compartment_id = var.compartment_id
-  tenancy_id     = var.tenancy_id
-  cidr           = "10.0.0.0/16"
+  vcn_cidr_block = "10.0.0.0/16"
 
   private_subnets = ["10.0.1.0/24", "10.0.2.0/24", "10.0.3.0/24"]
   public_subnets  = ["10.0.101.0/24", "10.0.102.0/24", "10.0.103.0/24"]
@@ -32,24 +31,24 @@ module "vcn" {
 
 OCI has a concept with no direct AWS equivalent: subnets can be **regional** (default) or **AD-specific**.
 
-- **Regional subnets** (recommended): `ads = []` (the default). Subnets span all Availability Domains in the region automatically. Most resilient, simplest.
-- **AD-specific subnets**: `ads = [1, 2, 3]`. Each subnet is pinned to one AD. Use this only when you need workload-level AD affinity (e.g. bare metal instances, local NVMe, AD-local services).
+- **Regional subnets** (recommended): `availability_domains = []` (the default). Subnets span all Availability Domains in the region automatically. Most resilient, simplest.
+- **AD-specific subnets**: `availability_domains = [1, 2, 3]`. Each subnet is pinned to one AD. Use this only when you need workload-level AD affinity (e.g. bare metal instances, local NVMe, AD-local services).
 
-When `ads` is set, subnets are distributed round-robin across the listed ADs, so you can create more subnets than ADs (e.g. 6 subnets across 3 ADs = 2 subnets per AD).
+When `availability_domains` is set, subnets are distributed round-robin across the listed ADs, so you can create more subnets than ADs (e.g. 6 subnets across 3 ADs = 2 subnets per AD).
 
 ```hcl
-# Regional subnets (default - no ads needed)
+# Regional subnets (default - no availability_domains needed)
 module "vcn" {
   source = "terraform-oci-modules/vcn/oci"
   # ...
-  # ads = []  <-- this is the default
+  # availability_domains = []  <-- this is the default
 }
 
 # AD-specific subnets
 module "vcn" {
   source = "terraform-oci-modules/vcn/oci"
   # ...
-  ads = [1, 2, 3]
+  availability_domains = [1, 2, 3]
 }
 ```
 
@@ -70,9 +69,9 @@ This module supports three scenarios for creating NAT Gateways:
   - `enable_nat_gateway = true`
   - `single_nat_gateway = false`
   - `one_nat_gateway_per_ad = true`
-  - `ads = [1, 2, 3]`
+  - `availability_domains = [1, 2, 3]`
 
-> **Note:** `one_nat_gateway_per_ad` has no effect when `ads = []` (regional subnets). Regional subnets already span all ADs automatically, so a single NAT Gateway is sufficient.
+> **Note:** `one_nat_gateway_per_ad` has no effect when `availability_domains = []` (regional subnets). Regional subnets already span all ADs automatically, so a single NAT Gateway is sufficient.
 
 ## Service Gateway (OCI-specific)
 
@@ -125,16 +124,11 @@ OCI supports two tag types, both mapped:
 
 Each example ships with a [`terraform test`](https://developer.hashicorp.com/terraform/language/tests) file that applies real OCI resources, asserts key outputs, then destroys on completion. See [docs/testing.md](docs/testing.md) for prerequisites, OCI auth setup, and how to run the tests.
 
-## AWS → OCI Feature Parity
+## AWS to OCI feature parity
 
-See [docs/feature_parity.md](docs/feature_parity.md) for a detailed comparison between this module
-and `terraform-aws-modules/vpc/aws`, including:
-
-- Feature-by-feature coverage (16 areas: routing, gateways, subnets, security lists, flow logs, etc.)
-- Variable mapping (matched / AWS-only / OCI-only)
-- Output mapping
-- Example comparison and gap analysis
-- Potential future additions
+See [docs/feature_parity.md](docs/feature_parity.md) for the full comparison against
+`terraform-aws-modules/vpc/aws`: feature, variable and output mapping, what is not applicable to
+OCI, what is out of scope, and what is not yet implemented.
 
 ## Related Projects
 
@@ -214,7 +208,7 @@ No modules.
 | Name | Description | Type | Default | Required |
 | ---- | ----------- | ---- | ------- | :------: |
 | <a name="input_attached_drg_id"></a> [attached\_drg\_id](#input\_attached\_drg\_id) | OCID of a DRG already attached to the VCN. Used for symbolic 'drg' route rules | `string` | `null` | no |
-| <a name="input_availability_domain_numbers"></a> [availability\_domain\_numbers](#input\_availability\_domain\_numbers) | List of availability domain numbers (e.g. [1, 2, 3]) to pin subnets to specific ADs.<br/><br/>OCI supports two subnet placement modes:<br/>  - Regional (default, recommended): leave ads = [] - subnets span all ADs in the<br/>    region automatically. This is the simplest and most resilient choice for most workloads.<br/>  - AD-specific: set ads = [1, 2, 3] - each subnet is pinned to one AD. Use this only<br/>    when you need workload-level AD affinity (e.g. bare metal, local NVMe, AD-local services).<br/><br/>When ads is set, subnets are distributed round-robin across the listed ADs so you can<br/>create more subnets than ADs (e.g. 6 subnets across 3 ADs gives two subnets per AD). | `list(number)` | `[]` | no |
+| <a name="input_availability_domains"></a> [availability\_domains](#input\_availability\_domains) | List of availability domain numbers (e.g. [1, 2, 3]) to pin subnets to specific ADs.<br/><br/>OCI supports two subnet placement modes:<br/>  - Regional (default, recommended): leave availability\_domains = [] - subnets<br/>    span all ADs in the region automatically. This is the simplest and most<br/>    resilient choice for most workloads.<br/>  - AD-specific: set availability\_domains = [1, 2, 3] - each subnet is pinned to<br/>    one AD. Use this only when you need workload-level AD affinity (e.g. bare<br/>    metal, local NVMe, AD-local services).<br/><br/>When set, subnets are distributed round-robin across the listed ADs, so you can<br/>create more subnets than ADs (e.g. 6 subnets across 3 ADs gives two subnets per AD). | `list(number)` | `[]` | no |
 | <a name="input_compartment_id"></a> [compartment\_id](#input\_compartment\_id) | The OCID of the compartment where the VCN and all resources will be created | `string` | n/a | yes |
 | <a name="input_create_database_internet_gateway_route"></a> [create\_database\_internet\_gateway\_route](#input\_create\_database\_internet\_gateway\_route) | Controls if an Internet Gateway route is added to the database route table. Requires create\_database\_subnet\_route\_table = true and create\_igw = true. Use with caution - database subnets are normally private | `bool` | `false` | no |
 | <a name="input_create_database_subnet_route_table"></a> [create\_database\_subnet\_route\_table](#input\_create\_database\_subnet\_route\_table) | Controls if a dedicated route table for database subnets should be created. When false, database subnets use the private route table | `bool` | `false` | no |
@@ -260,13 +254,13 @@ No modules.
 | <a name="input_intra_subnet_tags_per_ad"></a> [intra\_subnet\_tags\_per\_ad](#input\_intra\_subnet\_tags\_per\_ad) | Additional freeform tags for the intra subnets where the primary key is the AD name (e.g. "NATD:US-ASHBURN-AD-1") | `map(map(string))` | `{}` | no |
 | <a name="input_intra_subnets"></a> [intra\_subnets](#input\_intra\_subnets) | A list of intra subnet CIDR blocks inside the VCN. Each gets a dedicated empty route table (no rules - fully isolated, no NAT/IGW/SGW routes) | `list(string)` | `[]` | no |
 | <a name="input_local_peering_gateways"></a> [local\_peering\_gateways](#input\_local\_peering\_gateways) | Map of Local Peering Gateways to attach to the VCN. Key is the LPG name, value is an object with optional peer\_id and route\_table\_id | `map(any)` | `null` | no |
-| <a name="input_lockdown_default_seclist"></a> [lockdown\_default\_seclist](#input\_lockdown\_default\_seclist) | Whether to remove all default security rules from the VCN Default Security List. Recommended true for security best practice | `bool` | `true` | no |
+| <a name="input_lockdown_default_security_list"></a> [lockdown\_default\_security\_list](#input\_lockdown\_default\_security\_list) | Whether to remove all default security rules from the VCN Default Security List. Recommended true for security best practice | `bool` | `true` | no |
 | <a name="input_name"></a> [name](#input\_name) | Name to be used on all the resources as identifier | `string` | `""` | no |
 | <a name="input_nat_gateway_destination_cidr_block"></a> [nat\_gateway\_destination\_cidr\_block](#input\_nat\_gateway\_destination\_cidr\_block) | Used to pass a custom destination route for private NAT Gateway. If not specified, the default 0.0.0.0/0 is used as a destination route | `string` | `"0.0.0.0/0"` | no |
 | <a name="input_nat_gateway_public_ip_id"></a> [nat\_gateway\_public\_ip\_id](#input\_nat\_gateway\_public\_ip\_id) | Controls the public IP attached to the first (or only) NAT Gateway:<br/>  - null (default): OCI assigns an ephemeral public IP automatically.<br/>  - "RESERVED": the module creates a new reserved public IP and attaches it.<br/>    Use this to get a stable, predictable outbound IP (e.g. for firewall allowlisting).<br/>  - "<ocid>": attach an existing reserved public IP by OCID.<br/>Has no effect when enable\_nat\_gateway = false.<br/>When multiple NAT gateways are created, only the first one gets this IP. | `string` | `null` | no |
 | <a name="input_nat_gateway_route_rules"></a> [nat\_gateway\_route\_rules](#input\_nat\_gateway\_route\_rules) | Additional route rules to add to the NAT Gateway route table(s). Use symbolic network\_entity\_id values: 'drg', 'nat\_gateway', 'lpg@<key>' | `list(map(string))` | `null` | no |
 | <a name="input_nat_gateway_tags"></a> [nat\_gateway\_tags](#input\_nat\_gateway\_tags) | Additional freeform tags for the NAT Gateways | `map(string)` | `{}` | no |
-| <a name="input_one_nat_gateway_per_ad"></a> [one\_nat\_gateway\_per\_ad](#input\_one\_nat\_gateway\_per\_ad) | Should be true if you want one NAT Gateway per availability domain. Has no effect when ads = [] (regional subnets) - in that case a single NAT Gateway is sufficient since regional subnets already span all ADs. Requires var.availability\_domain\_numbers to be set and var.single\_nat\_gateway to be false | `bool` | `false` | no |
+| <a name="input_one_nat_gateway_per_ad"></a> [one\_nat\_gateway\_per\_ad](#input\_one\_nat\_gateway\_per\_ad) | Should be true if you want one NAT Gateway per availability domain. Requires availability\_domains to be set and single\_nat\_gateway to be false. Has no effect when availability\_domains = [] (regional subnets), since those already span all ADs and a single NAT Gateway is sufficient | `bool` | `false` | no |
 | <a name="input_private_acl_tags"></a> [private\_acl\_tags](#input\_private\_acl\_tags) | Additional freeform tags for the private dedicated security list | `map(string)` | `{}` | no |
 | <a name="input_private_dedicated_security_list"></a> [private\_dedicated\_security\_list](#input\_private\_dedicated\_security\_list) | Whether to create a dedicated security list for private subnets and attach it | `bool` | `false` | no |
 | <a name="input_private_inbound_security_rules"></a> [private\_inbound\_security\_rules](#input\_private\_inbound\_security\_rules) | Inbound (ingress) security rules for the private dedicated security list | <pre>list(object({<br/>    protocol    = string<br/>    source      = string<br/>    source_type = optional(string, "CIDR_BLOCK")<br/>    description = optional(string, null)<br/>    stateless   = optional(bool, false)<br/>    tcp_options = optional(object({<br/>      min = number<br/>      max = number<br/>    }), null)<br/>    udp_options = optional(object({<br/>      min = number<br/>      max = number<br/>    }), null)<br/>    icmp_options = optional(object({<br/>      type = number<br/>      code = optional(number, null)<br/>    }), null)<br/>  }))</pre> | <pre>[<br/>  {<br/>    "description": "Allow all inbound traffic",<br/>    "protocol": "all",<br/>    "source": "0.0.0.0/0",<br/>    "source_type": "CIDR_BLOCK"<br/>  }<br/>]</pre> | no |
@@ -301,8 +295,8 @@ No modules.
 
 | Name | Description |
 | ---- | ----------- |
-| <a name="output_ad_names"></a> [ad\_names](#output\_ad\_names) | Resolved availability domain names for the ADs specified in var.availability\_domain\_numbers |
-| <a name="output_ads"></a> [ads](#output\_ads) | A list of availability domain numbers specified as argument to this module |
+| <a name="output_availability_domain_names"></a> [availability\_domain\_names](#output\_availability\_domain\_names) | Resolved availability domain names for the ADs specified in var.availability\_domains |
+| <a name="output_availability_domains"></a> [availability\_domains](#output\_availability\_domains) | The availability domain numbers passed to this module |
 | <a name="output_database_route_table_ids"></a> [database\_route\_table\_ids](#output\_database\_route\_table\_ids) | List of OCIDs of the dedicated database route tables (one per NAT GW when one\_nat\_gateway\_per\_ad=true) |
 | <a name="output_database_security_list_id"></a> [database\_security\_list\_id](#output\_database\_security\_list\_id) | The OCID of the dedicated database security list (null if not created) |
 | <a name="output_database_subnet_objects"></a> [database\_subnet\_objects](#output\_database\_subnet\_objects) | A list of all database subnet objects (full attributes) |
@@ -315,8 +309,6 @@ No modules.
 | <a name="output_dhcp_options_id"></a> [dhcp\_options\_id](#output\_dhcp\_options\_id) | The OCID of the custom DHCP options set created by this module. Null when enable\_dhcp\_options = false |
 | <a name="output_flow_log_group_ids"></a> [flow\_log\_group\_ids](#output\_flow\_log\_group\_ids) | Map of subnet type to flow log group OCID |
 | <a name="output_flow_log_ids"></a> [flow\_log\_ids](#output\_flow\_log\_ids) | Map of subnet key to flow log OCID |
-| <a name="output_ig_route_all_attributes"></a> [ig\_route\_all\_attributes](#output\_ig\_route\_all\_attributes) | All attributes of the Internet Gateway route table (full object, auto-updating) |
-| <a name="output_ig_route_id"></a> [ig\_route\_id](#output\_ig\_route\_id) | The OCID of the Internet Gateway route table |
 | <a name="output_internet_gateway_all_attributes"></a> [internet\_gateway\_all\_attributes](#output\_internet\_gateway\_all\_attributes) | All attributes of the created Internet Gateway (full object, auto-updating) |
 | <a name="output_internet_gateway_id"></a> [internet\_gateway\_id](#output\_internet\_gateway\_id) | The OCID of the Internet Gateway |
 | <a name="output_intra_route_table_id"></a> [intra\_route\_table\_id](#output\_intra\_route\_table\_id) | The OCID of the intra (isolated) route table |
@@ -325,21 +317,21 @@ No modules.
 | <a name="output_intra_subnets"></a> [intra\_subnets](#output\_intra\_subnets) | List of OCIDs of intra subnets |
 | <a name="output_intra_subnets_cidr_blocks"></a> [intra\_subnets\_cidr\_blocks](#output\_intra\_subnets\_cidr\_blocks) | List of CIDR blocks of intra subnets |
 | <a name="output_intra_subnets_ipv6_cidr_blocks"></a> [intra\_subnets\_ipv6\_cidr\_blocks](#output\_intra\_subnets\_ipv6\_cidr\_blocks) | List of IPv6 CIDR blocks of intra subnets |
-| <a name="output_lpg_all_attributes"></a> [lpg\_all\_attributes](#output\_lpg\_all\_attributes) | All attributes of created Local Peering Gateways (full objects, auto-updating) |
-| <a name="output_lpg_ids"></a> [lpg\_ids](#output\_lpg\_ids) | Map of LPG name to OCID for all created Local Peering Gateways |
+| <a name="output_local_peering_gateway_all_attributes"></a> [local\_peering\_gateway\_all\_attributes](#output\_local\_peering\_gateway\_all\_attributes) | All attributes of created Local Peering Gateways (full objects, auto-updating) |
+| <a name="output_local_peering_gateway_ids"></a> [local\_peering\_gateway\_ids](#output\_local\_peering\_gateway\_ids) | Map of LPG name to OCID for all created Local Peering Gateways |
 | <a name="output_name"></a> [name](#output\_name) | The name specified as argument to this module |
 | <a name="output_nat_gateway_all_attributes"></a> [nat\_gateway\_all\_attributes](#output\_nat\_gateway\_all\_attributes) | All attributes of created NAT Gateways (full objects, auto-updating) |
 | <a name="output_nat_ids"></a> [nat\_ids](#output\_nat\_ids) | List of OCIDs of NAT Gateways |
 | <a name="output_nat_public_ips"></a> [nat\_public\_ips](#output\_nat\_public\_ips) | List of public IP addresses of NAT Gateways |
 | <a name="output_nat_reserved_public_ip_id"></a> [nat\_reserved\_public\_ip\_id](#output\_nat\_reserved\_public\_ip\_id) | OCID of the reserved public IP created for the NAT Gateway (null when nat\_gateway\_public\_ip\_id != 'RESERVED') |
-| <a name="output_nat_route_all_attributes"></a> [nat\_route\_all\_attributes](#output\_nat\_route\_all\_attributes) | All attributes of NAT Gateway route tables (full objects, auto-updating) |
-| <a name="output_nat_route_ids"></a> [nat\_route\_ids](#output\_nat\_route\_ids) | List of OCIDs of NAT Gateway route tables |
+| <a name="output_private_route_table_all_attributes"></a> [private\_route\_table\_all\_attributes](#output\_private\_route\_table\_all\_attributes) | All attributes of NAT Gateway route tables (full objects, auto-updating) |
 | <a name="output_private_route_table_ids"></a> [private\_route\_table\_ids](#output\_private\_route\_table\_ids) | List of OCIDs of the NAT Gateway route tables (one per NAT GW, used by private subnets) |
 | <a name="output_private_security_list_id"></a> [private\_security\_list\_id](#output\_private\_security\_list\_id) | The OCID of the dedicated private security list (null if not created) |
 | <a name="output_private_subnet_objects"></a> [private\_subnet\_objects](#output\_private\_subnet\_objects) | A list of all private subnet objects (full attributes) |
 | <a name="output_private_subnets"></a> [private\_subnets](#output\_private\_subnets) | List of OCIDs of private subnets |
 | <a name="output_private_subnets_cidr_blocks"></a> [private\_subnets\_cidr\_blocks](#output\_private\_subnets\_cidr\_blocks) | List of CIDR blocks of private subnets |
 | <a name="output_private_subnets_ipv6_cidr_blocks"></a> [private\_subnets\_ipv6\_cidr\_blocks](#output\_private\_subnets\_ipv6\_cidr\_blocks) | List of IPv6 CIDR blocks of private subnets |
+| <a name="output_public_route_table_all_attributes"></a> [public\_route\_table\_all\_attributes](#output\_public\_route\_table\_all\_attributes) | All attributes of the Internet Gateway route table (full object, auto-updating) |
 | <a name="output_public_route_table_id"></a> [public\_route\_table\_id](#output\_public\_route\_table\_id) | The OCID of the Internet Gateway route table (used by public subnets) |
 | <a name="output_public_security_list_id"></a> [public\_security\_list\_id](#output\_public\_security\_list\_id) | The OCID of the dedicated public security list (null if not created) |
 | <a name="output_public_subnet_objects"></a> [public\_subnet\_objects](#output\_public\_subnet\_objects) | A list of all public subnet objects (full attributes) |

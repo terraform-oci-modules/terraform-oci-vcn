@@ -66,7 +66,7 @@ module "vcn_ashburn" {
 
   vcn_cidr_block = local.vcn_cidr_ashburn
 
-  # Regional subnets - ads = [] (default); each subnet spans all ADs automatically
+  # Regional subnets - availability_domains = [] (default); each subnet spans all ADs automatically
   public_subnets = [
     cidrsubnet(local.vcn_cidr_ashburn, 4, 8), # 10.0.128.0/20
     cidrsubnet(local.vcn_cidr_ashburn, 4, 9), # 10.0.144.0/20
@@ -113,7 +113,7 @@ module "vcn_chicago" {
 
   vcn_cidr_block = local.vcn_cidr_chicago
 
-  # Regional subnets - ads = [] (default); each subnet spans all ADs automatically
+  # Regional subnets - availability_domains = [] (default); each subnet spans all ADs automatically
   # Chicago is a private spoke - no internet access, cross-region traffic via DRG
   private_subnets = [
     cidrsubnet(local.vcn_cidr_chicago, 4, 0), # 10.1.0.0/20

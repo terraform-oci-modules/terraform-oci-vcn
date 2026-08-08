@@ -21,7 +21,7 @@ locals {
 # Minimal setup: one VCN with public and private subnets, a single shared NAT
 # Gateway, and a Service Gateway for Oracle services (Object Storage, Logging…).
 # create_igw defaults to true - an Internet Gateway is created automatically.
-# Subnets are regional (ads = [] default), meaning each subnet spans all ADs.
+# Subnets are regional (availability_domains = [] default), meaning each subnet spans all ADs.
 ################################################################################
 
 module "vcn" {
@@ -32,7 +32,7 @@ module "vcn" {
 
   vcn_cidr_block = local.vcn_cidr # 10.0.0.0/16
 
-  # Regional subnets - ads = [] (default) means each subnet spans all ADs.
+  # Regional subnets - availability_domains = [] (default) means each subnet spans all ADs.
   # Each /20 block holds 4,094 usable addresses.
   private_subnets = [                 # outbound via NAT, no inbound from internet
     cidrsubnet(local.vcn_cidr, 4, 0), # 10.0.0.0/20
