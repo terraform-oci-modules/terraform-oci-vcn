@@ -17,7 +17,7 @@ Gaps are split three ways:
 
 | Feature           | AWS                                                | OCI                                      | Status   |
 | ----------------- | -------------------------------------------------- | ---------------------------------------- | -------- |
-| Create toggle     | `create_vpc`                                       | `create`                             | mapped   |
+| Create toggle     | `create_vpc`                                       | `create_vcn`                             | mapped   |
 | Resource name     | `name`                                             | `name`                                   | mapped   |
 | Primary CIDR      | `cidr`                                             | `vcn_cidr_block`                         | mapped   |
 | Secondary CIDRs   | `secondary_cidr_blocks`                            | `secondary_cidr_blocks`                  | mapped   |
@@ -151,8 +151,8 @@ Per-tier interface, identical across all four OCI tiers:
 | Feature                              | AWS                                         | OCI                                                       | Status            |
 | ------------------------------------ | ------------------------------------------- | ---------------------------------------------------------- | ----------------- |
 | Dedicated ACL/security list per tier | `<tier>_dedicated_network_acl`              | `<tier>_dedicated_security_list`                          | mapped            |
-| Per-tier rules                       | `<tier>_inbound_acl_rules` / `_outbound_*`  | `<tier>_ingress_security_rules` / `<tier>_egress_security_rules` | mapped   |
-| Per-tier ACL/seclist tags            | `<tier>_acl_tags`                           | `<tier>_security_list_tags`                               | mapped   |
+| Per-tier rules                       | `<tier>_inbound_acl_rules` / `_outbound_*`  | `<tier>_inbound_security_rules` / `<tier>_outbound_security_rules` | mapped   |
+| Per-tier ACL/seclist tags            | `<tier>_acl_tags`                           | `<tier>_acl_tags`                               | mapped   |
 | Default SG / seclist lockdown        | `manage_default_security_group`             | `lockdown_default_security_list`                                | mapped (inverted) |
 | Manage default VPC/VCN               | `manage_default_vpc`                        | none                                                      | n/a               |
 | Default network ACL                  | `manage_default_network_acl`                | none (OCI has no NACL resource separate from seclists)    | n/a               |
@@ -197,7 +197,7 @@ Equivalent concept, different name. Anything not listed maps by an identical nam
 
 | AWS                                | OCI                                                             | Notes                                                 |
 | ---------------------------------- | ----------------------------------------------------------------- | ----------------------------------------------------- |
-| `create_vpc`                       | `create`                                                    | master toggle                                         |
+| `create_vpc`                       | `create_vcn`                                                    | master toggle                                         |
 | `cidr`                             | `vcn_cidr_block`                                                | primary CIDR block                                    |
 | `azs`                              | `availability_domains`                                   | AWS takes AZ name strings, OCI takes integers 1/2/3   |
 | `tags`                             | `tags` (freeform) + `defined_tags`                              | OCI has two tag systems                               |
@@ -207,11 +207,8 @@ Equivalent concept, different name. Anything not listed maps by an identical nam
 | `reuse_nat_ips` + `external_nat_ip_ids` | `nat_gateway_public_ip_id`                                 | single value, not a list: `null`, `"RESERVED"`, or an OCID |
 | `manage_default_security_group`    | `lockdown_default_security_list`                                      | inverted semantics: AWS manages rules, OCI denies all |
 | `<tier>_dedicated_network_acl`     | `<tier>_dedicated_security_list`                                |                                                       |
-| `<tier>_inbound_acl_rules`         | `<tier>_ingress_security_rules`                                 |                                                       |
-| `<tier>_outbound_acl_rules`        | `<tier>_egress_security_rules`                                |                                                       |
-| `<tier>_acl_tags`                  | `<tier>_security_list_tags`                                     |                                                       |
-| `create_igw`                       | `create_igw`                                       |                                                       |
-| `igw_tags`                         | `igw_tags`                                         |                                                       |
+| `<tier>_inbound_acl_rules`         | `<tier>_inbound_security_rules`                                 |                                                       |
+| `<tier>_outbound_acl_rules`        | `<tier>_outbound_security_rules`                                |                                                       |
 | `dhcp_options_domain_name_servers` | `dhcp_options_server_type` + `dhcp_options_domain_name_servers` | different model, see DHCP options above               |
 | `vpc_flow_log_tags`                | `flow_log_tags`                                                 |                                                       |
 
@@ -245,7 +242,7 @@ OCI-only variables, no AWS counterpart:
 | `default_security_group_id`       | `default_security_list_id`        |                                    |
 | `dhcp_options_id`                 | `dhcp_options_id`                 |                                    |
 | `igw_id`                          | `internet_gateway_id`             |                                    |
-| `nat_ids`, `nat_public_ips`       | `nat_ids`, `nat_public_ips` | renamed to match the `nat_gateway_*` variables |
+| `nat_ids`, `nat_public_ips`       | `nat_ids`, `nat_public_ips`       |                                    |
 | `<tier>_subnets`                  | `<tier>_subnets`                  | subnet IDs, all four tiers         |
 | `<tier>_subnet_objects`           | `<tier>_subnet_objects`           |                                    |
 | `<tier>_subnets_cidr_blocks`      | `<tier>_subnets_cidr_blocks`      |                                    |
