@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.7.0](https://github.com/terraform-oci-modules/terraform-oci-vcn/compare/v0.6.0...v0.7.0) (2026-08-08)
+
+### Features
+
+* Rename availability domain and OCI-only outputs for clarity ([#2](https://github.com/terraform-oci-modules/terraform-oci-vcn/issues/2)) ([a149191](https://github.com/terraform-oci-modules/terraform-oci-vcn/commit/a1491914a7bb12b3350b036cc4a5231a3c4b41d1))
+
 ## [0.6.0](https://github.com/terraform-oci-modules/terraform-oci-vcn/compare/v0.5.0...v0.6.0) (2026-08-03)
 
 ### Features
