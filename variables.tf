@@ -49,25 +49,27 @@ variable "secondary_cidr_blocks" {
   default     = []
 }
 
-variable "availability_domain_numbers" {
+variable "availability_domains" {
   description = <<-EOT
     List of availability domain numbers (e.g. [1, 2, 3]) to pin subnets to specific ADs.
 
     OCI supports two subnet placement modes:
-      - Regional (default, recommended): leave ads = [] - subnets span all ADs in the
-        region automatically. This is the simplest and most resilient choice for most workloads.
-      - AD-specific: set ads = [1, 2, 3] - each subnet is pinned to one AD. Use this only
-        when you need workload-level AD affinity (e.g. bare metal, local NVMe, AD-local services).
+      - Regional (default, recommended): leave availability_domains = [] - subnets
+        span all ADs in the region automatically. This is the simplest and most
+        resilient choice for most workloads.
+      - AD-specific: set availability_domains = [1, 2, 3] - each subnet is pinned to
+        one AD. Use this only when you need workload-level AD affinity (e.g. bare
+        metal, local NVMe, AD-local services).
 
-    When ads is set, subnets are distributed round-robin across the listed ADs so you can
+    When set, subnets are distributed round-robin across the listed ADs, so you can
     create more subnets than ADs (e.g. 6 subnets across 3 ADs gives two subnets per AD).
   EOT
   type        = list(number)
   default     = []
 
   validation {
-    condition     = alltrue([for n in var.availability_domain_numbers : n >= 1 && n <= 3])
-    error_message = "All ads values must be between 1 and 3. OCI regions have at most 3 availability domains."
+    condition     = alltrue([for n in var.availability_domains : n >= 1 && n <= 3])
+    error_message = "All availability_domains values must be between 1 and 3. OCI regions have at most 3 availability domains."
   }
 }
 
@@ -351,7 +353,7 @@ variable "single_nat_gateway" {
 }
 
 variable "one_nat_gateway_per_ad" {
-  description = "Should be true if you want one NAT Gateway per availability domain. Has no effect when ads = [] (regional subnets) - in that case a single NAT Gateway is sufficient since regional subnets already span all ADs. Requires var.availability_domain_numbers to be set and var.single_nat_gateway to be false"
+  description = "Should be true if you want one NAT Gateway per availability domain. Requires availability_domains to be set and single_nat_gateway to be false. Has no effect when availability_domains = [] (regional subnets), since those already span all ADs and a single NAT Gateway is sufficient"
   type        = bool
   default     = false
 }
@@ -463,7 +465,7 @@ variable "dhcp_options_tags" {
 # Default Security List
 ################################################################################
 
-variable "lockdown_default_seclist" {
+variable "lockdown_default_security_list" {
   description = "Whether to remove all default security rules from the VCN Default Security List. Recommended true for security best practice"
   type        = bool
   default     = true

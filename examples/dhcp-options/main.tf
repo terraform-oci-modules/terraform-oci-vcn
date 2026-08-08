@@ -54,7 +54,7 @@ module "vcn_search_domain" {
 
   vcn_cidr_block = local.vcn_cidr
 
-  # Regional subnets - ads = [] (default); each subnet spans all ADs automatically
+  # Regional subnets - availability_domains = [] (default); each subnet spans all ADs automatically
   private_subnets = [
     cidrsubnet(local.vcn_cidr, 4, 0), # 10.0.0.0/20
     cidrsubnet(local.vcn_cidr, 4, 1), # 10.0.16.0/20
@@ -92,7 +92,7 @@ module "vcn_custom_dns" {
 
   vcn_cidr_block = "10.1.0.0/16"
 
-  # Regional subnets - ads = [] (default); each subnet spans all ADs automatically
+  # Regional subnets - availability_domains = [] (default); each subnet spans all ADs automatically
   # Private-only VCN - no IGW, no public subnets; DNS via custom forwarders
   private_subnets = [
     cidrsubnet("10.1.0.0/16", 4, 0), # 10.1.0.0/20

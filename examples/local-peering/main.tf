@@ -51,7 +51,7 @@ module "vcn_hub" {
 
   vcn_cidr_block = local.hub_cidr
 
-  # Regional subnets - ads = [] (default); each subnet spans all ADs automatically
+  # Regional subnets - availability_domains = [] (default); each subnet spans all ADs automatically
   # Hub public subnets - internet-facing; hub is the internet exit point for the spoke
   public_subnets = [
     cidrsubnet(local.hub_cidr, 4, 8), # 10.0.128.0/20
@@ -105,7 +105,7 @@ module "vcn_spoke" {
 
   vcn_cidr_block = local.spoke_cidr
 
-  # Regional subnets - ads = [] (default); each subnet spans all ADs automatically
+  # Regional subnets - availability_domains = [] (default); each subnet spans all ADs automatically
   # Spoke private subnets - egress goes to hub via LPG, not directly to internet
   private_subnets = [
     cidrsubnet(local.spoke_cidr, 4, 0), # 10.1.0.0/20
@@ -120,7 +120,7 @@ module "vcn_spoke" {
   # Create the spoke-side LPG in requestor mode - sets peer_id to initiate peering
   local_peering_gateways = {
     to-hub = {
-      peer_id = module.vcn_hub.lpg_ids["to-spoke"]
+      peer_id = module.vcn_hub.local_peering_gateway_ids["to-spoke"]
     }
   }
 

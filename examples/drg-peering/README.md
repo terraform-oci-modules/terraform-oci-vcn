@@ -16,7 +16,7 @@ The Ashburn VCN has public and private subnets, an Internet Gateway, a NAT Gatew
 2. An RPC is created on each DRG. One side is the *requestor* - it sets `peer_id` and `peer_region_name` to initiate the connection. The other side is the *acceptor* and omits `peer_id`. Here Ashburn is the requestor and Chicago is the acceptor.
 3. Route tables on each VCN must have a route pointing the remote CIDR at the local DRG. This example uses the symbolic `"drg"` value in `nat_gateway_route_rules`, which the module resolves to the correct DRG OCID via `attached_drg_id`.
 
-Subnets in both VCNs are **regional** (`ads` not set) - each spans all availability domains automatically.
+Subnets in both VCNs are **regional** (`availability_domains` not set) - each spans all availability domains automatically.
 
 [Read more about OCI DRG Remote Peering](https://docs.oracle.com/en-us/iaas/Content/Network/Tasks/remoteVCNpeering.htm).
 

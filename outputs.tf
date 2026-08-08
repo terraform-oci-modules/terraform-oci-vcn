@@ -202,12 +202,8 @@ output "internet_gateway_all_attributes" {
   value       = { for k, v in oci_core_internet_gateway.this : k => v }
 }
 
-output "ig_route_id" {
-  description = "The OCID of the Internet Gateway route table"
-  value       = try(oci_core_route_table.ig[0].id, null)
-}
 
-output "ig_route_all_attributes" {
+output "public_route_table_all_attributes" {
   description = "All attributes of the Internet Gateway route table (full object, auto-updating)"
   value       = { for k, v in oci_core_route_table.ig : k => v }
 }
@@ -236,12 +232,8 @@ output "nat_gateway_all_attributes" {
   value       = { for k, v in oci_core_nat_gateway.this : k => v }
 }
 
-output "nat_route_ids" {
-  description = "List of OCIDs of NAT Gateway route tables"
-  value       = oci_core_route_table.nat[*].id
-}
 
-output "nat_route_all_attributes" {
+output "private_route_table_all_attributes" {
   description = "All attributes of NAT Gateway route tables (full objects, auto-updating)"
   value       = { for k, v in oci_core_route_table.nat : k => v }
 }
@@ -264,12 +256,12 @@ output "service_gateway_all_attributes" {
 # Local Peering Gateways (OCI-specific)
 ################################################################################
 
-output "lpg_ids" {
+output "local_peering_gateway_ids" {
   description = "Map of LPG name to OCID for all created Local Peering Gateways"
   value       = { for k, v in oci_core_local_peering_gateway.lpg : k => v.id }
 }
 
-output "lpg_all_attributes" {
+output "local_peering_gateway_all_attributes" {
   description = "All attributes of created Local Peering Gateways (full objects, auto-updating)"
   value       = { for k, v in oci_core_local_peering_gateway.lpg : k => v }
 }
@@ -292,14 +284,14 @@ output "flow_log_ids" {
 # Static values (arguments)
 ################################################################################
 
-output "ads" {
-  description = "A list of availability domain numbers specified as argument to this module"
-  value       = var.availability_domain_numbers
+output "availability_domains" {
+  description = "The availability domain numbers passed to this module"
+  value       = var.availability_domains
 }
 
-output "ad_names" {
-  description = "Resolved availability domain names for the ADs specified in var.availability_domain_numbers"
-  value       = local.ad_names
+output "availability_domain_names" {
+  description = "Resolved availability domain names for the ADs specified in var.availability_domains"
+  value       = local.availability_domain_names
 }
 
 output "name" {

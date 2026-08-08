@@ -4,7 +4,7 @@ module "wrapper" {
   for_each = var.items
 
   attached_drg_id                        = try(each.value.attached_drg_id, var.defaults.attached_drg_id, null)
-  availability_domain_numbers            = try(each.value.availability_domain_numbers, var.defaults.availability_domain_numbers, [])
+  availability_domains                   = try(each.value.availability_domains, var.defaults.availability_domains, [])
   compartment_id                         = try(each.value.compartment_id, var.defaults.compartment_id)
   create_database_internet_gateway_route = try(each.value.create_database_internet_gateway_route, var.defaults.create_database_internet_gateway_route, false)
   create_database_subnet_route_table     = try(each.value.create_database_subnet_route_table, var.defaults.create_database_subnet_route_table, false)
@@ -78,7 +78,7 @@ module "wrapper" {
   intra_subnet_tags_per_ad           = try(each.value.intra_subnet_tags_per_ad, var.defaults.intra_subnet_tags_per_ad, {})
   intra_subnets                      = try(each.value.intra_subnets, var.defaults.intra_subnets, [])
   local_peering_gateways             = try(each.value.local_peering_gateways, var.defaults.local_peering_gateways, null)
-  lockdown_default_seclist           = try(each.value.lockdown_default_seclist, var.defaults.lockdown_default_seclist, true)
+  lockdown_default_security_list     = try(each.value.lockdown_default_security_list, var.defaults.lockdown_default_security_list, true)
   name                               = try(each.value.name, var.defaults.name, "")
   nat_gateway_destination_cidr_block = try(each.value.nat_gateway_destination_cidr_block, var.defaults.nat_gateway_destination_cidr_block, "0.0.0.0/0")
   nat_gateway_public_ip_id           = try(each.value.nat_gateway_public_ip_id, var.defaults.nat_gateway_public_ip_id, null)

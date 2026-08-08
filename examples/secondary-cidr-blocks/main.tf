@@ -38,7 +38,7 @@ module "vcn" {
   # Attach a secondary CIDR block
   secondary_cidr_blocks = [local.secondary_cidr]
 
-  # Regional subnets - ads = [] (default); each subnet spans all ADs automatically
+  # Regional subnets - availability_domains = [] (default); each subnet spans all ADs automatically
   # Public subnets - from the primary CIDR, internet-facing
   public_subnets = [
     cidrsubnet(local.vcn_cidr, 4, 8), # 10.0.128.0/20

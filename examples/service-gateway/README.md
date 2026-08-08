@@ -21,7 +21,7 @@ The route tables created are:
 | -------------------------- | ---------------- | ------------------------- |
 | `<name>-db-rt` (dedicated) | database subnets | SGW → all Oracle services |
 
-Private subnets use the VCN default route table (empty - no routes) when there is no NAT Gateway, leaving them with no egress path. All subnets are **regional** (`ads` not set) - each spans all availability domains automatically.
+Private subnets use the VCN default route table (empty - no routes) when there is no NAT Gateway, leaving them with no egress path. All subnets are **regional** (`availability_domains` not set) - each spans all availability domains automatically.
 
 [Read more about OCI Service Gateways](https://docs.oracle.com/en-us/iaas/Content/Network/Tasks/servicegateway.htm).
 

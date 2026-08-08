@@ -5,7 +5,7 @@ Configuration in this directory demonstrates two patterns for attaching OCI flow
 **Pattern 1** - Public subnet flow log with its own dedicated log group (new `oci_logging_log_group` created).
 **Pattern 2** - Private subnet flow log that reuses the log group created in Pattern 1.
 
-Both subnets are **regional** (`ads` not set) - each spans all availability domains automatically.
+Both subnets are **regional** (`availability_domains` not set) - each spans all availability domains automatically.
 
 [Read more about OCI flow logs](https://docs.oracle.com/en-us/iaas/Content/Network/Concepts/vcn_flow_logs.htm).
 

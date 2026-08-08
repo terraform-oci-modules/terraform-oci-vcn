@@ -19,7 +19,7 @@ Two VCNs are created side-by-side to show both supported DNS server types:
 
 - `CustomDnsServer` - bypasses OCI's resolver entirely. All DNS queries are sent to the IP addresses listed in `dhcp_options_domain_name_servers`. Use this when instances must resolve names from an on-premises or custom DNS infrastructure.
 
-Subnets in both VCNs are **regional** (`ads` not set) - each spans all availability domains automatically.
+Subnets in both VCNs are **regional** (`availability_domains` not set) - each spans all availability domains automatically.
 
 [Read more about OCI DHCP Options](https://docs.oracle.com/en-us/iaas/Content/Network/Tasks/managingDHCP.htm).
 

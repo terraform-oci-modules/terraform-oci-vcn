@@ -38,7 +38,7 @@ module "vcn" {
 
   enable_ipv6 = true
 
-  # Regional subnets - ads = [] (default); each subnet spans all ADs automatically
+  # Regional subnets - availability_domains = [] (default); each subnet spans all ADs automatically
 
   # Public subnets - internet-facing; each gets a /64 IPv6 prefix (offsets 0, 1, 2)
   public_subnets = ["10.0.128.0/20", "10.0.144.0/20", "10.0.160.0/20"]

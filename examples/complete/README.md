@@ -54,8 +54,8 @@ No resources.
 
 | Name | Description |
 | ---- | ----------- |
-| <a name="output_ad_names"></a> [ad\_names](#output\_ad\_names) | Resolved availability domain names |
-| <a name="output_ads"></a> [ads](#output\_ads) | AD numbers specified as input |
+| <a name="output_availability_domain_names"></a> [availability\_domain\_names](#output\_availability\_domain\_names) | Resolved availability domain names |
+| <a name="output_availability_domains"></a> [availability\_domains](#output\_availability\_domains) | AD numbers specified as input |
 | <a name="output_database_route_table_ids"></a> [database\_route\_table\_ids](#output\_database\_route\_table\_ids) | List of OCIDs of the dedicated database route tables |
 | <a name="output_database_subnets"></a> [database\_subnets](#output\_database\_subnets) | List of OCIDs of database subnets |
 | <a name="output_database_subnets_cidr_blocks"></a> [database\_subnets\_cidr\_blocks](#output\_database\_subnets\_cidr\_blocks) | List of CIDR blocks of database subnets |
