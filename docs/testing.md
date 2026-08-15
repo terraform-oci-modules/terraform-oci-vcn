@@ -4,14 +4,26 @@ The test suite lives in `tests/` - one `.tftest.hcl` file per example. All tests
 
 ## Prerequisites
 
-- Terraform >= 1.6
+- Terraform >= 1.7
 - OCI credentials configured - any of:
   - Environment variables (`OCI_CLI_TENANCY`, `OCI_CLI_USER`, `OCI_CLI_FINGERPRINT`, `OCI_CLI_KEY_FILE`, `OCI_CLI_REGION`)
   - A config file at `~/.oci/config`
   - Instance principal (when running from an OCI compute instance)
 - A target compartment OCID
 
-## Quick start
+## Quick start (free, no credentials needed)
+
+`tests/unit_mappings.tftest.hcl` exercises input->config mapping logic (AD
+resolution/round-robin, NAT gateway count, VCN DNS label derivation, subnet
+naming, per-AD tags) against a mocked OCI provider via `command = plan` - no
+real resources, no OCI credentials, safe to run anytime:
+
+```bash
+terraform init
+terraform test -filter=tests/unit_mappings.tftest.hcl
+```
+
+## Quick start (real resources, needs credentials)
 
 ```bash
 export TF_VAR_compartment_id="ocid1.compartment.oc1.."
@@ -29,6 +41,6 @@ terraform test
 
 ## Notes
 
-- Tests use `command = apply` - they create and destroy **real** OCI resources and may incur cost.
+- All tests except `tests/unit_mappings.tftest.hcl` use `command = apply` - they create and destroy **real** OCI resources and may incur cost.
 - The `drg-peering` example requires your tenancy to be subscribed to both `us-ashburn-1` and `us-chicago-1`.
 - The `ipv6-dualstack` example follows a two-step apply workflow; the test covers step 1 only (VCN + subnets created, IPv6 /56 assigned).
