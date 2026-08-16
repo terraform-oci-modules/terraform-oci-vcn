@@ -205,23 +205,17 @@ output "internet_gateway_all_attributes" {
 
 output "public_route_table_all_attributes" {
   # route_rules is deliberately excluded: it's a set of objects containing
-  # the deprecated cidr_block sub-attribute, and merely reading that
-  # attribute at all - even to select only its non-deprecated sub-fields -
-  # triggers the provider's "Deprecated value used" warning. destination/
-  # destination_type (its non-deprecated replacement) are what this module
-  # itself sets; there is no way to expose route rule data here without
-  # reintroducing the warning.
+  # the deprecated cidr_block sub-attribute. Filtering it out by key (rather
+  # than reading the resource wholesale, or reconstructing every other
+  # attribute by hand) avoids ever evaluating route_rules' value at all,
+  # which is what actually triggers the provider's "Deprecated value used"
+  # warning - not merely its presence in the final output. destination/
+  # destination_type (route_rules' non-deprecated replacement) are what this
+  # module itself sets.
   description = "Attributes of the Internet Gateway route table, excluding route_rules (a deprecated attribute lives inside it - see comment in source)"
   value = {
     for k, v in oci_core_route_table.ig : k => {
-      id             = v.id
-      compartment_id = v.compartment_id
-      display_name   = v.display_name
-      vcn_id         = v.vcn_id
-      freeform_tags  = v.freeform_tags
-      defined_tags   = v.defined_tags
-      state          = v.state
-      time_created   = v.time_created
+      for ak, av in v : ak => av if ak != "route_rules"
     }
   }
 }
@@ -257,14 +251,7 @@ output "private_route_table_all_attributes" {
   description = "Attributes of NAT Gateway route tables, excluding route_rules (a deprecated attribute lives inside it - see comment in source)"
   value = {
     for k, v in oci_core_route_table.nat : k => {
-      id             = v.id
-      compartment_id = v.compartment_id
-      display_name   = v.display_name
-      vcn_id         = v.vcn_id
-      freeform_tags  = v.freeform_tags
-      defined_tags   = v.defined_tags
-      state          = v.state
-      time_created   = v.time_created
+      for ak, av in v : ak => av if ak != "route_rules"
     }
   }
 }
