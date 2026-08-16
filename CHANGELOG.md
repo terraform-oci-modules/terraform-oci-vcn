@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.7.2](https://github.com/terraform-oci-modules/terraform-oci-vcn/compare/v0.7.1...v0.7.2) (2026-08-16)
+
+### Bug Fixes
+
+* Exclude deprecated route_rules from route table outputs ([6a3260f](https://github.com/terraform-oci-modules/terraform-oci-vcn/commit/6a3260f5420bf5d17beb324715dc730df8e0f7d8))
+
 ## [0.7.1](https://github.com/terraform-oci-modules/terraform-oci-vcn/compare/v0.7.0...v0.7.1) (2026-08-16)
 
 ### Bug Fixes
