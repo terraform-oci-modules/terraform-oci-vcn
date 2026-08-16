@@ -324,14 +324,14 @@ No modules.
 | <a name="output_nat_ids"></a> [nat\_ids](#output\_nat\_ids) | List of OCIDs of NAT Gateways |
 | <a name="output_nat_public_ips"></a> [nat\_public\_ips](#output\_nat\_public\_ips) | List of public IP addresses of NAT Gateways |
 | <a name="output_nat_reserved_public_ip_id"></a> [nat\_reserved\_public\_ip\_id](#output\_nat\_reserved\_public\_ip\_id) | OCID of the reserved public IP created for the NAT Gateway (null when nat\_gateway\_public\_ip\_id != 'RESERVED') |
-| <a name="output_private_route_table_all_attributes"></a> [private\_route\_table\_all\_attributes](#output\_private\_route\_table\_all\_attributes) | All attributes of NAT Gateway route tables (full objects, auto-updating) |
+| <a name="output_private_route_table_all_attributes"></a> [private\_route\_table\_all\_attributes](#output\_private\_route\_table\_all\_attributes) | Attributes of NAT Gateway route tables, excluding route\_rules (a deprecated attribute lives inside it - see comment in source) |
 | <a name="output_private_route_table_ids"></a> [private\_route\_table\_ids](#output\_private\_route\_table\_ids) | List of OCIDs of the NAT Gateway route tables (one per NAT GW, used by private subnets) |
 | <a name="output_private_security_list_id"></a> [private\_security\_list\_id](#output\_private\_security\_list\_id) | The OCID of the dedicated private security list (null if not created) |
 | <a name="output_private_subnet_objects"></a> [private\_subnet\_objects](#output\_private\_subnet\_objects) | A list of all private subnet objects (full attributes) |
 | <a name="output_private_subnets"></a> [private\_subnets](#output\_private\_subnets) | List of OCIDs of private subnets |
 | <a name="output_private_subnets_cidr_blocks"></a> [private\_subnets\_cidr\_blocks](#output\_private\_subnets\_cidr\_blocks) | List of CIDR blocks of private subnets |
 | <a name="output_private_subnets_ipv6_cidr_blocks"></a> [private\_subnets\_ipv6\_cidr\_blocks](#output\_private\_subnets\_ipv6\_cidr\_blocks) | List of IPv6 CIDR blocks of private subnets |
-| <a name="output_public_route_table_all_attributes"></a> [public\_route\_table\_all\_attributes](#output\_public\_route\_table\_all\_attributes) | All attributes of the Internet Gateway route table (full object, auto-updating) |
+| <a name="output_public_route_table_all_attributes"></a> [public\_route\_table\_all\_attributes](#output\_public\_route\_table\_all\_attributes) | Attributes of the Internet Gateway route table, excluding route\_rules (a deprecated attribute lives inside it - see comment in source) |
 | <a name="output_public_route_table_id"></a> [public\_route\_table\_id](#output\_public\_route\_table\_id) | The OCID of the Internet Gateway route table (used by public subnets) |
 | <a name="output_public_security_list_id"></a> [public\_security\_list\_id](#output\_public\_security\_list\_id) | The OCID of the dedicated public security list (null if not created) |
 | <a name="output_public_subnet_objects"></a> [public\_subnet\_objects](#output\_public\_subnet\_objects) | A list of all public subnet objects (full attributes) |
