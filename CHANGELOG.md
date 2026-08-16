@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.7.1](https://github.com/terraform-oci-modules/terraform-oci-vcn/compare/v0.7.0...v0.7.1) (2026-08-16)
+
+### Bug Fixes
+
+* Bump required_version to 1.7, add free mock_provider unit tests ([7805062](https://github.com/terraform-oci-modules/terraform-oci-vcn/commit/78050622c6a0ed5514adf4f4b66acfd50e837126))
+
 ## [0.7.0](https://github.com/terraform-oci-modules/terraform-oci-vcn/compare/v0.6.0...v0.7.0) (2026-08-08)
 
 ### Features
