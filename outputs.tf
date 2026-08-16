@@ -204,8 +204,20 @@ output "internet_gateway_all_attributes" {
 
 
 output "public_route_table_all_attributes" {
-  description = "All attributes of the Internet Gateway route table (full object, auto-updating)"
-  value       = { for k, v in oci_core_route_table.ig : k => v }
+  # route_rules is deliberately excluded: it's a set of objects containing
+  # the deprecated cidr_block sub-attribute. Filtering it out by key (rather
+  # than reading the resource wholesale, or reconstructing every other
+  # attribute by hand) avoids ever evaluating route_rules' value at all,
+  # which is what actually triggers the provider's "Deprecated value used"
+  # warning - not merely its presence in the final output. destination/
+  # destination_type (route_rules' non-deprecated replacement) are what this
+  # module itself sets.
+  description = "Attributes of the Internet Gateway route table, excluding route_rules (a deprecated attribute lives inside it - see comment in source)"
+  value = {
+    for k, v in oci_core_route_table.ig : k => {
+      for ak, av in v : ak => av if ak != "route_rules"
+    }
+  }
 }
 
 ################################################################################
@@ -234,8 +246,14 @@ output "nat_gateway_all_attributes" {
 
 
 output "private_route_table_all_attributes" {
-  description = "All attributes of NAT Gateway route tables (full objects, auto-updating)"
-  value       = { for k, v in oci_core_route_table.nat : k => v }
+  # route_rules is deliberately excluded - see the comment on
+  # public_route_table_all_attributes above.
+  description = "Attributes of NAT Gateway route tables, excluding route_rules (a deprecated attribute lives inside it - see comment in source)"
+  value = {
+    for k, v in oci_core_route_table.nat : k => {
+      for ak, av in v : ak => av if ak != "route_rules"
+    }
+  }
 }
 
 ################################################################################
