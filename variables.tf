@@ -419,8 +419,11 @@ variable "attached_drg_id" {
 
 variable "local_peering_gateways" {
   description = "Map of Local Peering Gateways to attach to the VCN. Key is the LPG name, value is an object with optional peer_id and route_table_id"
-  type        = map(any)
-  default     = null
+  type = map(object({
+    peer_id        = optional(string)
+    route_table_id = optional(string)
+  }))
+  default = null
 }
 
 ################################################################################

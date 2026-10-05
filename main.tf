@@ -707,8 +707,8 @@ resource "oci_core_local_peering_gateway" "lpg" {
   vcn_id         = oci_core_vcn.this[0].id
   display_name   = "${var.name}-${each.key}"
 
-  peer_id        = can(each.value.peer_id) ? each.value.peer_id : null
-  route_table_id = can(each.value.route_table_id) ? each.value.route_table_id : null
+  peer_id        = each.value.peer_id
+  route_table_id = each.value.route_table_id
 
   freeform_tags = merge({ "Name" = "${var.name}-${each.key}" }, var.tags)
   defined_tags  = var.defined_tags

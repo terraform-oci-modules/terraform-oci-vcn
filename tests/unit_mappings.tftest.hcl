@@ -202,3 +202,23 @@ run "per_ad_tags_applied_by_resolved_ad_name" {
     error_message = "public_subnet_tags_per_ad must be looked up by the subnet's resolved AD name and merged into freeform_tags"
   }
 }
+
+# --- Local peering gateways -------------------------------------------------
+
+run "lpgs_accept_mixed_entry_shapes" {
+  command = plan
+
+  # An entry with no attributes and one with peer_id in the same map; both must
+  # plan, with peer_id reaching only the LPG that sets it.
+  variables {
+    local_peering_gateways = {
+      to-spoke = {}
+      to-hub   = { peer_id = "ocid1.localpeeringgateway.oc1..aaaaaaaapeer" }
+    }
+  }
+
+  assert {
+    condition     = oci_core_local_peering_gateway.lpg["to-hub"].peer_id == "ocid1.localpeeringgateway.oc1..aaaaaaaapeer"
+    error_message = "peer_id must reach the LPG resource"
+  }
+}
