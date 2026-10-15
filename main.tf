@@ -179,12 +179,13 @@ locals {
       ad           = length(local.availability_domain_names) > 0 ? local.availability_domain_names[idx % length(local.availability_domain_names)] : null
       ipv6_index   = idx + length(var.public_subnets)
       # Which NAT GW route table does this subnet use?
-      # single → index 0; one_per_ad → index = (idx % ad count); else → index = idx
+      # single → index 0; one_per_ad → index = (idx % ad count), or one per subnet
+      # when availability_domains = [] (matches nat_gateway_count); else → index = idx
       nat_rt_index = (
         var.single_nat_gateway
         ? 0
         : var.one_nat_gateway_per_ad
-        ? (length(local.availability_domain_names) > 0 ? idx % length(local.availability_domain_names) : 0)
+        ? (length(local.availability_domain_names) > 0 ? idx % length(local.availability_domain_names) : idx % max(local.nat_gateway_count, 1))
         : idx
       )
     }
@@ -240,7 +241,7 @@ locals {
         var.single_nat_gateway
         ? 0
         : var.one_nat_gateway_per_ad
-        ? (length(local.availability_domain_names) > 0 ? idx % length(local.availability_domain_names) : 0)
+        ? (length(local.availability_domain_names) > 0 ? idx % length(local.availability_domain_names) : idx % max(local.nat_gateway_count, 1))
         : idx
       )
     }
@@ -316,9 +317,11 @@ resource "oci_core_route_table" "database" {
     }
   }
 
-  # Route to NAT gateway when available - indexes into the correct NAT GW per RT
+  # Route to NAT gateway when available - indexes into the correct NAT GW per RT.
+  # Skipped when the Internet Gateway route below is added: both are 0.0.0.0/0,
+  # and a route table cannot hold two rules for the same destination.
   dynamic "route_rules" {
-    for_each = var.enable_nat_gateway ? [1] : []
+    for_each = var.enable_nat_gateway && !(var.create_database_internet_gateway_route && var.create_igw) ? [1] : []
     content {
       destination       = local.anywhere
       destination_type  = "CIDR_BLOCK"
