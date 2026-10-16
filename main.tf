@@ -120,7 +120,11 @@ resource "oci_core_dhcp_options" "this" {
   defined_tags  = var.defined_tags
 
   lifecycle {
-    ignore_changes = [defined_tags, freeform_tags]
+    # Removing these options moves subnets back to the VCN default DHCP options.
+    # create_before_destroy makes Terraform update those subnets before deleting
+    # the options; by default it deletes first and OCI rejects that (409).
+    create_before_destroy = true
+    ignore_changes        = [defined_tags, freeform_tags]
   }
 }
 
@@ -153,12 +157,12 @@ resource "oci_core_subnet" "public" {
   # Public subnets: prohibit_public_ip = false so instances can get public IPs
   prohibit_public_ip_on_vnic = false
   ipv6cidr_block             = var.enable_ipv6 ? cidrsubnet(oci_core_vcn.this[0].ipv6cidr_blocks[0], 8, local.public_subnet_objects[count.index].ipv6_index) : null
-  dhcp_options_id            = var.enable_dhcp_options ? oci_core_dhcp_options.this[0].id : null
+  dhcp_options_id            = var.enable_dhcp_options ? oci_core_dhcp_options.this[0].id : oci_core_vcn.this[0].default_dhcp_options_id
   # Without a route table of its own a subnet uses the VCN default route table.
   # Pointing at it explicitly (not null) moves the subnet off a route table the
   # module is deleting; null would keep it attached and the delete would fail.
   route_table_id    = var.create_igw ? element(oci_core_route_table.ig[*].id, var.create_multiple_public_route_tables ? count.index : 0) : oci_core_vcn.this[0].default_route_table_id
-  security_list_ids = local.create_public_security_list ? [oci_core_security_list.public[0].id] : null
+  security_list_ids = local.create_public_security_list ? [oci_core_security_list.public[0].id] : [oci_core_vcn.this[0].default_security_list_id]
 
   freeform_tags = merge(
     { "Name" = local.public_subnet_objects[count.index].display_name },
@@ -213,13 +217,13 @@ resource "oci_core_subnet" "private" {
   availability_domain        = local.private_subnet_objects[count.index].ad
   prohibit_public_ip_on_vnic = true
   ipv6cidr_block             = var.enable_ipv6 ? cidrsubnet(oci_core_vcn.this[0].ipv6cidr_blocks[0], 8, local.private_subnet_objects[count.index].ipv6_index) : null
-  dhcp_options_id            = var.enable_dhcp_options ? oci_core_dhcp_options.this[0].id : null
+  dhcp_options_id            = var.enable_dhcp_options ? oci_core_dhcp_options.this[0].id : oci_core_vcn.this[0].default_dhcp_options_id
   route_table_id = (
     var.enable_nat_gateway
     ? oci_core_route_table.nat[local.private_subnet_objects[count.index].nat_rt_index].id
     : oci_core_vcn.this[0].default_route_table_id
   )
-  security_list_ids = local.create_private_security_list ? [oci_core_security_list.private[0].id] : null
+  security_list_ids = local.create_private_security_list ? [oci_core_security_list.private[0].id] : [oci_core_vcn.this[0].default_security_list_id]
 
   freeform_tags = merge(
     { "Name" = local.private_subnet_objects[count.index].display_name },
@@ -285,7 +289,7 @@ resource "oci_core_subnet" "database" {
   availability_domain        = local.database_subnet_objects[count.index].ad
   prohibit_public_ip_on_vnic = true
   ipv6cidr_block             = var.enable_ipv6 ? cidrsubnet(oci_core_vcn.this[0].ipv6cidr_blocks[0], 8, local.database_subnet_objects[count.index].ipv6_index) : null
-  dhcp_options_id            = var.enable_dhcp_options ? oci_core_dhcp_options.this[0].id : null
+  dhcp_options_id            = var.enable_dhcp_options ? oci_core_dhcp_options.this[0].id : oci_core_vcn.this[0].default_dhcp_options_id
   route_table_id = (
     var.create_database_subnet_route_table
     ? element(oci_core_route_table.database[*].id,
@@ -296,7 +300,7 @@ resource "oci_core_subnet" "database" {
       : oci_core_vcn.this[0].default_route_table_id
     )
   )
-  security_list_ids = local.create_database_security_list ? [oci_core_security_list.database[0].id] : null
+  security_list_ids = local.create_database_security_list ? [oci_core_security_list.database[0].id] : [oci_core_vcn.this[0].default_security_list_id]
 
   freeform_tags = merge(
     { "Name" = local.database_subnet_objects[count.index].display_name },
@@ -412,9 +416,9 @@ resource "oci_core_subnet" "intra" {
   availability_domain        = local.intra_subnet_objects[count.index].ad
   prohibit_public_ip_on_vnic = true
   ipv6cidr_block             = var.enable_ipv6 ? cidrsubnet(oci_core_vcn.this[0].ipv6cidr_blocks[0], 8, local.intra_subnet_objects[count.index].ipv6_index) : null
-  dhcp_options_id            = var.enable_dhcp_options ? oci_core_dhcp_options.this[0].id : null
+  dhcp_options_id            = var.enable_dhcp_options ? oci_core_dhcp_options.this[0].id : oci_core_vcn.this[0].default_dhcp_options_id
   route_table_id             = element(oci_core_route_table.intra[*].id, var.create_multiple_intra_route_tables ? count.index : 0)
-  security_list_ids          = local.create_intra_security_list ? [oci_core_security_list.intra[0].id] : null
+  security_list_ids          = local.create_intra_security_list ? [oci_core_security_list.intra[0].id] : [oci_core_vcn.this[0].default_security_list_id]
 
   freeform_tags = merge(
     { "Name" = local.intra_subnet_objects[count.index].display_name },
