@@ -1,8 +1,10 @@
 # VPC to VCN feature parity
 
 Comparison against [`terraform-aws-vpc`](https://github.com/terraform-aws-modules/terraform-aws-vpc)
-v6.6.1. This module mirrors that module's scope (one network, four subnet tiers,
-route tables, gateways, DHCP options, flow logs) and maps each concept to its OCI
+v6.7.3 (6.7.0 to 6.7.3 add nothing that applies to OCI: flow log group deletion
+protection, AZ ID prefixes, DNS64 and route table association fixes, README).
+This module mirrors that module's scope (one network, four subnet tiers, route
+tables, gateways, DHCP options, flow logs) and maps each concept to its OCI
 equivalent. It is not a 1:1 mapping: OCI and AWS networking primitives differ.
 
 Gaps are split three ways:

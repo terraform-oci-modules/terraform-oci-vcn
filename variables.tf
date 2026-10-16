@@ -434,9 +434,10 @@ variable "nat_gateway_public_ip_id" {
       - "<ocid>": attach an existing reserved public IP by OCID.
     Has no effect when enable_nat_gateway = false.
     When multiple NAT gateways are created, only the first one gets this IP.
-    Changing this on an existing NAT Gateway needs two applies: first with
-    enable_nat_gateway = false, then with the new value. A single apply fails,
-    because OCI will not delete a NAT Gateway that a route table still references.
+    Set this when the NAT Gateway is created. OCI cannot change a NAT Gateway's
+    IP, so changing this later replaces the gateway, which a single apply cannot
+    do. For a stable IP that survives rebuilding the VCN, pass your own reserved
+    IP's OCID.
   EOT
   type        = string
   default     = null
