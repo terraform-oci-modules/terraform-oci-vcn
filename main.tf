@@ -364,7 +364,11 @@ resource "oci_core_route_table" "database" {
   defined_tags  = var.defined_tags
 
   lifecycle {
-    ignore_changes = [defined_tags, freeform_tags]
+    # Removing this table moves subnets back to the VCN default route table.
+    # create_before_destroy makes Terraform update those subnets before
+    # deleting the table; by default it deletes first and OCI rejects that (409).
+    create_before_destroy = true
+    ignore_changes        = [defined_tags, freeform_tags]
   }
 }
 
@@ -549,7 +553,11 @@ resource "oci_core_route_table" "ig" {
   defined_tags  = var.defined_tags
 
   lifecycle {
-    ignore_changes = [defined_tags, freeform_tags]
+    # Removing this table moves subnets back to the VCN default route table.
+    # create_before_destroy makes Terraform update those subnets before
+    # deleting the table; by default it deletes first and OCI rejects that (409).
+    create_before_destroy = true
+    ignore_changes        = [defined_tags, freeform_tags]
   }
 }
 
@@ -699,7 +707,11 @@ resource "oci_core_route_table" "nat" {
   defined_tags = var.defined_tags
 
   lifecycle {
-    ignore_changes = [defined_tags, freeform_tags]
+    # Removing this table moves subnets back to the VCN default route table.
+    # create_before_destroy makes Terraform update those subnets before
+    # deleting the table; by default it deletes first and OCI rejects that (409).
+    create_before_destroy = true
+    ignore_changes        = [defined_tags, freeform_tags]
   }
 }
 
