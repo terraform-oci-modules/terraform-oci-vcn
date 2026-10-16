@@ -520,16 +520,32 @@ resource "oci_core_route_table" "ig" {
 # NAT Gateway (NGW)
 ################################################################################
 
-# Reserved public IP for the first NAT gateway - created only when nat_gateway_public_ip_id = "RESERVED"
+locals {
+  # Reserved public IPs the module creates:
+  #   reserve_nat_ip_per_gateway=true    → one per NAT gateway
+  #   nat_gateway_public_ip_id="RESERVED" → one, for the first gateway
+  # Index 0 is the same IP in both modes, so turning on reserve_nat_ip_per_gateway keeps it.
+  nat_reserved_ip_count = (
+    !local.create_vcn || !var.enable_nat_gateway ? 0
+    : var.reserve_nat_ip_per_gateway ? local.nat_gateway_count
+    : var.nat_gateway_public_ip_id == "RESERVED" ? 1
+    : 0
+  )
+}
+
 resource "oci_core_public_ip" "nat" {
-  count = local.create_vcn && var.enable_nat_gateway && var.nat_gateway_public_ip_id == "RESERVED" ? 1 : 0
+  count = local.nat_reserved_ip_count
 
   compartment_id = var.compartment_id
   lifetime       = "RESERVED"
-  display_name   = "${var.name}-nat-ip"
+  display_name   = count.index == 0 ? "${var.name}-nat-ip" : "${var.name}-nat-ip-${count.index + 1}"
 
-  freeform_tags = merge({ "Name" = "${var.name}-nat-ip" }, var.tags, var.nat_gateway_tags)
-  defined_tags  = var.defined_tags
+  freeform_tags = merge(
+    { "Name" = count.index == 0 ? "${var.name}-nat-ip" : "${var.name}-nat-ip-${count.index + 1}" },
+    var.tags,
+    var.nat_gateway_tags,
+  )
+  defined_tags = var.defined_tags
 
   lifecycle {
     ignore_changes = [defined_tags, freeform_tags]
@@ -546,6 +562,19 @@ locals {
     : var.nat_gateway_public_ip_id == "RESERVED" ? oci_core_public_ip.nat[0].id
     : var.nat_gateway_public_ip_id
   )
+
+  # public_ip_id per NAT gateway, in gateway order:
+  #   external_nat_ip_ids set           → the matching entry
+  #   reserve_nat_ip_per_gateway=true   → the matching reserved IP created above
+  #   otherwise                         → nat_public_ip_id for the first gateway, ephemeral for the rest
+  nat_gateway_public_ip_ids = [
+    for i in range(local.nat_gateway_count) : (
+      length(var.external_nat_ip_ids) > 0 ? try(var.external_nat_ip_ids[i], null)
+      : var.reserve_nat_ip_per_gateway ? try(oci_core_public_ip.nat[i].id, null)
+      : i == 0 ? local.nat_public_ip_id
+      : null
+    )
+  ]
 }
 
 resource "oci_core_nat_gateway" "this" {
@@ -555,8 +584,7 @@ resource "oci_core_nat_gateway" "this" {
   compartment_id = var.compartment_id
   vcn_id         = oci_core_vcn.this[0].id
   display_name   = local.nat_gateway_count == 1 ? "${var.name}-nat" : "${var.name}-nat-${count.index + 1}"
-  # Reserved/existing public IP only applied to the first NAT gateway
-  public_ip_id = count.index == 0 ? local.nat_public_ip_id : null
+  public_ip_id   = local.nat_gateway_public_ip_ids[count.index]
 
   freeform_tags = merge(
     { "Name" = local.nat_gateway_count == 1 ? "${var.name}-nat" : "${var.name}-nat-${count.index + 1}" },
@@ -569,6 +597,18 @@ resource "oci_core_nat_gateway" "this" {
     precondition {
       condition     = !(var.single_nat_gateway && var.one_nat_gateway_per_ad)
       error_message = "single_nat_gateway and one_nat_gateway_per_ad are mutually exclusive. Set only one to true."
+    }
+    precondition {
+      condition     = length(var.external_nat_ip_ids) == 0 || (var.nat_gateway_public_ip_id == null && !var.reserve_nat_ip_per_gateway)
+      error_message = "external_nat_ip_ids cannot be combined with nat_gateway_public_ip_id or reserve_nat_ip_per_gateway."
+    }
+    precondition {
+      condition     = length(var.external_nat_ip_ids) == 0 || length(var.external_nat_ip_ids) == local.nat_gateway_count
+      error_message = "external_nat_ip_ids has ${length(var.external_nat_ip_ids)} entries but the module creates ${local.nat_gateway_count} NAT gateway(s). Pass one OCID per gateway."
+    }
+    precondition {
+      condition     = !var.reserve_nat_ip_per_gateway || var.nat_gateway_public_ip_id == null || var.nat_gateway_public_ip_id == "RESERVED"
+      error_message = "reserve_nat_ip_per_gateway cannot be combined with an existing IP OCID in nat_gateway_public_ip_id. Use external_nat_ip_ids to attach existing IPs to every gateway."
     }
     ignore_changes = [defined_tags, freeform_tags]
   }

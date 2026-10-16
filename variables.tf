@@ -385,10 +385,41 @@ variable "nat_gateway_public_ip_id" {
         Use this to get a stable, predictable outbound IP (e.g. for firewall allowlisting).
       - "<ocid>": attach an existing reserved public IP by OCID.
     Has no effect when enable_nat_gateway = false.
-    When multiple NAT gateways are created, only the first one gets this IP.
+    When multiple NAT gateways are created, only the first one gets this IP. To give
+    every gateway a stable IP, use reserve_nat_ip_per_gateway or external_nat_ip_ids.
   EOT
   type        = string
   default     = null
+}
+
+variable "reserve_nat_ip_per_gateway" {
+  description = <<-EOT
+    Should be true to create one reserved public IP per NAT Gateway, so every gateway has a
+    stable outbound IP. Can be combined with nat_gateway_public_ip_id = "RESERVED" (the first
+    gateway keeps that IP), but not with an existing IP OCID or with external_nat_ip_ids.
+    A NAT Gateway's public IP cannot be changed in place: turning this on for gateways that
+    already exist replaces every gateway that did not have a reserved IP yet.
+  EOT
+  type        = bool
+  default     = false
+  nullable    = false
+}
+
+variable "external_nat_ip_ids" {
+  description = <<-EOT
+    List of existing reserved public IP OCIDs to attach to the NAT Gateways, one per gateway in
+    gateway order. Its length must equal the number of NAT Gateways the module creates.
+    Mutually exclusive with nat_gateway_public_ip_id and reserve_nat_ip_per_gateway.
+    A NAT Gateway's public IP cannot be changed in place: changing an entry replaces that gateway.
+  EOT
+  type        = list(string)
+  default     = []
+  nullable    = false
+
+  validation {
+    condition     = alltrue([for id in var.external_nat_ip_ids : can(regex("^ocid1\\.publicip\\.", id))])
+    error_message = "external_nat_ip_ids must contain reserved public IP OCIDs (ocid1.publicip...)."
+  }
 }
 
 ################################################################################
