@@ -117,20 +117,19 @@ Per-tier interface, identical across all four OCI tiers:
 | One NAT per AZ/AD       | `one_nat_gateway_per_az`                  | `one_nat_gateway_per_ad`                         | mapped   |
 | Custom destination CIDR | `nat_gateway_destination_cidr_block`      | `nat_gateway_destination_cidr_block`             | mapped   |
 | NAT GW tags             | `nat_gateway_tags`                        | `nat_gateway_tags`                               | mapped   |
-| Reuse / reserve NAT IPs | `reuse_nat_ips`, `external_nat_ip_ids`    | `external_nat_ip_ids`, `reserve_nat_ip_per_gateway`, `nat_gateway_public_ip_id` | mapped   |
+| Reuse / reserve NAT IPs | `reuse_nat_ips`, `external_nat_ip_ids`    | `nat_gateway_public_ip_id`                       | partial  |
 | Service Gateway         | closest analog is a VPC gateway endpoint  | `create_service_gateway`, `service_gateway_tags` | OCI-only |
 | Attach existing DRG     | none                                      | `attached_drg_id`                                | OCI-only |
 | Local Peering Gateways  | none                                      | `local_peering_gateways` (map)                   | OCI-only |
 | Customer Gateway / VPN  | `customer_gateways`, `enable_vpn_gateway` | none                                             | backlog  |
 
-> **NAT public IP**: each OCI NAT gateway takes exactly one public IP, ephemeral
-> unless you attach a reserved one. `external_nat_ip_ids` is AWS's list of
-> pre-allocated IPs, one per gateway; there is no `reuse_nat_ips` switch because a
-> non-empty list already says it. `reserve_nat_ip_per_gateway = true` makes the
-> module create a reserved IP per gateway, which is what AWS does by default.
-> `nat_gateway_public_ip_id` (`null`, `"RESERVED"`, or an OCID) covers the first
-> gateway only. A NAT gateway's IP is fixed at creation, so changing any of these
-> on an existing gateway replaces it.
+> **NAT public IP**: AWS lets you pass a list of pre-allocated EIPs. OCI's NAT
+> gateway takes exactly one IP, so `nat_gateway_public_ip_id` is a single value
+> with three modes: `null` lets OCI assign an ephemeral IP, `"RESERVED"` creates a
+> new reserved public IP and attaches it (for a stable outbound IP you can
+> allowlist), and an OCID attaches an existing reserved public IP. There is no
+> list form: OCI allows one NAT gateway per VCN by default, so the extra gateways
+> from `one_nat_gateway_per_ad` (or one per subnet) need a limit increase first.
 
 > **Service Gateway**: provides private access to Oracle-managed services (Object
 > Storage, DBaaS APIs) without traversing the public internet. Broader than an S3
@@ -208,7 +207,7 @@ Equivalent concept, different name. Anything not listed maps by an identical nam
 | `tags`                                  | `tags` (freeform) + `defined_tags`                              | OCI has two tag systems                                    |
 | `<tier>_subnet_tags_per_az`             | `<tier>_subnet_tags_per_ad`                                     |                                                            |
 | `one_nat_gateway_per_az`                | `one_nat_gateway_per_ad`                                        |                                                            |
-| `reuse_nat_ips` + `external_nat_ip_ids` | `external_nat_ip_ids`                                           | no `reuse_nat_ips`: a non-empty list turns it on           |
+| `reuse_nat_ips` + `external_nat_ip_ids` | `nat_gateway_public_ip_id`                                      | single value, not a list: `null`, `"RESERVED"`, or an OCID |
 | `manage_default_security_group`         | `lockdown_default_security_list`                                | inverted semantics: AWS manages rules, OCI denies all      |
 | `<tier>_dedicated_network_acl`          | `<tier>_dedicated_security_list`                                |                                                            |
 | `<tier>_inbound_acl_rules`              | `<tier>_inbound_security_rules`                                 |                                                            |
@@ -230,8 +229,7 @@ OCI-only variables, no AWS counterpart:
 | `local_peering_gateways`                         | Local Peering Gateway map for hub-and-spoke peering           |
 | `internet_gateway_route_rules`                   | custom symbolic route rules on the IG route table             |
 | `nat_gateway_route_rules`                        | custom symbolic route rules on the NAT route table            |
-| `nat_gateway_public_ip_id`                       | ephemeral, newly-reserved, or existing reserved IP for the first NAT gateway |
-| `reserve_nat_ip_per_gateway`                     | create a reserved public IP for every NAT gateway             |
+| `nat_gateway_public_ip_id`                       | ephemeral, newly-reserved, or existing reserved NAT public IP |
 | `flow_log_retention_duration`                    | OCI log retention in days                                     |
 | `dhcp_options_server_type`                       | `VcnLocalPlusInternet` or `CustomDnsServer`                   |
 

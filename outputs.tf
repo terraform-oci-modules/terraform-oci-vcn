@@ -235,13 +235,8 @@ output "nat_public_ips" {
 }
 
 output "nat_reserved_public_ip_id" {
-  description = "OCID of the reserved public IP the module created for the first NAT Gateway (null when it created none)"
+  description = "OCID of the reserved public IP created for the NAT Gateway (null when nat_gateway_public_ip_id != 'RESERVED')"
   value       = try(oci_core_public_ip.nat[0].id, null)
-}
-
-output "nat_reserved_public_ip_ids" {
-  description = "List of OCIDs of the reserved public IPs the module created for the NAT Gateways, in gateway order"
-  value       = oci_core_public_ip.nat[*].id
 }
 
 output "nat_gateway_all_attributes" {
