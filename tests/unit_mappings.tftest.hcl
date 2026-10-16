@@ -202,3 +202,84 @@ run "per_ad_tags_applied_by_resolved_ad_name" {
     error_message = "public_subnet_tags_per_ad must be looked up by the subnet's resolved AD name and merged into freeform_tags"
   }
 }
+
+# --- Local peering gateways -------------------------------------------------
+
+run "lpgs_accept_mixed_entry_shapes" {
+  command = plan
+
+  # An entry with no attributes and one with peer_id in the same map; both must
+  # plan, with peer_id reaching only the LPG that sets it.
+  variables {
+    local_peering_gateways = {
+      to-spoke = {}
+      to-hub   = { peer_id = "ocid1.localpeeringgateway.oc1..aaaaaaaapeer" }
+    }
+  }
+
+  assert {
+    condition     = oci_core_local_peering_gateway.lpg["to-hub"].peer_id == "ocid1.localpeeringgateway.oc1..aaaaaaaapeer"
+    error_message = "peer_id must reach the LPG resource"
+  }
+}
+
+# --- NAT route table selection ---------------------------------------------------
+
+run "one_nat_per_ad_without_ads_routes_each_subnet_to_its_own_nat" {
+  command = apply
+
+  variables {
+    availability_domains   = []
+    enable_nat_gateway     = true
+    private_subnets        = ["10.0.11.0/24", "10.0.12.0/24", "10.0.13.0/24"]
+    one_nat_gateway_per_ad = true
+  }
+
+  assert {
+    condition     = length(oci_core_nat_gateway.this) == 3
+    error_message = "with no ADs, one_nat_gateway_per_ad falls back to one NAT gateway per private subnet"
+  }
+  assert {
+    condition     = length(distinct(oci_core_subnet.private[*].route_table_id)) == 3
+    error_message = "each private subnet must route through its own NAT route table, not all through the first"
+  }
+}
+
+# --- Database route table: Internet Gateway vs NAT default route -----------------
+
+run "database_igw_route_replaces_nat_default_route" {
+  command = plan
+
+  variables {
+    enable_nat_gateway                     = true
+    single_nat_gateway                     = true
+    create_igw                             = true
+    public_subnets                         = ["10.0.1.0/24"]
+    private_subnets                        = ["10.0.11.0/24"]
+    database_subnets                       = ["10.0.21.0/24"]
+    create_database_subnet_route_table     = true
+    create_database_internet_gateway_route = true
+  }
+
+  assert {
+    condition     = length([for r in oci_core_route_table.database[0].route_rules : r if r.destination == "0.0.0.0/0"]) == 1
+    error_message = "the database route table must hold exactly one 0.0.0.0/0 rule (the Internet Gateway), not both NAT and IGW"
+  }
+}
+
+run "database_route_table_keeps_nat_route_by_default" {
+  command = plan
+
+  variables {
+    enable_nat_gateway                 = true
+    single_nat_gateway                 = true
+    private_subnets                    = ["10.0.11.0/24"]
+    database_subnets                   = ["10.0.21.0/24"]
+    create_database_subnet_route_table = true
+  }
+
+  assert {
+    condition     = length([for r in oci_core_route_table.database[0].route_rules : r if r.destination == "0.0.0.0/0"]) == 1
+    error_message = "without the IGW route, the database route table must keep its NAT default route"
+  }
+}

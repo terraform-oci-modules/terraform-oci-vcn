@@ -80,6 +80,10 @@ resource "oci_core_vcn" "this" {
   defined_tags  = var.defined_tags
 
   lifecycle {
+    precondition {
+      condition     = length(local.duplicate_ipv6_indexes) == 0
+      error_message = "IPv6 prefix index(es) ${join(", ", local.duplicate_ipv6_indexes)} are used by more than one subnet. Check the <tier>_subnet_ipv6_prefixes inputs: tiers left empty use the default offsets."
+    }
     ignore_changes = [defined_tags, dns_label, freeform_tags]
   }
 }
@@ -116,7 +120,11 @@ resource "oci_core_dhcp_options" "this" {
   defined_tags  = var.defined_tags
 
   lifecycle {
-    ignore_changes = [defined_tags, freeform_tags]
+    # Removing these options moves subnets back to the VCN default DHCP options.
+    # create_before_destroy makes Terraform update those subnets before deleting
+    # the options; by default it deletes first and OCI rejects that (409).
+    create_before_destroy = true
+    ignore_changes        = [defined_tags, freeform_tags]
   }
 }
 
@@ -133,7 +141,7 @@ locals {
       cidr         = cidr
       display_name = length(var.public_subnet_names) > idx ? var.public_subnet_names[idx] : "${var.name}-${var.public_subnet_suffix}-${idx + 1}"
       ad           = length(local.availability_domain_names) > 0 ? local.availability_domain_names[idx % length(local.availability_domain_names)] : null
-      ipv6_index   = idx
+      ipv6_index   = length(var.public_subnet_ipv6_prefixes) > 0 ? try(var.public_subnet_ipv6_prefixes[idx], idx) : idx
     }
   ]
 }
@@ -149,9 +157,12 @@ resource "oci_core_subnet" "public" {
   # Public subnets: prohibit_public_ip = false so instances can get public IPs
   prohibit_public_ip_on_vnic = false
   ipv6cidr_block             = var.enable_ipv6 ? cidrsubnet(oci_core_vcn.this[0].ipv6cidr_blocks[0], 8, local.public_subnet_objects[count.index].ipv6_index) : null
-  dhcp_options_id            = var.enable_dhcp_options ? oci_core_dhcp_options.this[0].id : null
-  route_table_id             = var.create_igw ? element(oci_core_route_table.ig[*].id, var.create_multiple_public_route_tables ? count.index : 0) : null
-  security_list_ids          = local.create_public_security_list ? [oci_core_security_list.public[0].id] : null
+  dhcp_options_id            = var.enable_dhcp_options ? oci_core_dhcp_options.this[0].id : oci_core_vcn.this[0].default_dhcp_options_id
+  # Without a route table of its own a subnet uses the VCN default route table.
+  # Pointing at it explicitly (not null) moves the subnet off a route table the
+  # module is deleting; null would keep it attached and the delete would fail.
+  route_table_id    = var.create_igw ? element(oci_core_route_table.ig[*].id, var.create_multiple_public_route_tables ? count.index : 0) : oci_core_vcn.this[0].default_route_table_id
+  security_list_ids = local.create_public_security_list ? [oci_core_security_list.public[0].id] : [oci_core_vcn.this[0].default_security_list_id]
 
   freeform_tags = merge(
     { "Name" = local.public_subnet_objects[count.index].display_name },
@@ -162,6 +173,10 @@ resource "oci_core_subnet" "public" {
   defined_tags = merge(var.defined_tags, var.public_subnet_defined_tags)
 
   lifecycle {
+    precondition {
+      condition     = length(var.public_subnet_ipv6_prefixes) == 0 || length(var.public_subnet_ipv6_prefixes) == length(var.public_subnets)
+      error_message = "public_subnet_ipv6_prefixes must have one entry per public subnet (${length(var.public_subnets)}), or be empty."
+    }
     ignore_changes = [defined_tags, freeform_tags]
   }
 }
@@ -177,14 +192,15 @@ locals {
       cidr         = cidr
       display_name = length(var.private_subnet_names) > idx ? var.private_subnet_names[idx] : "${var.name}-${var.private_subnet_suffix}-${idx + 1}"
       ad           = length(local.availability_domain_names) > 0 ? local.availability_domain_names[idx % length(local.availability_domain_names)] : null
-      ipv6_index   = idx + length(var.public_subnets)
+      ipv6_index   = length(var.private_subnet_ipv6_prefixes) > 0 ? try(var.private_subnet_ipv6_prefixes[idx], idx + length(var.public_subnets)) : idx + length(var.public_subnets)
       # Which NAT GW route table does this subnet use?
-      # single → index 0; one_per_ad → index = (idx % ad count); else → index = idx
+      # single → index 0; one_per_ad → index = (idx % ad count), or one per subnet
+      # when availability_domains = [] (matches nat_gateway_count); else → index = idx
       nat_rt_index = (
         var.single_nat_gateway
         ? 0
         : var.one_nat_gateway_per_ad
-        ? (length(local.availability_domain_names) > 0 ? idx % length(local.availability_domain_names) : 0)
+        ? (length(local.availability_domain_names) > 0 ? idx % length(local.availability_domain_names) : idx % max(local.nat_gateway_count, 1))
         : idx
       )
     }
@@ -201,13 +217,13 @@ resource "oci_core_subnet" "private" {
   availability_domain        = local.private_subnet_objects[count.index].ad
   prohibit_public_ip_on_vnic = true
   ipv6cidr_block             = var.enable_ipv6 ? cidrsubnet(oci_core_vcn.this[0].ipv6cidr_blocks[0], 8, local.private_subnet_objects[count.index].ipv6_index) : null
-  dhcp_options_id            = var.enable_dhcp_options ? oci_core_dhcp_options.this[0].id : null
+  dhcp_options_id            = var.enable_dhcp_options ? oci_core_dhcp_options.this[0].id : oci_core_vcn.this[0].default_dhcp_options_id
   route_table_id = (
     var.enable_nat_gateway
     ? oci_core_route_table.nat[local.private_subnet_objects[count.index].nat_rt_index].id
-    : null
+    : oci_core_vcn.this[0].default_route_table_id
   )
-  security_list_ids = local.create_private_security_list ? [oci_core_security_list.private[0].id] : null
+  security_list_ids = local.create_private_security_list ? [oci_core_security_list.private[0].id] : [oci_core_vcn.this[0].default_security_list_id]
 
   freeform_tags = merge(
     { "Name" = local.private_subnet_objects[count.index].display_name },
@@ -218,6 +234,10 @@ resource "oci_core_subnet" "private" {
   defined_tags = merge(var.defined_tags, var.private_subnet_defined_tags)
 
   lifecycle {
+    precondition {
+      condition     = length(var.private_subnet_ipv6_prefixes) == 0 || length(var.private_subnet_ipv6_prefixes) == length(var.private_subnets)
+      error_message = "private_subnet_ipv6_prefixes must have one entry per private subnet (${length(var.private_subnets)}), or be empty."
+    }
     ignore_changes = [defined_tags, freeform_tags]
   }
 }
@@ -233,14 +253,14 @@ locals {
       cidr         = cidr
       display_name = length(var.database_subnet_names) > idx ? var.database_subnet_names[idx] : "${var.name}-${var.database_subnet_suffix}-${idx + 1}"
       ad           = length(local.availability_domain_names) > 0 ? local.availability_domain_names[idx % length(local.availability_domain_names)] : null
-      ipv6_index   = idx + length(var.public_subnets) + length(var.private_subnets)
+      ipv6_index   = length(var.database_subnet_ipv6_prefixes) > 0 ? try(var.database_subnet_ipv6_prefixes[idx], idx + length(var.public_subnets) + length(var.private_subnets)) : idx + length(var.public_subnets) + length(var.private_subnets)
       # Which NAT GW / route table does this subnet use?
       # Same logic as private subnets - keeps DB traffic AD-local when one_nat_gateway_per_ad=true.
       nat_rt_index = (
         var.single_nat_gateway
         ? 0
         : var.one_nat_gateway_per_ad
-        ? (length(local.availability_domain_names) > 0 ? idx % length(local.availability_domain_names) : 0)
+        ? (length(local.availability_domain_names) > 0 ? idx % length(local.availability_domain_names) : idx % max(local.nat_gateway_count, 1))
         : idx
       )
     }
@@ -269,7 +289,7 @@ resource "oci_core_subnet" "database" {
   availability_domain        = local.database_subnet_objects[count.index].ad
   prohibit_public_ip_on_vnic = true
   ipv6cidr_block             = var.enable_ipv6 ? cidrsubnet(oci_core_vcn.this[0].ipv6cidr_blocks[0], 8, local.database_subnet_objects[count.index].ipv6_index) : null
-  dhcp_options_id            = var.enable_dhcp_options ? oci_core_dhcp_options.this[0].id : null
+  dhcp_options_id            = var.enable_dhcp_options ? oci_core_dhcp_options.this[0].id : oci_core_vcn.this[0].default_dhcp_options_id
   route_table_id = (
     var.create_database_subnet_route_table
     ? element(oci_core_route_table.database[*].id,
@@ -277,10 +297,10 @@ resource "oci_core_subnet" "database" {
     : (
       var.enable_nat_gateway
       ? oci_core_route_table.nat[local.database_subnet_objects[count.index].nat_rt_index].id
-      : null
+      : oci_core_vcn.this[0].default_route_table_id
     )
   )
-  security_list_ids = local.create_database_security_list ? [oci_core_security_list.database[0].id] : null
+  security_list_ids = local.create_database_security_list ? [oci_core_security_list.database[0].id] : [oci_core_vcn.this[0].default_security_list_id]
 
   freeform_tags = merge(
     { "Name" = local.database_subnet_objects[count.index].display_name },
@@ -291,6 +311,10 @@ resource "oci_core_subnet" "database" {
   defined_tags = merge(var.defined_tags, var.database_subnet_defined_tags)
 
   lifecycle {
+    precondition {
+      condition     = length(var.database_subnet_ipv6_prefixes) == 0 || length(var.database_subnet_ipv6_prefixes) == length(var.database_subnets)
+      error_message = "database_subnet_ipv6_prefixes must have one entry per database subnet (${length(var.database_subnets)}), or be empty."
+    }
     ignore_changes = [defined_tags, freeform_tags]
   }
 }
@@ -316,9 +340,11 @@ resource "oci_core_route_table" "database" {
     }
   }
 
-  # Route to NAT gateway when available - indexes into the correct NAT GW per RT
+  # Route to NAT gateway when available - indexes into the correct NAT GW per RT.
+  # Skipped when the Internet Gateway route below is added: both are 0.0.0.0/0,
+  # and a route table cannot hold two rules for the same destination.
   dynamic "route_rules" {
-    for_each = var.enable_nat_gateway ? [1] : []
+    for_each = var.enable_nat_gateway && !(var.create_database_internet_gateway_route && var.create_igw) ? [1] : []
     content {
       destination       = local.anywhere
       destination_type  = "CIDR_BLOCK"
@@ -342,7 +368,11 @@ resource "oci_core_route_table" "database" {
   defined_tags  = var.defined_tags
 
   lifecycle {
-    ignore_changes = [defined_tags, freeform_tags]
+    # Removing this table moves subnets back to the VCN default route table.
+    # create_before_destroy makes Terraform update those subnets before
+    # deleting the table; by default it deletes first and OCI rejects that (409).
+    create_before_destroy = true
+    ignore_changes        = [defined_tags, freeform_tags]
   }
 }
 
@@ -357,9 +387,23 @@ locals {
       cidr         = cidr
       display_name = length(var.intra_subnet_names) > idx ? var.intra_subnet_names[idx] : "${var.name}-${var.intra_subnet_suffix}-${idx + 1}"
       ad           = length(local.availability_domain_names) > 0 ? local.availability_domain_names[idx % length(local.availability_domain_names)] : null
-      ipv6_index   = idx + length(var.public_subnets) + length(var.private_subnets) + length(var.database_subnets)
+      ipv6_index   = length(var.intra_subnet_ipv6_prefixes) > 0 ? try(var.intra_subnet_ipv6_prefixes[idx], idx + length(var.public_subnets) + length(var.private_subnets) + length(var.database_subnets)) : idx + length(var.public_subnets) + length(var.private_subnets) + length(var.database_subnets)
     }
   ]
+}
+
+locals {
+  # Every subnet's /64 index across all tiers, to catch two subnets asking for the same /64.
+  # Only checked with enable_ipv6, since the indexes are unused otherwise.
+  ipv6_indexes_by_value = {
+    for i in concat(
+      local.public_subnet_objects[*].ipv6_index,
+      local.private_subnet_objects[*].ipv6_index,
+      local.database_subnet_objects[*].ipv6_index,
+      local.intra_subnet_objects[*].ipv6_index,
+    ) : tostring(i) => i...
+  }
+  duplicate_ipv6_indexes = var.enable_ipv6 ? sort([for k, v in local.ipv6_indexes_by_value : k if length(v) > 1]) : []
 }
 
 resource "oci_core_subnet" "intra" {
@@ -372,9 +416,9 @@ resource "oci_core_subnet" "intra" {
   availability_domain        = local.intra_subnet_objects[count.index].ad
   prohibit_public_ip_on_vnic = true
   ipv6cidr_block             = var.enable_ipv6 ? cidrsubnet(oci_core_vcn.this[0].ipv6cidr_blocks[0], 8, local.intra_subnet_objects[count.index].ipv6_index) : null
-  dhcp_options_id            = var.enable_dhcp_options ? oci_core_dhcp_options.this[0].id : null
+  dhcp_options_id            = var.enable_dhcp_options ? oci_core_dhcp_options.this[0].id : oci_core_vcn.this[0].default_dhcp_options_id
   route_table_id             = element(oci_core_route_table.intra[*].id, var.create_multiple_intra_route_tables ? count.index : 0)
-  security_list_ids          = local.create_intra_security_list ? [oci_core_security_list.intra[0].id] : null
+  security_list_ids          = local.create_intra_security_list ? [oci_core_security_list.intra[0].id] : [oci_core_vcn.this[0].default_security_list_id]
 
   freeform_tags = merge(
     { "Name" = local.intra_subnet_objects[count.index].display_name },
@@ -385,6 +429,10 @@ resource "oci_core_subnet" "intra" {
   defined_tags = merge(var.defined_tags, var.intra_subnet_defined_tags)
 
   lifecycle {
+    precondition {
+      condition     = length(var.intra_subnet_ipv6_prefixes) == 0 || length(var.intra_subnet_ipv6_prefixes) == length(var.intra_subnets)
+      error_message = "intra_subnet_ipv6_prefixes must have one entry per intra subnet (${length(var.intra_subnets)}), or be empty."
+    }
     ignore_changes = [defined_tags, freeform_tags]
   }
 }
@@ -509,7 +557,11 @@ resource "oci_core_route_table" "ig" {
   defined_tags  = var.defined_tags
 
   lifecycle {
-    ignore_changes = [defined_tags, freeform_tags]
+    # Removing this table moves subnets back to the VCN default route table.
+    # create_before_destroy makes Terraform update those subnets before
+    # deleting the table; by default it deletes first and OCI rejects that (409).
+    create_before_destroy = true
+    ignore_changes        = [defined_tags, freeform_tags]
   }
 }
 
@@ -659,7 +711,11 @@ resource "oci_core_route_table" "nat" {
   defined_tags = var.defined_tags
 
   lifecycle {
-    ignore_changes = [defined_tags, freeform_tags]
+    # Removing this table moves subnets back to the VCN default route table.
+    # create_before_destroy makes Terraform update those subnets before
+    # deleting the table; by default it deletes first and OCI rejects that (409).
+    create_before_destroy = true
+    ignore_changes        = [defined_tags, freeform_tags]
   }
 }
 
@@ -707,8 +763,8 @@ resource "oci_core_local_peering_gateway" "lpg" {
   vcn_id         = oci_core_vcn.this[0].id
   display_name   = "${var.name}-${each.key}"
 
-  peer_id        = can(each.value.peer_id) ? each.value.peer_id : null
-  route_table_id = can(each.value.route_table_id) ? each.value.route_table_id : null
+  peer_id        = each.value.peer_id
+  route_table_id = each.value.route_table_id
 
   freeform_tags = merge({ "Name" = "${var.name}-${each.key}" }, var.tags)
   defined_tags  = var.defined_tags

@@ -1,8 +1,10 @@
 # VPC to VCN feature parity
 
 Comparison against [`terraform-aws-vpc`](https://github.com/terraform-aws-modules/terraform-aws-vpc)
-v6.6.1. This module mirrors that module's scope (one network, four subnet tiers,
-route tables, gateways, DHCP options, flow logs) and maps each concept to its OCI
+v6.7.3 (6.7.0 to 6.7.3 add nothing that applies to OCI: flow log group deletion
+protection, AZ ID prefixes, DNS64 and route table association fixes, README).
+This module mirrors that module's scope (one network, four subnet tiers, route
+tables, gateways, DHCP options, flow logs) and maps each concept to its OCI
 equivalent. It is not a 1:1 mapping: OCI and AWS networking primitives differ.
 
 Gaps are split three ways:
@@ -58,18 +60,21 @@ Per-tier interface, identical across all four OCI tiers:
 | Freeform tags per tier    | `<tier>_subnet_tags`                                        | `<tier>_subnet_tags`                      | mapped            |
 | Defined tags per tier     | none                                                        | `<tier>_subnet_defined_tags`              | OCI-only          |
 | Per-AZ/AD tags            | `<tier>_subnet_tags_per_az`                                 | `<tier>_subnet_tags_per_ad`               | mapped            |
-| IPv6 prefixes/CIDRs       | `<tier>_subnet_ipv6_prefixes`                               | auto-derived from the VCN `/56`           | mapped (see note) |
+| IPv6 prefixes/CIDRs       | `<tier>_subnet_ipv6_prefixes`                               | `<tier>_subnet_ipv6_prefixes`             | mapped (see note) |
 | IPv6-native mode          | `<tier>_subnet_ipv6_native`                                 | none                                      | n/a               |
 | DNS64                     | `<tier>_subnet_enable_dns64`                                | none                                      | n/a               |
 | Private DNS hostname type | `<tier>_subnet_private_dns_hostname_type_on_launch`         | none (OCI uses `hostname_label` per VNIC) | n/a               |
 | Resource-name DNS records | `<tier>_subnet_enable_resource_name_dns_*_record_on_launch` | none                                      | n/a               |
 
-> **IPv6 subnet CIDRs**: AWS takes integer prefix offsets and computes `/64` blocks
-> with `cidrsubnet` at plan time. OCI assigns the VCN's `/56` at apply time, but
-> because the module calls `cidrsubnet(oci_core_vcn.this[0].ipv6cidr_blocks[0], 8, index)`
-> internally, Terraform resolves the dependency automatically. No manual CIDR input
-> and no two-step apply. Public subnets get offsets 0 to N, private continue from
-> there, then database, then intra.
+> **IPv6 subnet CIDRs**: as in AWS, `<tier>_subnet_ipv6_prefixes` takes the `/64`
+> index (0-255) inside the VCN's `/56`, one per subnet. OCI assigns the `/56` at
+> apply time, but the module calls `cidrsubnet(oci_core_vcn.this[0].ipv6cidr_blocks[0], 8, index)`
+> internally, so Terraform resolves the dependency with no two-step apply. Left
+> empty, public subnets get indexes 0 to N, private continue from there, then
+> database, then intra. A plan fails if two subnets end up on the same index.
+> Changing an index updates the subnet in place (the provider patches the subnet's
+> IPv6 CIDR) rather than replacing it; VNICs holding addresses from the old `/64`
+> are affected, so plan the change like a renumbering.
 
 ### Availability domain / zone placement
 
@@ -125,7 +130,8 @@ Per-tier interface, identical across all four OCI tiers:
 > with three modes: `null` lets OCI assign an ephemeral IP, `"RESERVED"` creates a
 > new reserved public IP and attaches it (for a stable outbound IP you can
 > allowlist), and an OCID attaches an existing reserved public IP. There is no
-> list form because there is nothing to put in a list.
+> list form: OCI allows one NAT gateway per VCN by default, so the extra gateways
+> from `one_nat_gateway_per_ad` (or one per subnet) need a limit increase first.
 
 > **Service Gateway**: provides private access to Oracle-managed services (Object
 > Storage, DBaaS APIs) without traversing the public internet. Broader than an S3
@@ -202,7 +208,6 @@ Equivalent concept, different name. Anything not listed maps by an identical nam
 | `azs`                                   | `availability_domains`                                          | AWS takes AZ name strings, OCI takes integers 1/2/3        |
 | `tags`                                  | `tags` (freeform) + `defined_tags`                              | OCI has two tag systems                                    |
 | `<tier>_subnet_tags_per_az`             | `<tier>_subnet_tags_per_ad`                                     |                                                            |
-| `<tier>_subnet_ipv6_prefixes`           | none, derived from `enable_ipv6`                                | OCI auto-computes `/64`s from the VCN `/56`                |
 | `one_nat_gateway_per_az`                | `one_nat_gateway_per_ad`                                        |                                                            |
 | `reuse_nat_ips` + `external_nat_ip_ids` | `nat_gateway_public_ip_id`                                      | single value, not a list: `null`, `"RESERVED"`, or an OCID |
 | `manage_default_security_group`         | `lockdown_default_security_list`                                | inverted semantics: AWS manages rules, OCI denies all      |

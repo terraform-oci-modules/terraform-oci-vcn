@@ -108,7 +108,11 @@ resource "oci_core_security_list" "public" {
   defined_tags  = var.defined_tags
 
   lifecycle {
-    ignore_changes = [defined_tags, freeform_tags]
+    # Removing this list moves subnets back to the VCN default security list.
+    # create_before_destroy makes Terraform update those subnets before deleting
+    # the list; by default it deletes first and OCI rejects that (409).
+    create_before_destroy = true
+    ignore_changes        = [defined_tags, freeform_tags]
   }
 }
 
@@ -197,7 +201,11 @@ resource "oci_core_security_list" "private" {
   defined_tags  = var.defined_tags
 
   lifecycle {
-    ignore_changes = [defined_tags, freeform_tags]
+    # Removing this list moves subnets back to the VCN default security list.
+    # create_before_destroy makes Terraform update those subnets before deleting
+    # the list; by default it deletes first and OCI rejects that (409).
+    create_before_destroy = true
+    ignore_changes        = [defined_tags, freeform_tags]
   }
 }
 
@@ -286,7 +294,11 @@ resource "oci_core_security_list" "database" {
   defined_tags  = var.defined_tags
 
   lifecycle {
-    ignore_changes = [defined_tags, freeform_tags]
+    # Removing this list moves subnets back to the VCN default security list.
+    # create_before_destroy makes Terraform update those subnets before deleting
+    # the list; by default it deletes first and OCI rejects that (409).
+    create_before_destroy = true
+    ignore_changes        = [defined_tags, freeform_tags]
   }
 }
 
@@ -375,6 +387,10 @@ resource "oci_core_security_list" "intra" {
   defined_tags  = var.defined_tags
 
   lifecycle {
-    ignore_changes = [defined_tags, freeform_tags]
+    # Removing this list moves subnets back to the VCN default security list.
+    # create_before_destroy makes Terraform update those subnets before deleting
+    # the list; by default it deletes first and OCI rejects that (409).
+    create_before_destroy = true
+    ignore_changes        = [defined_tags, freeform_tags]
   }
 }

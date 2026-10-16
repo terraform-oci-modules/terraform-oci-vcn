@@ -91,7 +91,7 @@ variable "vcn_dns_label" {
 }
 
 variable "enable_ipv6" {
-  description = "Requests an Oracle-provided IPv6 /56 CIDR block for the VCN. The module automatically derives a /64 for each subnet from that /56 - no manual CIDR input required. Public subnet 0 gets offset 0, private subnet 0 gets offset N_public, etc."
+  description = "Requests an Oracle-provided IPv6 /56 CIDR block for the VCN. The module derives a /64 for each subnet from that /56. By default public subnet 0 gets offset 0, private subnet 0 gets offset N_public, etc.; set <tier>_subnet_ipv6_prefixes to choose the offsets yourself."
   type        = bool
   default     = false
 }
@@ -116,6 +116,18 @@ variable "public_subnet_names" {
   description = "Explicit display names for public subnets. If empty, names are generated"
   type        = list(string)
   default     = []
+}
+
+variable "public_subnet_ipv6_prefixes" {
+  description = "Assigns IPv6 public subnet id based on the Oracle provided /56 prefix base 10 integer (0-255). Must be of equal length to the corresponding IPv4 subnet list. Leave empty to use the default offsets. Only used when enable_ipv6 = true"
+  type        = list(number)
+  default     = []
+  nullable    = false
+
+  validation {
+    condition     = alltrue([for p in var.public_subnet_ipv6_prefixes : p >= 0 && p <= 255 && floor(p) == p])
+    error_message = "public_subnet_ipv6_prefixes entries must be integers from 0 to 255 (the /64 index inside the VCN's /56)."
+  }
 }
 
 variable "public_subnet_suffix" {
@@ -171,6 +183,18 @@ variable "private_subnet_names" {
   default     = []
 }
 
+variable "private_subnet_ipv6_prefixes" {
+  description = "Assigns IPv6 private subnet id based on the Oracle provided /56 prefix base 10 integer (0-255). Must be of equal length to the corresponding IPv4 subnet list. Leave empty to use the default offsets. Only used when enable_ipv6 = true"
+  type        = list(number)
+  default     = []
+  nullable    = false
+
+  validation {
+    condition     = alltrue([for p in var.private_subnet_ipv6_prefixes : p >= 0 && p <= 255 && floor(p) == p])
+    error_message = "private_subnet_ipv6_prefixes entries must be integers from 0 to 255 (the /64 index inside the VCN's /56)."
+  }
+}
+
 variable "private_subnet_suffix" {
   description = "Suffix to append to private subnet names"
   type        = string
@@ -216,6 +240,18 @@ variable "database_subnet_names" {
   description = "Explicit display names for database subnets. If empty, names are generated"
   type        = list(string)
   default     = []
+}
+
+variable "database_subnet_ipv6_prefixes" {
+  description = "Assigns IPv6 database subnet id based on the Oracle provided /56 prefix base 10 integer (0-255). Must be of equal length to the corresponding IPv4 subnet list. Leave empty to use the default offsets. Only used when enable_ipv6 = true"
+  type        = list(number)
+  default     = []
+  nullable    = false
+
+  validation {
+    condition     = alltrue([for p in var.database_subnet_ipv6_prefixes : p >= 0 && p <= 255 && floor(p) == p])
+    error_message = "database_subnet_ipv6_prefixes entries must be integers from 0 to 255 (the /64 index inside the VCN's /56)."
+  }
 }
 
 variable "database_subnet_suffix" {
@@ -275,6 +311,18 @@ variable "intra_subnet_names" {
   description = "Explicit display names for intra subnets. If empty, names are generated"
   type        = list(string)
   default     = []
+}
+
+variable "intra_subnet_ipv6_prefixes" {
+  description = "Assigns IPv6 intra subnet id based on the Oracle provided /56 prefix base 10 integer (0-255). Must be of equal length to the corresponding IPv4 subnet list. Leave empty to use the default offsets. Only used when enable_ipv6 = true"
+  type        = list(number)
+  default     = []
+  nullable    = false
+
+  validation {
+    condition     = alltrue([for p in var.intra_subnet_ipv6_prefixes : p >= 0 && p <= 255 && floor(p) == p])
+    error_message = "intra_subnet_ipv6_prefixes entries must be integers from 0 to 255 (the /64 index inside the VCN's /56)."
+  }
 }
 
 variable "intra_subnet_suffix" {
@@ -386,6 +434,10 @@ variable "nat_gateway_public_ip_id" {
       - "<ocid>": attach an existing reserved public IP by OCID.
     Has no effect when enable_nat_gateway = false.
     When multiple NAT gateways are created, only the first one gets this IP.
+    Set this when the NAT Gateway is created. OCI cannot change a NAT Gateway's
+    IP, so changing this later replaces the gateway, which a single apply cannot
+    do. For a stable IP that survives rebuilding the VCN, pass your own reserved
+    IP's OCID.
   EOT
   type        = string
   default     = null
@@ -419,8 +471,11 @@ variable "attached_drg_id" {
 
 variable "local_peering_gateways" {
   description = "Map of Local Peering Gateways to attach to the VCN. Key is the LPG name, value is an object with optional peer_id and route_table_id"
-  type        = map(any)
-  default     = null
+  type = map(object({
+    peer_id        = optional(string)
+    route_table_id = optional(string)
+  }))
+  default = null
 }
 
 ################################################################################
