@@ -154,8 +154,11 @@ resource "oci_core_subnet" "public" {
   prohibit_public_ip_on_vnic = false
   ipv6cidr_block             = var.enable_ipv6 ? cidrsubnet(oci_core_vcn.this[0].ipv6cidr_blocks[0], 8, local.public_subnet_objects[count.index].ipv6_index) : null
   dhcp_options_id            = var.enable_dhcp_options ? oci_core_dhcp_options.this[0].id : null
-  route_table_id             = var.create_igw ? element(oci_core_route_table.ig[*].id, var.create_multiple_public_route_tables ? count.index : 0) : null
-  security_list_ids          = local.create_public_security_list ? [oci_core_security_list.public[0].id] : null
+  # Without a route table of its own a subnet uses the VCN default route table.
+  # Pointing at it explicitly (not null) moves the subnet off a route table the
+  # module is deleting; null would keep it attached and the delete would fail.
+  route_table_id    = var.create_igw ? element(oci_core_route_table.ig[*].id, var.create_multiple_public_route_tables ? count.index : 0) : oci_core_vcn.this[0].default_route_table_id
+  security_list_ids = local.create_public_security_list ? [oci_core_security_list.public[0].id] : null
 
   freeform_tags = merge(
     { "Name" = local.public_subnet_objects[count.index].display_name },
@@ -214,7 +217,7 @@ resource "oci_core_subnet" "private" {
   route_table_id = (
     var.enable_nat_gateway
     ? oci_core_route_table.nat[local.private_subnet_objects[count.index].nat_rt_index].id
-    : null
+    : oci_core_vcn.this[0].default_route_table_id
   )
   security_list_ids = local.create_private_security_list ? [oci_core_security_list.private[0].id] : null
 
@@ -290,7 +293,7 @@ resource "oci_core_subnet" "database" {
     : (
       var.enable_nat_gateway
       ? oci_core_route_table.nat[local.database_subnet_objects[count.index].nat_rt_index].id
-      : null
+      : oci_core_vcn.this[0].default_route_table_id
     )
   )
   security_list_ids = local.create_database_security_list ? [oci_core_security_list.database[0].id] : null
