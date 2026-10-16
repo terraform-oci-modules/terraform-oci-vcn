@@ -80,6 +80,10 @@ resource "oci_core_vcn" "this" {
   defined_tags  = var.defined_tags
 
   lifecycle {
+    precondition {
+      condition     = length(local.duplicate_ipv6_indexes) == 0
+      error_message = "IPv6 prefix index(es) ${join(", ", local.duplicate_ipv6_indexes)} are used by more than one subnet. Check the <tier>_subnet_ipv6_prefixes inputs: tiers left empty use the default offsets."
+    }
     ignore_changes = [defined_tags, dns_label, freeform_tags]
   }
 }
@@ -133,7 +137,7 @@ locals {
       cidr         = cidr
       display_name = length(var.public_subnet_names) > idx ? var.public_subnet_names[idx] : "${var.name}-${var.public_subnet_suffix}-${idx + 1}"
       ad           = length(local.availability_domain_names) > 0 ? local.availability_domain_names[idx % length(local.availability_domain_names)] : null
-      ipv6_index   = idx
+      ipv6_index   = length(var.public_subnet_ipv6_prefixes) > 0 ? try(var.public_subnet_ipv6_prefixes[idx], idx) : idx
     }
   ]
 }
@@ -162,6 +166,10 @@ resource "oci_core_subnet" "public" {
   defined_tags = merge(var.defined_tags, var.public_subnet_defined_tags)
 
   lifecycle {
+    precondition {
+      condition     = length(var.public_subnet_ipv6_prefixes) == 0 || length(var.public_subnet_ipv6_prefixes) == length(var.public_subnets)
+      error_message = "public_subnet_ipv6_prefixes must have one entry per public subnet (${length(var.public_subnets)}), or be empty."
+    }
     ignore_changes = [defined_tags, freeform_tags]
   }
 }
@@ -177,7 +185,7 @@ locals {
       cidr         = cidr
       display_name = length(var.private_subnet_names) > idx ? var.private_subnet_names[idx] : "${var.name}-${var.private_subnet_suffix}-${idx + 1}"
       ad           = length(local.availability_domain_names) > 0 ? local.availability_domain_names[idx % length(local.availability_domain_names)] : null
-      ipv6_index   = idx + length(var.public_subnets)
+      ipv6_index   = length(var.private_subnet_ipv6_prefixes) > 0 ? try(var.private_subnet_ipv6_prefixes[idx], idx + length(var.public_subnets)) : idx + length(var.public_subnets)
       # Which NAT GW route table does this subnet use?
       # single → index 0; one_per_ad → index = (idx % ad count), or one per subnet
       # when availability_domains = [] (matches nat_gateway_count); else → index = idx
@@ -219,6 +227,10 @@ resource "oci_core_subnet" "private" {
   defined_tags = merge(var.defined_tags, var.private_subnet_defined_tags)
 
   lifecycle {
+    precondition {
+      condition     = length(var.private_subnet_ipv6_prefixes) == 0 || length(var.private_subnet_ipv6_prefixes) == length(var.private_subnets)
+      error_message = "private_subnet_ipv6_prefixes must have one entry per private subnet (${length(var.private_subnets)}), or be empty."
+    }
     ignore_changes = [defined_tags, freeform_tags]
   }
 }
@@ -234,7 +246,7 @@ locals {
       cidr         = cidr
       display_name = length(var.database_subnet_names) > idx ? var.database_subnet_names[idx] : "${var.name}-${var.database_subnet_suffix}-${idx + 1}"
       ad           = length(local.availability_domain_names) > 0 ? local.availability_domain_names[idx % length(local.availability_domain_names)] : null
-      ipv6_index   = idx + length(var.public_subnets) + length(var.private_subnets)
+      ipv6_index   = length(var.database_subnet_ipv6_prefixes) > 0 ? try(var.database_subnet_ipv6_prefixes[idx], idx + length(var.public_subnets) + length(var.private_subnets)) : idx + length(var.public_subnets) + length(var.private_subnets)
       # Which NAT GW / route table does this subnet use?
       # Same logic as private subnets - keeps DB traffic AD-local when one_nat_gateway_per_ad=true.
       nat_rt_index = (
@@ -292,6 +304,10 @@ resource "oci_core_subnet" "database" {
   defined_tags = merge(var.defined_tags, var.database_subnet_defined_tags)
 
   lifecycle {
+    precondition {
+      condition     = length(var.database_subnet_ipv6_prefixes) == 0 || length(var.database_subnet_ipv6_prefixes) == length(var.database_subnets)
+      error_message = "database_subnet_ipv6_prefixes must have one entry per database subnet (${length(var.database_subnets)}), or be empty."
+    }
     ignore_changes = [defined_tags, freeform_tags]
   }
 }
@@ -360,9 +376,23 @@ locals {
       cidr         = cidr
       display_name = length(var.intra_subnet_names) > idx ? var.intra_subnet_names[idx] : "${var.name}-${var.intra_subnet_suffix}-${idx + 1}"
       ad           = length(local.availability_domain_names) > 0 ? local.availability_domain_names[idx % length(local.availability_domain_names)] : null
-      ipv6_index   = idx + length(var.public_subnets) + length(var.private_subnets) + length(var.database_subnets)
+      ipv6_index   = length(var.intra_subnet_ipv6_prefixes) > 0 ? try(var.intra_subnet_ipv6_prefixes[idx], idx + length(var.public_subnets) + length(var.private_subnets) + length(var.database_subnets)) : idx + length(var.public_subnets) + length(var.private_subnets) + length(var.database_subnets)
     }
   ]
+}
+
+locals {
+  # Every subnet's /64 index across all tiers, to catch two subnets asking for the same /64.
+  # Only checked with enable_ipv6, since the indexes are unused otherwise.
+  ipv6_indexes_by_value = {
+    for i in concat(
+      local.public_subnet_objects[*].ipv6_index,
+      local.private_subnet_objects[*].ipv6_index,
+      local.database_subnet_objects[*].ipv6_index,
+      local.intra_subnet_objects[*].ipv6_index,
+    ) : tostring(i) => i...
+  }
+  duplicate_ipv6_indexes = var.enable_ipv6 ? sort([for k, v in local.ipv6_indexes_by_value : k if length(v) > 1]) : []
 }
 
 resource "oci_core_subnet" "intra" {
@@ -388,6 +418,10 @@ resource "oci_core_subnet" "intra" {
   defined_tags = merge(var.defined_tags, var.intra_subnet_defined_tags)
 
   lifecycle {
+    precondition {
+      condition     = length(var.intra_subnet_ipv6_prefixes) == 0 || length(var.intra_subnet_ipv6_prefixes) == length(var.intra_subnets)
+      error_message = "intra_subnet_ipv6_prefixes must have one entry per intra subnet (${length(var.intra_subnets)}), or be empty."
+    }
     ignore_changes = [defined_tags, freeform_tags]
   }
 }
