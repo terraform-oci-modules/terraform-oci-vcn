@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.8.0](https://github.com/terraform-oci-modules/terraform-oci-vcn/compare/v0.7.2...v0.8.0) (2026-10-18)
+
+### Features
+
+* Choose subnet IPv6 prefixes and fix turning NAT, DHCP options or security lists off ([#5](https://github.com/terraform-oci-modules/terraform-oci-vcn/issues/5)) ([51b8566](https://github.com/terraform-oci-modules/terraform-oci-vcn/commit/51b85666a84cc67ca303e701b9b35f834886c769))
+
 ## [0.7.2](https://github.com/terraform-oci-modules/terraform-oci-vcn/compare/v0.7.1...v0.7.2) (2026-08-16)
 
 ### Bug Fixes
