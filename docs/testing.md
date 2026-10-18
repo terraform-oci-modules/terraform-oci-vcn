@@ -16,11 +16,16 @@ The test suite lives in `tests/` - one `.tftest.hcl` file per example. All tests
 `tests/unit_mappings.tftest.hcl` exercises input->config mapping logic (AD
 resolution/round-robin, NAT gateway count, VCN DNS label derivation, subnet
 naming, per-AD tags) against a mocked OCI provider via `command = plan` - no
-real resources, no OCI credentials, safe to run anytime:
+real resources, no OCI credentials, safe to run anytime.
+`tests/ipv6_prefixes.tftest.hcl` (per-subnet IPv6 `/64` selection) and
+`tests/vcn_defaults.tftest.hcl` (subnets falling back to the VCN default route table, DHCP options
+and security list) work the same
+way (their runs use `command = apply`, but against the mock, so they create nothing either):
 
 ```bash
 terraform init
-terraform test -filter=tests/unit_mappings.tftest.hcl
+terraform test -filter=tests/unit_mappings.tftest.hcl -filter=tests/ipv6_prefixes.tftest.hcl \
+  -filter=tests/vcn_defaults.tftest.hcl
 ```
 
 ## Quick start (real resources, needs credentials)
@@ -41,6 +46,6 @@ terraform test
 
 ## Notes
 
-- All tests except `tests/unit_mappings.tftest.hcl` use `command = apply` - they create and destroy **real** OCI resources and may incur cost.
+- All tests except `tests/unit_mappings.tftest.hcl`, `tests/ipv6_prefixes.tftest.hcl` and `tests/vcn_defaults.tftest.hcl` (the files with a `mock_provider` block) create and destroy **real** OCI resources and may incur cost.
 - The `drg-peering` example requires your tenancy to be subscribed to both `us-ashburn-1` and `us-chicago-1`.
 - The `ipv6-dualstack` example follows a two-step apply workflow; the test covers step 1 only (VCN + subnets created, IPv6 /56 assigned).
