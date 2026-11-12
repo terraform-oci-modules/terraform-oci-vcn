@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.8.1](https://github.com/terraform-oci-modules/terraform-oci-vcn/compare/v0.8.0...v0.8.1) (2026-11-12)
+
+### Bug Fixes
+
+* Republish 0.8.0 so the Terraform Registry can download it ([#6](https://github.com/terraform-oci-modules/terraform-oci-vcn/issues/6)) ([077f5d4](https://github.com/terraform-oci-modules/terraform-oci-vcn/commit/077f5d4bc6893a27a4d5b162fb49d524db94b426))
+
 ## [0.8.0](https://github.com/terraform-oci-modules/terraform-oci-vcn/compare/v0.7.2...v0.8.0) (2026-10-18)
 
 ### Features
